@@ -35,3 +35,12 @@ summary(M$HC)
 # 保存为 RDS
 saveRDS(M,file = "data/M.RDS")
 
+
+#' # 影响因子数据（最新）
+library(dplyr)
+file <- "data-raw/2019_Impact_factor.xlsx"
+journal_IF <- openxlsx::read.xlsx(file,startRow=3)  %>%
+  select(SO,impact_factor) %>%
+  mutate(SO=toupper(SO)) %>%
+  unique()
+saveRDS(journal_IF,"data/journal_IF.RDS")
