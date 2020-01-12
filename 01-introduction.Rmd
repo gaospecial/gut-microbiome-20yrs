@@ -1,6 +1,10 @@
 \mainmatter
 
-# 牛刀小试 {#intro}
+# 研究概述 {#intro}
+
+现在我们可以看看全景式的大数据了。
+
+
 
 现在我们可以试试 **bookdown** 的一些初级功能了，例如图表。图 \@ref(fig:hello) 是一幅无趣的散点图，表 \@ref(tab:iris) 是一份枯燥的数据。
 

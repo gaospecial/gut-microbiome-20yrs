@@ -1,0 +1,42 @@
+\cleardoublepage 
+
+# (APPENDIX) 附录 {-}
+
+
+# 数据来源 {#data-source}
+
+
+## 文献检索方式
+
+使用“肠道”和“菌群”两个主题词在 WOS 数据库中搜索 2000 年以来的文献数据，共检得56445条记录（2020-1-3)。
+
+其中，包括 2135 条高被引论文（Highly Cited in Field）。
+
+- 数据库
+  
+  Web of Science Core Collection;
+  
+  包括：SCI-EXPANDED, SSCI, CPCI-S, CPCI-SSH, CCR-EXPANDED, IC.
+
+- 检索年限
+  
+  从 2000 年至 2020 年；
+
+- 具体使用的检索式是：
+
+  "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"。
+
+
+**Web of Science 关于高被引论文的定义**
+
+> As of September/October 2019, this highly cited paper received enough citations to place it in the top 1% of the academic field of Agricultural Sciences based on a highly cited threshold for the field and publication year.
+
+### 下载“肠道菌群”研究完整数据
+
+下载完整数据（Full Record and Cited References），保存为 `Gut_Microbiome_*.txt` 文件。
+
+（每次 500 条数据，耗时约半天。）
+
+# 后记 {#sound}
+
+呐，到这里朕的书差不多写完了，但还有几句话要交待，所以开个附录，再啰嗦几句，各位客官稍安勿躁、扶稳坐好。

@@ -1,0 +1,315 @@
+# 研究热点 {#research-topic}
+
+
+## 五年研究热点
+
+
+```{r include=FALSE}
+# load frequentely used packages
+library(tidyverse)
+library(lubridate)
+library(mrgut)
+library(RColorBrewer)
+library(knitr)
+library(export)
+library(cowplot)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+# display.brewer.pal(7,"PuBuGn")
+cols <- brewer.pal(n=7,name = "PuBuGn")[c(-1,-2)]
+pal <- colorRampPalette(cols)
+```
+
+
+```{r}
+# 要导出的文件
+graph_ppt_file <- paste0(Sys.Date(),"_graph.pptx")
+```
+
+
+```{r}
+theme_labs <- 
+  theme(plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
+        plot.subtitle = element_text(size = 8,
+                                     hjust = 1,
+                                     color = "grey50"),
+        plot.caption = element_text(size=8, 
+                                    hjust = 1,
+                                    color = "grey50",
+                                    vjust = 1,
+                                    lineheight = 1.1),
+        legend.position = "none")
+
+theme_set(theme_light() + theme_labs)
+```
+
+
+
+```{r}
+query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
+
+# 检索时使用的关键词
+search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
+```
+
+
+## 近五年研究热点的变迁
+
+使用 WOS 指定的关键词作为依托，分析研究热点的变化。
+
+
+
+```{r}
+# Impact factor
+file <- "./data/2019_Impact_factor.xlsx"
+journal_IF <- openxlsx::read.xlsx(file, startRow=3) %>% 
+  unique() %>%  # 一些行是重复的
+  select(SO,impact_factor) %>%
+  as_tibble() %>% 
+  mutate_at("impact_factor",as.numeric) %>%
+  mutate_at("SO",toupper) %>%
+  filter(impact_factor > -1) %>%  # 只选取有影响因子的期刊
+  mutate(group=cut(impact_factor,
+                   breaks = c(-Inf,3,5,10,20,Inf),
+                   labels = c("<3",">3",">5",">10",">20")))
+```
+
+```{r}
+# 读取近五年的文献资料
+M <- read_rds("data/M_GUT_MICROBIOME.RDS") %>% as_tibble() %>%
+  filter(PY>2014)
+```
+
+```{r}
+# 期刊加上影响因子
+M <- M %>% left_join(journal_IF)
+```
+
+有些期刊已经没有影响因子，对应的文章有 `r sum(is.na(M$impact_factor))` 篇。具体如下(只显示前20行）：
+
+```{r}
+# 检查数据
+M %>% filter(is.na(impact_factor)) %>% select(SO,impact_factor) %>% group_by(SO) %>%
+  summarise(Records =n()) %>%
+  arrange(desc(Records)) %>%
+  head(20) %>%
+  kable() %>%
+  kable_styling(c("striped","hover","condensed","responsive"))
+```
+
+### 每年的发文量
+
+近五年一共发表了 `r nrow(M)` 篇文献。
+
+```{r}
+pos <- position_dodge(width = 0.9)
+M %>% filter(PY<2020) %>%
+  group_by(PY,group) %>%
+  summarise(Records=n()) %>%
+  filter(!is.na(group)) %>%
+  ggplot(aes(PY,Records,fill=group)) +
+  geom_col(position = pos) +
+  geom_text(aes(y=Records+5,label=Records),
+            hjust=0.5,vjust=-0.1,
+            angle=0, size=2.5,
+            show.legend = F,position = pos) +
+  scale_fill_manual(values = pal(6),name="Impact Factor") +
+  labs(x="Year of Publication") +
+  theme(legend.position = "right")
+```
+
+
+
+```{r}
+# 近五年的关键词及关键词每年的词频
+years <- 2015:2019
+list <- lapply(seq_along(years),function(i){
+  year <- years[[i]]
+  M %>% filter(PY==year) %>% pull(ID) %>% 
+    str_split(pattern = "; ") %>% 
+    unlist() %>% as_tibble() %>% 
+    rename("ID"=value) %>% 
+    mutate(PY=year)
+})
+# M$ID 字段是关键词，以 ; 分隔
+
+IDs <- do.call("rbind",list) %>%
+  group_by(PY,ID) %>%
+  summarise(Freq=n()) %>% 
+  group_by(PY) %>%
+  mutate(proportion=Freq/sum(Freq)) %>%
+  # 有部分文章的 ID 为 NA（没有 ID）
+  filter(!is.na(ID)) %>%
+  ungroup() %>%
+  complete(PY,ID,fill = list(Freq=0,proportion=0))
+```
+
+这其中包括了 `r length(unique(IDs$ID))` 个不同的关键词。大部分的关键词使用的频率较低，可以事先去掉，减少干扰因素。
+
+```{r}
+breaks <- 10^(-10:10)
+minor_breaks <- rep(1:9, 21)*(10^rep(-10:10, each=9))
+ID_usage <- IDs %>% group_by(ID) %>%
+  summarise(Freq = sum(Freq,na.rm = T)) %>%
+  arrange(desc(Freq)) %>%
+  mutate(No=row_number()) 
+
+ID_usage %>%
+  ggplot(aes(No,Freq)) +
+  geom_line() +
+  scale_x_log10(minor_breaks=minor_breaks) +
+  scale_y_log10(minor_breaks=minor_breaks) +
+  theme(panel.grid.major = element_line(colour = "grey60"))
+```
+
+从上图可以看出，出现频率最高的关键词总共使用了近8000次（“GUT MICROBIOTA”）；使用次数在 100 次以上的有 400 个左右；使用次数在40次以上的有1000个左右；使用次数在10次以上的有3000个左右。
+
+基于此，我们选择使用频次在 100 次以上的关键词继续分析。
+
+```{r}
+selected_ID <- ID_usage %>% filter(Freq>100) %>% pull(ID)
+IDs_filtered <- IDs %>% filter(ID %in% selected_ID)
+```
+
+
+为了得到五年显著上升或下降的关键词，我们分别计算每个关键词在5年中所占比例（proportion）的变异系数（CV），变异系数较大的则变化比较显著。
+
+$CV = (SD/Mean) * 100\%$
+
+```{r}
+# 计算关键词的变异系数
+ID_CV <- IDs_filtered %>% group_by(ID) %>% 
+  summarise(CV=(sd(proportion)/mean(proportion))) %>% 
+  arrange(desc(CV))
+
+```
+
+接下来再根据2015-2019年之间的差值变化的比例确定总体上的变化趋势（备注：如果比较差值变化的数值而不是比例的话，可以发现多说关键词占的比例还是挺小的，小众的关键词更容易发生“显著”变化，而大众的关键词该如何找出来呢？）。
+
+$change=(Proportion_{2019}-Proportion_{2015})/Proportion_{2015}$
+
+```{r}
+# 评估关键词的上升或下降
+ID_change <- IDs_filtered %>% filter(PY %in% c(2015,2019)) %>%
+  pivot_wider(id_cols = ID, names_from = PY,values_from = proportion) %>%
+  mutate(change=(`2019`-`2015`)/`2015`) %>%
+  select(ID,change)
+```
+
+
+```{r fig.width=10,fig.asp=1}
+change_cutoff <- c(-0.5,1) # 
+CV_cutoff <- 0.3
+
+# 根据变异系数和五年差异作图
+ID_CV_change <- ID_CV %>% left_join(ID_change) %>%
+  mutate(type=ifelse((change > change_cutoff[[1]] & change < change_cutoff[[2]]) | CV < CV_cutoff,
+                     "grey",
+                     ifelse(change>0,"red","blue")))
+
+ggplot(ID_CV_change,aes(change,CV,label=ID,color=I(type))) + 
+  geom_point() +
+  ggrepel::geom_text_repel(aes(label=ID),
+                           data = filter(ID_CV_change,type!="grey"),
+                           size=3) +
+  geom_vline(xintercept=change_cutoff,lty="dashed",color="grey40") +
+  geom_hline(yintercept = CV_cutoff,lty="dashed",color="grey40") +
+  xlim(-5,8)
+```
+
+
+结合变异系数和五年总体变化率的结果，分出“明显上升”和“明显下降”的关键词。如上图所示，我们分别对变异系数和总体变化率取阈值，进而得到热度明显上升、下降显著的关键词。
+
+```{r}
+# 去掉几个无意义的关键词
+non_sense_ID <- regex("MICROBIOTA|MICROBIOME|flora",ignore_case = T)
+change <- ID_CV_change %>% filter(!str_detect(ID,non_sense_ID))
+
+# 增加的 ID
+up_IDs <- change %>% filter(type=="red") %>% pull(ID)
+
+# 降低的 ID
+dn_IDs <- change %>% filter(type=="blue") %>% pull(ID)
+```
+
+
+### 显著上升的关键词
+
+显著上升的关键词有 `r length(up_IDs)` 个，分成 `r ceiling(length(up_IDs)/10)` 幅图。
+
+```{r}
+# 每幅图 10 个关键词
+seperate_idx <- function(total, per=10){
+  n <- ceiling(total/per)
+  list <- lapply(1:n,function(i){
+    from <- (i-1)*per+1
+    to <- i*per
+    to <- ifelse(to>total,total,to)
+    seq(from,to)
+  })
+  return(list)
+}
+
+idx <- seperate_idx(length(up_IDs))
+
+plots <- lapply(seq_along(idx), function(i){
+  x <- idx[[i]]
+  ID_up <- IDs %>% filter(ID %in% up_IDs[x])
+
+  ggplot(ID_up,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
+    geom_text(aes(label=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=1.1, fontface="bold", size=3) + 
+    xlim(2015,2019) + labs(x="",y="") +
+    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
+})
+
+# geom_text(aes(x=I(2005),label=ID,color=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=0, fontface="bold", size=3)
+```
+
+```{r}
+# 两幅图一起（一共四副图）
+plot_grid(plotlist = plots[1:2], ncol = 2,align = "hv")
+
+
+plot_grid(plotlist = plots[3:4], ncol = 2,align = "hv")
+
+
+```
+
+
+
+### 显著下降的关键词
+
+显著下降的关键词有 `r length(dn_IDs)` 个，分成 `r ceiling(length(dn_IDs)/10)` 幅图。
+
+```{r}
+# 针对几个显著下降的关键词绘制趋势
+idx <- seperate_idx(length(dn_IDs))
+
+plots <- lapply(seq_along(idx), function(i){
+  x <- idx[[i]]
+  ID_dn <- IDs %>% filter(ID %in% dn_IDs[x])
+
+  ggplot(ID_dn,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
+    geom_text(aes(label=ID),data = filter(ID_dn, PY==2015),position = position_stack(vjust = 0.5),hjust=-.1, fontface="bold", size=3) + 
+    xlim(2015,2019) + labs(x="",y="") +
+    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
+})
+```
+
+
+```{r }
+# 保存图片
+plot_grid(plotlist = plots, ncol = 2,align = "hv")
+
+
+
+```
+
+```{r}
+## 不同类型期刊的关注点是否不同？
+
+```
+

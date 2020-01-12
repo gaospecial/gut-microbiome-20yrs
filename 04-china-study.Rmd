@@ -1,0 +1,256 @@
+# 中国的肠道菌群研究 {#china-study}
+
+
+```{r}
+M_GUT_MICROBIOME <- read_rds("data/M_GUT_MICROBIOME.RDS")
+# 这一步几分钟就搞定了
+# RESULTS_GUT_MICROBIOME <- biblioAnalysis(M_GUT_MICROBIOME)
+```
+
+
+```{r}
+M <- M_GUT_MICROBIOME %>% as_tibble()
+```
+
+
+## 大陆与港澳台的比较
+
+
+```{r}
+# 根据通讯作者地址获取中国的研究 M$RP 
+China_study <- M %>% filter(is.part_of_china(RP))
+
+# 澳门的研究
+Macao_study <- China_study %>% filter(str_detect(RP,regex("\\bMACAO\\b",ignore_case = T)))
+Macao_study$RP
+
+# 香港的研究
+# 使用这种匹配模式，则香港与内地在香港以外的其它地区合办的分校会被视为香港的研究。
+# 包括香港中文大学深圳分校，北师大-香港浸会大学等。
+HK_study <- China_study %>% filter(str_detect(RP,regex("\\bHONG KONG\\b",ignore_case = T)))
+HK_study$RP
+
+# 台湾的研究
+Taiwan_study <- China_study %>% filter(str_detect(RP,regex("\\bTAIWAN\\b",ignore_case = T)))
+Taiwan_study$RP
+
+
+# 大陆的研究
+Mainland_study <- China_study %>% filter(!str_detect(RP,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
+Mainland_study$RP
+```
+
+```{r}
+list <- list(Macao_study, HK_study, Taiwan_study, Mainland_study)
+region <- c("Macao","Hong Kong","Taiwan","Mainland")
+list  <- lapply(seq_along(list), function(i){
+  list[[i]] %>% select(PY,SO,TC,ID,UT) %>% mutate(region=region[[i]])
+})
+
+# 合并 List，得到中国分区的研究
+China_study_essential <- do.call("rbind",list)
+```
+
+
+
+
+```{r fig.cap="两岸四地发文量统计"}
+China_study_essential %>% 
+  mutate(region=factor(region,levels = c("Mainland","Taiwan","Hong Kong","Macao"))) %>%
+  group_by(region,PY) %>% 
+  summarise(Records = n()) %>%
+  # 只保留2020年前的研究
+  filter(PY<2020) %>% 
+  ggplot(aes(PY,Records,color=region,fill=region)) +
+  geom_point(size=2) +
+  geom_line(size=1) +
+  geom_text(aes(y=Records*1.1,label=Records),hjust=1,vjust=-0.2,show.legend = F) +
+  xlim(2000,2020) +
+  scale_y_log10() +
+  theme(legend.position = c(0.3,0.7),
+        legend.title = element_blank(),
+        legend.text = element_text(face = "bold",size=16))
+
+# 导出图片到 PPT 文件
+```
+
+
+
+```{r fig.cap="两岸四地发文量统计"}
+China_study_essential %>% 
+  mutate(region=factor(region,levels = c("Mainland","Taiwan","Hong Kong","Macao"))) %>%
+  group_by(region,PY) %>% 
+  summarise(Records = n()) %>% ungroup() %>%
+  complete(region,PY,fill = list(Records=0)) %>%
+  # 只保留2020年前的研究
+  filter(PY<2020) %>% 
+  # 计算比例
+  group_by(PY) %>% mutate(proportion=Records/sum(Records,na.rm = T)) %>%
+  ggplot(aes(PY,proportion,color=region,fill=region)) +
+  geom_area() +
+  xlim(2000,2020) + 
+  scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")}) +
+  theme(legend.position = c(0.4,0.7),
+        legend.title = element_blank(),
+        legend.text = element_text(face = "bold",size=16))
+
+# 导出图片到 PPT 文件
+
+
+```
+
+## 关键词的词云
+
+使用 WOS 指定的关键词作为依托，分析研究热点的变化。
+
+```{r}
+years <- 2000:2019
+list <- lapply(seq_along(years),function(i){
+  year <- years[[i]]
+  M %>% filter(PY==year) %>% pull(ID) %>% str_split(pattern = "; ") %>% unlist() %>% as_tibble() %>% rename("ID"=value) %>% mutate(PY=year)
+})
+# M$ID 字段是关键词，以 ; 分隔
+
+IDs <- do.call("rbind",list) %>%
+  group_by(PY,ID) %>%
+  summarise(Freq=n()) %>% 
+  group_by(PY) %>%
+  mutate(proportion=Freq/sum(Freq)) %>%
+  # 有部分文章的 ID 为 NA（没有 ID）
+  filter(!is.na(ID)) %>%
+  ungroup() %>%
+  complete(PY,ID,fill = list(Freq=0,proportion=0))
+```
+
+
+
+```{r}
+# 关键词每年的词云
+library(wordcloud2)
+lapply(years, function(y){
+  wordcloud2(IDs %>% ungroup() %>% filter(PY==2019,Freq>3,!is.na(ID)) %>% select(ID,Freq) %>% arrange(desc(Freq)), size = 0.5, minSize = 5)
+
+})
+```
+
+
+## 关键词的变化
+
+以五年为一个周期，看看关键词频率有没有显著变化。
+
+关键词频率变化显著的，说明对应的关键词研究热度变化较大。如此分析，或许可以看到从无到有的研究热点的发展。
+
+```{r}
+library(ggpubr)
+
+# 将20年分为四个阶段
+data <- IDs %>% mutate(stage=cut(PY,breaks = seq(from=2000,to=2020,by=5),
+                         labels = c("First","Second","Third","Fourth"),
+                         right = F)) %>%
+  select(ID,Freq,proportion,stage) 
+
+# 去掉出现频次太少的关键词
+data <- data %>% filter(ID %in% (data %>% group_by(ID) %>% summarise(Freq=sum(Freq)) %>% filter(Freq > 100) %>% pull(ID)))
+
+# 利用统计方法计算差异，得出变化显著的关键词
+unique_ID <- unique(data$ID)
+
+# 测试数据
+stats <- compare_means(Freq~stage, data %>% filter(ID %in% sample(unique_ID,6)), method = "kruskal.test",group.by = "ID")
+# 完整数据
+stats_kruskal <- compare_means(Freq~stage, data, method = "kruskal.test",group.by = "ID")
+
+stats_aov <- compare_means(proportion~stage, data, method = "aov",group.by = "ID")
+
+stats_aov <- stats_aov %>% filter(p.adj<1e-3) %>% arrange(p.adj)
+```
+
+接下来再看一下关键词的比例是否有显著变化。
+
+如果关键词的比例发生显著变化，说明对应关键词的研究波动比较明显。
+
+
+```{r fig.width=10}
+data %>% filter(ID %in% stats_aov$ID) %>%
+  ggplot(aes(stage,proportion)) + geom_boxplot() + geom_jitter() +
+  facet_wrap(~ID,scales = "free_y",ncol = ) +    
+  scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")}) +
+  theme(strip.text = element_text(face = "bold"),
+        axis.text.x = element_text(angle = 60,hjust = 1,vjust = 1))
+```
+
+根据统计分析结果，分出“显著上升”和“显著下降”的。
+
+```{r}
+sig_IDs <- stats_aov$ID
+
+# 变化
+change <- data %>% filter(ID %in% sig_IDs,stage %in% c("First","Fourth")) %>% 
+  group_by(ID,stage) %>%
+  summarise(prop=mean(proportion)) %>%
+  pivot_wider(id_cols = ID, names_from = stage, values_from = prop) %>%
+  mutate(change = Fourth-First)
+
+# 去掉几个无意义的关键词
+non_sense_ID <- regex("MICROBIOTA|MICROBIOME|flora",ignore_case = T)
+change <- change %>% filter(!str_detect(ID,non_sense_ID))
+
+# 增加的 ID
+up_IDs <- change %>% filter(change>0) %>% pull(ID)
+
+# 降低的 ID
+dn_IDs <- change %>% filter(change<0) %>% pull(ID)
+```
+
+
+### 显著上升的关键词
+
+```{r}
+idx <- list(1:10,11:20,21:30,31:38)
+plots <- lapply(seq_along(idx), function(i){
+  x <- idx[[i]]
+  ID_up <- IDs %>% filter(ID %in% up_IDs[x])
+
+  ggplot(ID_up,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
+    geom_text(aes(label=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=1.1, fontface="bold", size=3) + 
+    xlim(2000,2020) + labs(x="",y="") +
+    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
+})
+
+# geom_text(aes(x=I(2005),label=ID,color=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=0, fontface="bold", size=3)
+```
+
+```{r}
+# 两幅图一起（一共四副图）
+
+# 保存前两幅图
+plot_grid(plotlist = plots[1:2], ncol = 2,align = "hv")
+
+
+# 保存后两幅图
+plot_grid(plotlist = plots[3:4], ncol = 2,align = "hv")
+
+
+
+```
+
+
+
+### 显著下降的关键词
+
+```{r}
+# 针对几个显著下降的关键词绘制趋势
+ID_dn <- IDs %>% filter(ID %in% dn_IDs) 
+dn_plot <- ggplot(ID_dn, aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
+  geom_text(aes(label=ID),data = filter(ID_dn, PY==2000),position = position_stack(vjust = 0.5),hjust=-0.1, fontface="bold", size=4) + 
+    xlim(2000,2020) + labs(x="",y="") +
+    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
+```
+
+
+```{r }
+# 保存图片
+dn_plot
+
+```
+
