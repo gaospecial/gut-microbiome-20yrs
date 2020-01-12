@@ -1,7 +1,8 @@
 --- 
-title: "麻麻说我们可以用 R Markdown 写书了"
-author: "张三"
+title: "肠道菌群研究二十年·大数据"
+author: "高春辉"
 date: "`r Sys.Date()`"
+always_allow_html: true
 documentclass: ctexbook
 bibliography: [book.bib, packages.bib]
 biblio-style: apalike
@@ -9,27 +10,92 @@ link-citations: yes
 colorlinks: yes
 lot: yes
 lof: yes
-geometry: [b5paper, tmargin=2.5cm, bmargin=2.5cm, lmargin=3.5cm, rmargin=2.5cm]
+geometry: [a4paper, tmargin=2.5cm, bmargin=2.5cm, lmargin=3.5cm, rmargin=2.5cm]
 site: bookdown::bookdown_site
-description: "一个简单的中文书示例。"
-github-repo: yihui/bookdown-chinese
+description: "从20年肠道菌群研究大数据看肠道菌群研究的未来"
+github-repo: gaospecial/whitePaper2020
 #cover-image: images/cover.jpg
 ---
 
 ```{r setup, include=FALSE}
 options(
-  htmltools.dir.version = FALSE, formatR.indent = 2, width = 55, digits = 4
+  htmltools.dir.version = FALSE, formatR.indent = 2, width = 55, digits = 4,
+  tinytex.verbose = TRUE
 )
 
+knitr::opts_chunk$set(fig.width = 8,
+                      fig.asp=0.618,
+                      include=FALSE)
+
+# disable Sys.setlocale output
+Sys.setenv(LANG="zh_CN.UTF-8")
+Sys.setenv(LANGUAGE = "en") #显示英文报错信息
+Sys.setlocale(category = "LC_ALL",locale = "Chinese")
+
+# https://stackoverflow.com/questions/32826906/how-to-solve-protection-stack-overflow-issue-in-r-studio
+options(expressions = 5e5)
+
 # 填上你需要用到的包，如 c('ggplot2', 'dplyr')
-lapply(c(), function(pkg) {
+packages <- c("tidyverse","wordcloud2","mrgut","lubridate","RColorBrewer","export","gganimate","ggVennDiagram","ccgraph")
+
+lapply(packages, function(pkg) {
   if (system.file(package = pkg) == '') install.packages(pkg)
 })
 ```
 
+
+
+```{r load_pacakges}
+# load frequentely used packages
+library(tidyverse)
+library(lubridate)
+library(mrgut)
+library(RColorBrewer)
+library(knitr)
+library(export)
+library(cowplot)
+library(knitr)
+library(bibliometrix)
+
+```
+
+```{r colors}
+# display.brewer.pal(7,"PuBuGn")
+cols <- brewer.pal(n=7,name = "PuBuGn")[c(-1,-2)]
+pal <- colorRampPalette(cols)
+```
+
+
+```{r}
+# 要导出的文件
+graph_ppt_file <- paste0(Sys.Date(),"_graph.pptx")
+```
+
+
+```{r}
+theme_labs <- 
+  theme(plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
+        plot.subtitle = element_text(size = 8,
+                                     hjust = 1,
+                                     color = "grey50"),
+        plot.caption = element_text(size=8, 
+                                    hjust = 1,
+                                    color = "grey50",
+                                    vjust = 1,
+                                    lineheight = 1.1),
+        legend.position = "none")
+
+theme_set(theme_light() + theme_labs)
+```
+
+
 # 前言 {-}
 
-你好，世界。我写了一本书。这本书是这样的，第 \@ref(intro) 章介绍了啥啥，第 \@ref(wind) 章说了啥啥，然后是啥啥……
+《热心肠日报》持续追踪“肠道菌群”研究进展马上已经有四年了。在四年的持续输出下，《日报》已经成为广大用户了解相关研究进展的一个窗口，受到很多老师、同学的喜爱和赞誉。但我们深知，《日报》仅能管中窥豹，难免会有错漏之处。在2019年底，在“肠道菌群研究的七大事实和五大倡议”一文创作期间，我们下载分析了 Web of Science 数据库中“肠道菌群”研究的全部论文数据，为文章提供数据支撑。
+
+蓦然回首，我们发现自进入21世纪，美国率先提出人体微生物组计划以来，“肠道菌群”已经兴起了十余年。
+
+你好，世界。我写了一本书。这本书是这样的，第 \@ref(intro) 章介绍了肠道菌群研究的概述，第 \@ref(global) 章说了啥啥，然后是啥啥……
 
 我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。以下是我的 R 进程信息：
 
@@ -39,7 +105,7 @@ sessionInfo()
 
 ## 致谢 {-}
 
-非常感谢谁谁以及谁谁对我的帮助。艾玛，要不是他们神一样的队友，我两年前就写完这本书了。
+非常感谢谁谁以及谁谁对我的帮助。艾玛，要不是他们神一样的队友，我花两年时间也写不完这本书。
 
 ```{block2, type='flushright', html.tag='p'}
 张三  
