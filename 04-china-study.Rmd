@@ -1,17 +1,6 @@
 # 中国的肠道菌群研究 {#china-study}
 
 
-```{r}
-M_GUT_MICROBIOME <- read_rds("data/M_GUT_MICROBIOME.RDS")
-# 这一步几分钟就搞定了
-# RESULTS_GUT_MICROBIOME <- biblioAnalysis(M_GUT_MICROBIOME)
-```
-
-
-```{r}
-M <- M_GUT_MICROBIOME %>% as_tibble()
-```
-
 
 ## 大陆与港澳台的比较
 
@@ -22,22 +11,18 @@ China_study <- M %>% filter(is.part_of_china(RP))
 
 # 澳门的研究
 Macao_study <- China_study %>% filter(str_detect(RP,regex("\\bMACAO\\b",ignore_case = T)))
-Macao_study$RP
 
 # 香港的研究
 # 使用这种匹配模式，则香港与内地在香港以外的其它地区合办的分校会被视为香港的研究。
 # 包括香港中文大学深圳分校，北师大-香港浸会大学等。
 HK_study <- China_study %>% filter(str_detect(RP,regex("\\bHONG KONG\\b",ignore_case = T)))
-HK_study$RP
 
 # 台湾的研究
 Taiwan_study <- China_study %>% filter(str_detect(RP,regex("\\bTAIWAN\\b",ignore_case = T)))
-Taiwan_study$RP
 
 
 # 大陆的研究
 Mainland_study <- China_study %>% filter(!str_detect(RP,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
-Mainland_study$RP
 ```
 
 ```{r}

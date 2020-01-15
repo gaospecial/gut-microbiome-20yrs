@@ -1,59 +1,10 @@
+
+
 # 研究热点 {#research-topic}
 
 
 ## 五年研究热点
 
-
-```{r include=FALSE}
-# load frequentely used packages
-library(tidyverse)
-library(lubridate)
-library(mrgut)
-library(RColorBrewer)
-library(knitr)
-library(export)
-library(cowplot)
-library(knitr)
-library(kableExtra)
-```
-
-```{r}
-# display.brewer.pal(7,"PuBuGn")
-cols <- brewer.pal(n=7,name = "PuBuGn")[c(-1,-2)]
-pal <- colorRampPalette(cols)
-```
-
-
-```{r}
-# 要导出的文件
-graph_ppt_file <- paste0(Sys.Date(),"_graph.pptx")
-```
-
-
-```{r}
-theme_labs <- 
-  theme(plot.title = element_text(size = 12, face = "bold",hjust = 0.5),
-        plot.subtitle = element_text(size = 8,
-                                     hjust = 1,
-                                     color = "grey50"),
-        plot.caption = element_text(size=8, 
-                                    hjust = 1,
-                                    color = "grey50",
-                                    vjust = 1,
-                                    lineheight = 1.1),
-        legend.position = "none")
-
-theme_set(theme_light() + theme_labs)
-```
-
-
-
-```{r}
-query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
-
-# 检索时使用的关键词
-search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
-```
 
 
 ## 近五年研究热点的变迁
@@ -62,43 +13,11 @@ search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% 
 
 
 
-```{r}
-# Impact factor
-file <- "./data/2019_Impact_factor.xlsx"
-journal_IF <- openxlsx::read.xlsx(file, startRow=3) %>% 
-  unique() %>%  # 一些行是重复的
-  select(SO,impact_factor) %>%
-  as_tibble() %>% 
-  mutate_at("impact_factor",as.numeric) %>%
-  mutate_at("SO",toupper) %>%
-  filter(impact_factor > -1) %>%  # 只选取有影响因子的期刊
-  mutate(group=cut(impact_factor,
-                   breaks = c(-Inf,3,5,10,20,Inf),
-                   labels = c("<3",">3",">5",">10",">20")))
-```
 
-```{r}
-# 读取近五年的文献资料
-M <- read_rds("data/M_GUT_MICROBIOME.RDS") %>% as_tibble() %>%
-  filter(PY>2014)
-```
 
-```{r}
-# 期刊加上影响因子
-M <- M %>% left_join(journal_IF)
-```
+有些期刊已经没有影响因子，对应的文章有  篇。具体如下(只显示前20行）：
 
-有些期刊已经没有影响因子，对应的文章有 `r sum(is.na(M$impact_factor))` 篇。具体如下(只显示前20行）：
 
-```{r}
-# 检查数据
-M %>% filter(is.na(impact_factor)) %>% select(SO,impact_factor) %>% group_by(SO) %>%
-  summarise(Records =n()) %>%
-  arrange(desc(Records)) %>%
-  head(20) %>%
-  kable() %>%
-  kable_styling(c("striped","hover","condensed","responsive"))
-```
 
 ### 每年的发文量
 

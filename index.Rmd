@@ -1,6 +1,6 @@
 --- 
 title: "肠道菌群研究二十年·大数据"
-author: "高春辉"
+author: "热心肠研究院"
 date: "`r Sys.Date()`"
 always_allow_html: true
 documentclass: ctexbook
@@ -25,7 +25,7 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
-                      include=FALSE)
+                      include=TRUE)
 
 # disable Sys.setlocale output
 Sys.setenv(LANG="zh_CN.UTF-8")
@@ -67,7 +67,7 @@ pal <- colorRampPalette(cols)
 
 
 ```{r}
-# 要导出的文件
+# 要导出为PowerPoint的图片
 graph_ppt_file <- paste0(Sys.Date(),"_graph.pptx")
 ```
 
@@ -88,18 +88,40 @@ theme_labs <-
 theme_set(theme_light() + theme_labs)
 ```
 
+```{r}
+# 读取数据
+M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
+ # 全部论文
+journal_IF <- readRDS("data/journal_IF.RDS") %>% as_tibble() %>%  mutate_at("impact_factor",as.numeric) 
+ # 期刊最新影响因子（2019）
+highly_cited <- M %>% filter(HC==TRUE)  # 高引论文
+
+M <- M %>% left_join(journal_IF) %>%
+  filter(impact_factor > -1) %>%  # 只选取有影响因子的期刊
+  mutate(group=cut(impact_factor,
+                   breaks = c(-Inf,3,5,10,20,Inf),
+                   labels = c("<3",">3",">5",">10",">20")))
+```
+
+```{r}
+# 需要从 M 中提取作者、通讯作者、单位、国家等信息。
+# 作者全名在 M$AF ，通讯作者在 M$RP（但是只有缩写）；
+# 机构信息在 M$C1 中。
+
+```
+
 
 # 前言 {-}
 
 《热心肠日报》持续追踪“肠道菌群”研究进展马上已经有四年了。在四年的持续输出下，《日报》已经成为广大用户了解相关研究进展的一个窗口，受到很多老师、同学的喜爱和赞誉。但我们深知，《日报》仅能管中窥豹，难免会有错漏之处。在2019年底，在“肠道菌群研究的七大事实和五大倡议”一文创作期间，我们下载分析了 Web of Science 数据库中“肠道菌群”研究的全部论文数据，为文章提供数据支撑。
 
-蓦然回首，我们发现自进入21世纪，美国率先提出人体微生物组计划以来，“肠道菌群”已经兴起了十余年。
+蓦然回首，我们发现自进入21世纪，美国率先提出人体微生物组计划以来，“肠道菌群”已经兴起了十余年。在进入 2020 年的最初几天，我们很快有一个想法，就是调研一下过去二十年“肠道菌群”研究的发展历程。
 
-你好，世界。我写了一本书。这本书是这样的，第 \@ref(intro) 章介绍了肠道菌群研究的概述，第 \@ref(global) 章说了啥啥，然后是啥啥……
+于是，我们写了一本书。这本书是这样的，第 \@ref(intro) 章介绍了肠道菌群研究的概述，第 \@ref(global) 章说了啥啥，然后是啥啥……
 
 我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。以下是我的 R 进程信息：
 
-```{r}
+```{r include=TRUE}
 sessionInfo()
 ```
 

@@ -1,23 +1,213 @@
 \mainmatter
+# (PART) 概况 {-}
 
 # 研究概述 {#intro}
 
 现在我们可以看看全景式的大数据了。
 
 
+## 按年份统计发文量
 
-现在我们可以试试 **bookdown** 的一些初级功能了，例如图表。图 \@ref(fig:hello) 是一幅无趣的散点图，表 \@ref(tab:iris) 是一份枯燥的数据。
+```{r}
+count_by_year <- M %>% group_by(PY) %>% summarise(count=n()) %>%
+  mutate_at("PY",as.numeric) %>%
+  ## 计算增量
+  mutate(increment = c(0,diff(count)),
+         cumsum = cumsum(count)) %>%
+  mutate(increasing_rate = increment/count[ifelse(row_number()>1,row_number()-1,1)])
 
-```{r hello, fig.cap='雷猴啊，散点图！', out.width='90%'}
-par(mar = c(4, 4, 1, .1))
-plot(cars, pch = 19)
+trend <- ggplot(count_by_year,aes(PY,count)) + 
+  geom_line(size = 1) + 
+  geom_point(size=3,fill="white",shape=21) + 
+  labs(x="Year",y="Count of Records in Web of Science") + 
+  xlim(c(2000,2020)) +  
+  geom_text(aes(y=count+10,label=count),hjust=1,vjust=-0.2)
 ```
 
-```{r iris}
-knitr::kable(
-  head(iris), caption = '雷猴啊，iris 数据！',
-  booktabs = TRUE
-)
+
+```{r trend-publications, fig.cap="近二十年肠道菌群研究发文量", out.width='90%'}
+trend 
 ```
 
-就这样，你可以一直编下去，直到编不下去。
+\@ref(fig:trend-publications) 显示按年统计的研究论文数目。
+
+```{r}
+TC_by_year <- M %>% group_by(PY) %>%
+  summarise(total=sum(TC,na.rm = TRUE))
+
+trend_TC <- ggplot(TC_by_year,aes(PY,total)) + 
+  geom_line(size = 1) + 
+  geom_point(size=3,fill="white",shape=21) + 
+  labs(x="Year",y="Count of Records in Web of Science") + 
+  xlim(c(2000,2020)) +  
+  ggrepel::geom_label_repel(aes(y=total+10,label=total),hjust=1,vjust=-0.2,size=3,label.size = NA,label.padding = 0.01)
+```
+
+```{r}
+trend_TC
+```
+
+## 论文的期刊分布
+
+`r nrow(M)` 篇“肠道菌群”相关研究论文发表在 `r length(unique(M$SO))` 种不同期刊上面。
+
+
+```{r}
+n <- 30
+M <- M %>% mutate(SO=ifelse(str_detect(SO,"PROCEEDINGS OF THE NATIONAL ACADEMY OF SCIENCES OF THE UNITED STATES OF AMERICA"),"PNAS",stringi::stri_trans_totitle(SO)))
+top_journal_of_paper <- M %>% group_by(SO) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count)) %>%
+  head(n) %>%
+  ungroup() %>%
+  mutate(SO=as_factor(SO))
+```
+
+发文量最多的前 `r n` 种是 `r paste(top_journal_of_paper$SO,collapse = "、")` 等期刊。
+
+```{r fig.asp=1}
+ggplot(top_journal_of_paper,aes(SO,count,label=count)) + geom_col() + 
+  geom_text(size=3,angle=60,vjust=0,hjust=0) +
+  labs(x="Journal",y="No. of Records")  +
+  coord_cartesian(ylim = c(0,2000)) +
+  theme(axis.text.x = element_text(angle = 60,hjust = 1,vjust = 1))
+```
+
+### 高被引论文的期刊分布
+
+
+`r nrow(highly_cited)` 篇高被引论文中，分布在 `r length(unique(highly_cited$SO))` 种不同期刊中。
+
+```{r}
+highly_cited <- highly_cited %>% mutate(SO=ifelse(str_detect(SO,"PROCEEDINGS OF THE NATIONAL ACADEMY OF SCIENCES OF THE UNITED STATES OF AMERICA"),"PNAS",stringi::stri_trans_totitle(SO)))
+top_journal_of_highly_cited <- highly_cited %>% group_by(SO) %>% summarise(count=n()) %>%
+  arrange(desc(count)) %>% head(n) 
+```
+
+文章数目最多的 `r n` 种期刊中，所占的比例并不算太大。
+
+```{r}
+highly_cited_journal <- highly_cited %>%
+  mutate(SO=ifelse(SO %in% top_journal_of_highly_cited$SO, SO, "others")) %>% 
+  group_by(PY,SO) %>% summarise(count=n(),total_cited=sum(TC)) %>% 
+  ungroup() %>%
+  mutate_at("PY",as.numeric)
+highly_cited_journal$SO <- factor(highly_cited_journal$SO,levels = c(top_journal_of_highly_cited$SO,"others"))
+highly_cited_journal
+```
+
+这 `r n` 种期刊包括：`r paste(top_journal_of_highly_cited$SO,collapse="、")` 等。
+
+```{r fig.asp=1}
+filter(highly_cited_journal,SO!="others") %>%
+  group_by(SO) %>%
+  summarise(count=sum(count)) %>%
+  ggplot(aes(SO,count,label=count)) + geom_col(color=NA) +
+  geom_text(vjust=-.1,size=3) +
+  labs(x="Journal",y="No. of Records") +
+  coord_cartesian(ylim=c(0,120)) +
+  theme(axis.text.x = element_text(angle = 60,hjust=1))
+```
+
+我们可以用一个 `treemap` 来显示 Top Journal 与 其它期刊 中高被引论文的数量分布情况。
+
+```{r}
+index <- c("PY","SO")
+library(treemap)
+treemap(highly_cited_journal,index = index,vSize = "count",fontsize.labels = 9)
+
+
+```
+
+值得注意的是，这些高被引论文都发表在 `r min(highly_cited$PY)` 年之后，说明自那以后“肠道菌群”相关研究才真正流行起来。
+
+## 比较不同国家之间的贡献
+
+```{r eval=FALSE}
+# 需要分析 M 才能得到国家信息
+
+n <- 15
+
+location_country <- locations %>% mutate(Name=ifelse(is.part_of_china(Name),"CHINA",Name)) %>%
+  mutate(Name=ifelse(str_detect(Name,"GERMANY"),"GERMANY",Name)) %>%
+  # 在 Incites 中，国家（原文为Location）字段中既有 United Kingdom，又有 England。实际上，UK的论文中是包括了England 的。
+  filter(!str_detect(Name,pattern = regex("england",ignore_case = T))) %>%
+  mutate(Name=ifelse(nchar(Name)>3,stringi::stri_trans_totitle(Name),Name))
+
+
+top_country <- location_country %>% group_by(Name) %>%
+  summarise(count=sum(Records)) %>% 
+  arrange(desc(count)) %>%
+  head(n)
+
+locations_summary <- location_country %>% mutate(Name=ifelse(Name %in% top_country$Name, Name, "Others")) %>%
+  group_by(Name,Pub_year) %>%
+  summarise(Records=sum(Records)) %>%
+  group_by(Pub_year) %>%
+  mutate(percent=Records/sum(Records))
+locations_summary$Name <- factor(locations_summary$Name,levels = rev(c(top_country$Name,"Others")))
+
+
+ggplot(locations_summary,aes(Pub_year,percent,color=Name,fill=Name)) + 
+  geom_area(color="grey") +
+  xlim(2000,2020.5) + 
+  geom_text(aes(x=2019.1,label=Name,size=percent*2),
+            position = position_stack(vjust = 0.5),
+            data = filter(locations_summary,Pub_year==2019),hjust=0,fontface="bold") +
+  scale_size(range = c(1,4)) +
+  scale_y_continuous(labels = function(x){paste0(x*100,"%")}) +
+  labs(x="Year of Publication",y="Proportion") +
+  scale_fill_manual(values = pal(21)) +
+  scale_color_manual(values=pal(21))
+```
+
+这些“肠道菌群”的研究来自于全球 个国家和地区。
+
+
+
+
+
+世界上的大国普遍参与，包括 等。
+在这其中，中国（China，包括港澳台地区）的贡献率在最近十年取得了长足的进步。
+
+
+## 按全部文献的标题生成词云
+
+**注意：检索式中已经用到的关键词已经从词云中剔除。**
+
+```{r results="asis"}
+library(wordcloud2)
+additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
+  strsplit(" ") %>% unlist()
+```
+
+```{r}
+query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
+
+# 检索时使用的关键词
+search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
+```
+
+```{r results="asis"}
+word_freq_title <- mrgut_word_freq(tolower(M$TI),n=1000,lang = "English") %>%
+  filter(!word_segmentation %in% c(search_keywords,letters,seq(0,9),additional_stopwords)) %>%
+  filter(nchar(as.character(word_segmentation))>2)
+ widget <- wordcloud2(word_freq_title) 
+
+markdown_widget(widget,filename = "all_the_title.png",delay = 30)
+```
+
+## 按高被引论文的摘要生成词云
+
+一共有 `r nrow(highly_cited)` 篇高被引文献，它们的完整信息被下载了下来。
+
+使用高被引论文的摘要制作词云，结果如下。
+
+```{r results="asis"}
+word_freq_abstract <- mrgut_word_freq(tolower(highly_cited$AB),n=1000,lang = "English") %>%
+  filter(!word_segmentation %in% c(search_keywords,letters,seq(0,9),additional_stopwords)) %>%
+  filter(nchar(as.character(word_segmentation))>2)
+ widget <- wordcloud2(word_freq_abstract) 
+markdown_widget(widget,filename = "highly_cited_abstract.png",delay = 30)
+```
+
