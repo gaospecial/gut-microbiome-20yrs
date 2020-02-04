@@ -56,7 +56,12 @@ M <- M %>% left_join(journal_IF) %>%
                    breaks = c(-Inf,3,5,10,20,Inf),
                    labels = c("<3",">3",">5",">10",">20")))
 
+# 简化文献类型
+M <- M %>% mutate(DT=ifelse(str_detect(DT,regex("article",ignore_case = T)), "ARTICLE", DT)) %>%
+  mutate(DT=ifelse(str_detect(DT,regex("review",ignore_case = T)), "REVIEW",DT)) %>%
+  mutate(DT=ifelse(str_detect(DT,regex("editorial",ignore_case = T)), "EDITORIAL",DT)) %>%
+  mutate(DT=ifelse(DT %in% c("ARTICLE","REVIEW","EDITORIAL","LETTER","MEETING ABSTRACT"), DT, "OTHERS"))
+
 # 保存为 RDS
 saveRDS(M,file = "data/M.RDS")
-
 
