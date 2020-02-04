@@ -25,7 +25,11 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
-                      include=FALSE,
+                      include=TRUE, # 是否显示执行代码的结果
+                      echo = FALSE, # 是否显示代码
+                      message = FALSE, # 是否显示 message
+                      warning = FALSE,  # 是否显示警告
+                      error = TRUE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
                       cache=TRUE)  # 加速预览
 
 # disable Sys.setlocale output
@@ -57,7 +61,8 @@ library(export)
 library(cowplot)
 library(knitr)
 library(bibliometrix)
-
+library(ggraph)
+library(plotly)
 ```
 
 ```{r colors}
@@ -84,32 +89,58 @@ theme_labs <-
                                     color = "grey50",
                                     vjust = 1,
                                     lineheight = 1.1),
+        axis.text = element_text(face = "bold"),    # 标记粗体
+        axis.title = element_text(face = "bold"),   # 坐标轴标题粗体
         legend.position = "none")
 
 theme_set(theme_light() + theme_labs)
 ```
 
 ```{r}
-# 读取数据
+# 读取全部论文数据
 M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
- # 全部论文
-journal_IF <- readRDS("data/journal_IF.RDS") %>% as_tibble() %>%  mutate_at("impact_factor",as.numeric) 
- # 期刊最新影响因子（2019）
-highly_cited <- M %>% filter(HC==TRUE)  # 高引论文
+# 高引论文
+
+highly_cited <- M %>% filter(HC==TRUE)
+
+# 一般分析结果
+results <- biblioAnalysis(M)
+result_summary <- summary(results,k=100,verbose=FALSE) # set verbose to FALSE 不打印信息
+
+```
 
 
-
-
-
-
+```{r}
+# 检索词：在词云分析是可以去掉的词语
 query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
 
 # 检索时使用的关键词
 search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
 ```
 
+```{r}
+# 函数
+
+# 使用鼠标相应事件
+plot.ly <- function(g,...){
+  ggplotly(g, tooltip = c("text"),...) %>% 
+    config(displaylogo = FALSE,
+           modeBarButtonsToRemove = c(
+             'sendDataToCloud',
+             # 'pan2d', 
+             'select2d', 
+             'lasso2d',
+             'toggleSpikelines',
+             'hoverClosestCartesian',
+             'hoverCompareCartesian'
+           ))
+}
+```
 
 
+```{r}
+# 重新开始时，需要先运行以上代码
+```
 
 
 # 前言 {-}
@@ -120,9 +151,9 @@ search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% 
 
 蓦然回首，特别是2008年美国国立卫生研究院（NIH）率先提出人体微生物组计划[^1]以来，“肠道菌群”已经兴起了十余年。而“肠道菌群”的研究岂止于此，2019年6月 Nature 杂志特别总结了“人类微生物组”研究的里程碑事件，将研究追溯到最早 1944 年的厌氧微生物分离培养 [@clarkCulturingAnaerobes2019]。
 
-热心肠研究院长期关注“肠道”，并将“让人们拥有更健康的肠道”作为公司的使命。在进入 2020 年的最初几天，我们很快有一个想法，就是以“肠道菌群”研究这一人体微生物组研究的主要领域为切入点，系统调研过去二十年“肠道菌群”研究的发展历程，从数据层面展示“肠道菌群”研究的全景、国际研究格局和研究热点的变迁等，为未来的“肠道菌群”研究提供参考，为未来的“肠道产业”发展理清方向。
+热心肠研究院长期关注“肠道”，并将“**让人们拥有更健康的肠道**”作为公司的使命。在进入 2020 年的最初几天，我们很快有一个想法，就是以“肠道菌群”研究这一人体微生物组研究的主要领域为切入点，系统调研过去二十年“肠道菌群”研究的发展历程，从数据层面展示“肠道菌群”研究的全景、国际研究格局和研究热点的变迁等，为未来的“肠道菌群”研究提供参考，为未来的“肠道产业”发展理清方向。
 
-[^1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)
+[^1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)。
 
 于是，我们写了一本书。这本书是这样的，第一部分是“肠道菌群”研究的概述，包括第 \@ref(intro) 章，介绍了肠道菌群研究的概述；第二部分是国际研究格局，包括第 \@ref(global) - \@ref(china-study) 章，分别介绍研究的国际协作、不同国家主要的研究力量的分布、主要的科学研究中心（机构、高校等）和研究团队等；第三部分是主要的研究发现和变迁，包括第 \@ref(milestone) - \@ref(CVD) 章，对“肠道菌群”研究取得的主要成果及其研究的脉络进行阐述。
 
