@@ -30,17 +30,33 @@ M$HC <- FALSE
 M[rownames(highly_cited),"HC"]  <- TRUE
 summary(M$HC)
 
+# 需要从 M 中提取作者、通讯作者、单位、国家等信息。
+# 作者全名在 M$AF ，通讯作者在 M$RP（但是只有缩写）；
+# 机构信息在 M$C1 中。
+# 生成几个新字段
+# M <- metaTagExtraction(M, Field="SR")  # short tag, 在引文列表中使用
+# M <- metaTagExtraction(M, Field="CR_AU")  #	First Author of each cited reference
+M <- metaTagExtraction(M, Field="AU_CO")  #	所有作者的所有机构的国家信息，与作者并非一一对应关系。
+M <- metaTagExtraction(M, Field="AU_UN")  #	University of affiliation for each co-author and the corresponding author （同时生成的AU1_UN是一个通讯作者）
+# M <- metaTagExtraction(M, Field="AU1_CO") #	Country of affiliation for the first author(仅为第一个作者，不包括共同第一作者)
+M$AU_CO_NR <- unlist(lapply(strsplit(M$AU_CO,split = ";"),function(x) paste(unique(x),collapse = ";")))
+M$AU_UN_NR <- unlist(lapply(strsplit(M$AU_UN,split = ";"),function(x) paste(unique(x),collapse = ";")))
 
-
-# 保存为 RDS
-saveRDS(M,file = "data/M.RDS")
-
-
-#' # 影响因子数据（最新）
+# 加入影响因子数据（最新）
 library(dplyr)
 file <- "data-raw/2019_Impact_factor.xlsx"
 journal_IF <- openxlsx::read.xlsx(file,startRow=3)  %>%
   select(SO,impact_factor) %>%
   mutate(SO=toupper(SO)) %>%
   unique()
-saveRDS(journal_IF,"data/journal_IF.RDS")
+
+# 按照影响因子分组
+M <- M %>% left_join(journal_IF) %>%
+  mutate(group=cut(impact_factor,
+                   breaks = c(-Inf,3,5,10,20,Inf),
+                   labels = c("<3",">3",">5",">10",">20")))
+
+# 保存为 RDS
+saveRDS(M,file = "data/M.RDS")
+
+

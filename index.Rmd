@@ -96,30 +96,36 @@ journal_IF <- readRDS("data/journal_IF.RDS") %>% as_tibble() %>%  mutate_at("imp
  # 期刊最新影响因子（2019）
 highly_cited <- M %>% filter(HC==TRUE)  # 高引论文
 
-M <- M %>% left_join(journal_IF) %>%
-  filter(impact_factor > -1) %>%  # 只选取有影响因子的期刊
-  mutate(group=cut(impact_factor,
-                   breaks = c(-Inf,3,5,10,20,Inf),
-                   labels = c("<3",">3",">5",">10",">20")))
+
+
+
+
+
+query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
+
+# 检索时使用的关键词
+search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
 ```
 
-```{r}
-# 需要从 M 中提取作者、通讯作者、单位、国家等信息。
-# 作者全名在 M$AF ，通讯作者在 M$RP（但是只有缩写）；
-# 机构信息在 M$C1 中。
 
-```
+
 
 
 # 前言 {-}
 
-《热心肠日报》持续追踪“肠道菌群”研究进展马上已经有四年了。在四年的持续输出下，《日报》已经成为广大用户了解相关研究进展的一个窗口，受到很多老师、同学的喜爱和赞誉。但我们深知，《日报》仅能管中窥豹，难免会有错漏之处。在2019年底，在“肠道菌群研究的七大事实和五大倡议”一文创作期间，我们下载分析了 Web of Science 数据库中“肠道菌群”研究的全部论文数据，为文章提供数据支撑。
+[北京热心肠生物技术研究院有限公司](https://www.mr-gut.cn/about)是致力于链接科学与商业的盈利型研究院。我们立足于链接肠道领域的学者、医生、企业家、政府和媒体人士，为受众提供包括在线知识库、落地活动、科普自媒体内容、产业动态及分析等在内的多种满足肠道行业需求的服务，同时通过企业服务和联名产品等方式获得收入与盈利。
 
-蓦然回首，我们发现自进入21世纪，美国率先提出人体微生物组计划以来，“肠道菌群”已经兴起了十余年。在进入 2020 年的最初几天，我们很快有一个想法，就是调研一下过去二十年“肠道菌群”研究的发展历程。
+作为热心肠研究院最为知名的产品之一，《热心肠日报》持续追踪“肠道菌群”研究进展已经有四年了。在四年的持续输出下，《日报》已经成为广大用户了解相关研究进展的一个窗口，受到很多老师、同学的喜爱和赞誉。但我们深知，《日报》仅能管中窥豹，难免会有错漏之处。在2019年底，在“肠道菌群研究的七大事实和五大倡议”一文创作期间，我们下载分析了 Web of Science 数据库中“肠道菌群”研究的全部论文数据，为文章提供数据支撑。
 
-于是，我们写了一本书。这本书是这样的，第 \@ref(intro) 章介绍了肠道菌群研究的概述，第 \@ref(global) 章说了啥啥，然后是啥啥……
+蓦然回首，特别是2008年美国国立卫生研究院（NIH）率先提出人体微生物组计划[^1]以来，“肠道菌群”已经兴起了十余年。而“肠道菌群”的研究岂止于此，2019年6月 Nature 杂志特别总结了“人类微生物组”研究的里程碑事件，将研究追溯到最早 1944 年的厌氧微生物分离培养 [@clarkCulturingAnaerobes2019]。
 
-我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。以下是我的 R 进程信息：
+热心肠研究院长期关注“肠道”，并将“让人们拥有更健康的肠道”作为公司的使命。在进入 2020 年的最初几天，我们很快有一个想法，就是以“肠道菌群”研究这一人体微生物组研究的主要领域为切入点，系统调研过去二十年“肠道菌群”研究的发展历程，从数据层面展示“肠道菌群”研究的全景、国际研究格局和研究热点的变迁等，为未来的“肠道菌群”研究提供参考，为未来的“肠道产业”发展理清方向。
+
+[^1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)
+
+于是，我们写了一本书。这本书是这样的，第一部分是“肠道菌群”研究的概述，包括第 \@ref(intro) 章，介绍了肠道菌群研究的概述；第二部分是国际研究格局，包括第 \@ref(global) - \@ref(china-study) 章，分别介绍研究的国际协作、不同国家主要的研究力量的分布、主要的科学研究中心（机构、高校等）和研究团队等；第三部分是主要的研究发现和变迁，包括第 \@ref(milestone) - \@ref(CVD) 章，对“肠道菌群”研究取得的主要成果及其研究的脉络进行阐述。
+
+本书的写作遵循**可重复研究**的范式，我们采用的主要研究手段是文献计量学方法，基于 **bibliometrix**\index{bibliometrix} [@R-bibliometrix] 和 R 语言数据科学工具包提供的方法 **tidyverse**\index{tidyverse} [@R-tidyverse] 和可视化工具 **ggraph**\index{ggraph} [@R-ggraph] 等。分析的数据来自于 Web of Science 数据库的核心合集（参见附录\@ref(data-source)）。最终，我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。下面附上我的 R 进程信息，以便相关人士查询：
 
 ```{r include=TRUE}
 sessionInfo()
@@ -127,10 +133,9 @@ sessionInfo()
 
 ## 致谢 {-}
 
-非常感谢谁谁以及谁谁对我的帮助。艾玛，要不是他们神一样的队友，我花两年时间也写不完这本书。
+非常感谢科睿唯安公司的郭老师以及中科院微生物研究所王军研究员对我们的帮助。
 
 ```{block2, type='flushright', html.tag='p'}
-张三  
-于 A 村某角落
+本书编者
 ```
 
