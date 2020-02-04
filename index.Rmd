@@ -4,7 +4,7 @@ author: "热心肠研究院"
 date: "`r Sys.Date()`"
 always_allow_html: true
 documentclass: ctexbook
-bibliography: [book.bib, packages.bib]
+bibliography: [book.bib, packages.bib, GUT_Microbiome_20yrs.bib]
 biblio-style: apalike
 link-citations: yes
 colorlinks: yes
@@ -25,7 +25,8 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
-                      include=TRUE)
+                      include=FALSE,
+                      cache=TRUE)  # 加速预览
 
 # disable Sys.setlocale output
 Sys.setenv(LANG="zh_CN.UTF-8")
@@ -36,7 +37,7 @@ Sys.setlocale(category = "LC_ALL",locale = "Chinese")
 options(expressions = 5e5)
 
 # 填上你需要用到的包，如 c('ggplot2', 'dplyr')
-packages <- c("tidyverse","wordcloud2","mrgut","lubridate","RColorBrewer","export","gganimate","ggVennDiagram","ccgraph")
+packages <- c("tidyverse","wordcloud2","mrgut","lubridate","RColorBrewer","export","gganimate","ggVennDiagram","ggraph","ccgraph")
 
 lapply(packages, function(pkg) {
   if (system.file(package = pkg) == '') install.packages(pkg)
