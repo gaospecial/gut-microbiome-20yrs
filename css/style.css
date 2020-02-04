@@ -1,6 +1,10 @@
 p.caption {
   color: #777;
   margin-top: 10px;
+  text-align: center;
+}
+.figure{
+  text-align: center;
 }
 p code {
   white-space: inherit;
