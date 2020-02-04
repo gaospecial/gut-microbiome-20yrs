@@ -62,6 +62,9 @@ M <- M %>% mutate(DT=ifelse(str_detect(DT,regex("article",ignore_case = T)), "AR
   mutate(DT=ifelse(str_detect(DT,regex("editorial",ignore_case = T)), "EDITORIAL",DT)) %>%
   mutate(DT=ifelse(DT %in% c("ARTICLE","REVIEW","EDITORIAL","LETTER","MEETING ABSTRACT"), DT, "OTHERS"))
 
+# 使用AF替代AU
+M$AU <- M$AF
+
 # 保存为 RDS
 saveRDS(M,file = "data/M.RDS")
 
