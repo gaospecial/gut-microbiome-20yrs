@@ -70,18 +70,37 @@ success <- lapply(years, function(year){
 })
 ```
 
+日报中文关键词词云
 
 
 ```{r}
-chinese_keywords <- mrgut_word_freq(search_results$content)
+
+chinese_keywords <- mrgut_word_freq(search_results$content) %>% 
+  mutate(word_segmentation=as.character(word_segmentation)) %>%
+  filter(!str_detect(word_segmentation,"菌群|综述|一篇|值得|多种|近期|发表|来自|团队|特别|有助于|文章|推荐|鉴定|最新|Nature|导致|程度|潜在|分析|介导|因素|一项|特定|Reviews|关注")) %>%
+  filter(nchar(word_segmentation)>1)
 ```
 
+
+```{r }
+wordcloud2(chinese_keywords,fontFamily = "微软雅黑")
+
+```
+
+日报英文关键词词云
 
 ```{r}
-widge <- wordcloud2(chinese_keywords,fontFamily = "微软雅黑")
-markdown_widget(widge,path="./_bookdown_files/bookdown_files/", filename = "chinese_wordcloud.png")
-```
+additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
+  strsplit(" ") %>% unlist()
+english_keywords <- mrgut_word_freq(tolower(search_results$en_summary),lang = "English") %>%
+  mutate(word_segmentation=as.character(word_segmentation)) %>%
+  filter(!word_segmentation %in% c(letters,seq(0,9),additional_stopwords)) %>%
+  filter(!str_detect(word_segmentation,regex(pattern = paste0(search_keywords,collapse = "|"),ignore_case = T)))
 
+
+wordcloud2(english_keywords,fontFamily = "微软雅黑")
+
+```
 
 ## 把日报数据可视化
 
@@ -96,23 +115,7 @@ search_results %>% group_by(periodical) %>%
 ```
 
 
-```{r}
-# 日报中的关键词
-```
 
-
-
-
-```{r eval=FALSE}
-additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
-  strsplit(" ") %>% unlist()
-english_keywords <- mrgut_word_freq(tolower(search_results$en_summary),lang = "English") %>%
-  filter(!word_segmentation %in% c(letters,seq(0,9),additional_stopwords))
-
-
-widge <- wordcloud2(english_keywords,fontFamily = "微软雅黑")
-markdown_widget(widge,path="./_bookdown_files/bookdown_files/",filename = "eng_wordcloud.png")
-```
 
 ```{r eval=FALSE}
 paper_words <- lapply(1:nrow(search_results),function(i){
@@ -133,11 +136,15 @@ total_words <- paper_words %>%
 # 根据热心肠日报的词云和短科普人工阅读，得到关键词
 keywords <- "TMAO|trimethylamine N-oxide|cardiovascular|CVD|atherosclerosis|coronary artery disease|coronary heart disease|Hypertension|high blood pressure"
 
-M2 <- M %>% filter(str_detect(AB,toupper(keywords)))
+
+
+M2 <- M %>% filter(str_detect(AB,toupper(keywords))) %>%
+  filter(PY>2009)
 ```
 
 
-在20年的数据中一共找到 `r nrow(M2)` 篇文献与“心血管”疾病相关，其中有 `r nrow(M2 %>% filter(HC==TRUE))` 篇高被引论文。
+
+在20年的数据中一共找到 `r nrow(M2)` 篇文献与“心血管”疾病相关，其中有 `r nrow(dplyr::filter(M2,HC==TRUE))` 篇高被引论文。
 
 
 ```{r fig.cap="心血管相关研究论文的增长趋势"}
@@ -150,6 +157,7 @@ M2 %>%  group_by(PY,HC) %>%
   geom_text(aes(label=n),vjust=-.2,position = pos) +
   guides(fill=guide_legend(title = "是否高被引")) +
   theme(legend.position = "right")
+
 ```
 
 
@@ -170,6 +178,7 @@ df %>% filter(author %in% top$author) %>% ungroup() %>%
   theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
         legend.position = "right")
 
+
 ```
 
 ## 作者合作网络
@@ -177,18 +186,75 @@ df %>% filter(author %in% top$author) %>% ungroup() %>%
 
 知名的研究团队
 
-```{r fig.width=10,fig.asp=1.5}
+```{r fig.width=10,fig.asp=1}
 # 作者合作网络
 net_matrix <- biblioNetwork(M2,analysis = "collaboration",network = "authors",sep=";")
-net <- networkPlot(net_matrix,n=80,type = "kamada",Title = "作者合作网络",halo=T,edges.min=3,size=T)
+net <- networkPlot(net_matrix,n=80,type = "kamada",Title = "作者合作网络",halo=T,edges.min=2,size=T,alpha=1)
+```
+
+## 国家、机构的数据展现
+
+```{r}
+M2 <- metaTagExtraction(M2, Field = "AU_CO", sep = ";")
+M2$AU_CO_NR <- sapply(lapply(strsplit(M2$AU_CO,";"),unique),function(x)paste0(x,collapse=";"))
+```
+
+```{r}
+country <- tableTag(M2,Tag = "AU_CO_NR",sep = ";")
+data.frame(country,stringsAsFactors = F) %>% 
+  mutate(country=as.character(Tab)) %>%
+  mutate(country=ifelse(is.part_of_china(country),"CHINA",country)) %>%
+  group_by(country) %>%
+  summarise(count=sum(Freq)) %>% 
+  arrange(desc(count)) %>% 
+  head(10) %>%
+  kable(caption = "不同国家的论文数量")
+```
+
+
+```{r fig.asp=1,fig.cap="国家间的合作"}
+net_matrix <- biblioNetwork(M2, analysis = "collaboration",network = "countries",sep = ";")
+net <- networkPlot(net_matrix,n=20,Title = "国家间的合作",type = "kamada",size = T,remove.multiple = F,remove.isolates = F)
+```
+
+```{r}
+M2 <- metaTagExtraction(M2, Field = "AU_UN", sep = ";")
+M2$AU_UN_NR <- sapply(lapply(strsplit(M2$AU_UN,";"),unique),function(x)paste0(x,collapse=";"))
+
 ```
 
 
 ```{r}
-# TOP author的单位
-df <- M2 %>% 
-  filter(str_detect(C1,paste(top$author,collapse ="|")))
+aff <- tableTag(M2,Tag = "AU_UN_NR",sep = ";")
+data.frame(aff,stringsAsFactors = F) %>% 
+  mutate(aff=as.character(Tab)) %>%
+  group_by(aff) %>%
+  summarise(count=sum(Freq)) %>% 
+  arrange(desc(count)) %>% 
+  head(20) %>%
+  kable(caption = "不同机构的论文数量")
 ```
+
+
+```{r fig.asp=1,fig.cap="机构间的合作"}
+net_matrix <- biblioNetwork(M2, analysis = "collaboration",network = "universities",sep = ";")
+net <- networkPlot(net_matrix,n=30,Title = "机构间的合作",type = "kamada",size = T,
+                   # weighted = T,
+                   remove.multiple = F,remove.isolates = F,halo = T)
+```
+
+## 看看有哪些中国学者
+
+```{r}
+M2 %>%
+  filter(is.part_of_china(AU_CO_NR)) %>%
+  tableTag(Tag = "AF") %>%
+  as_tibble() %>%
+  rename(Name="Tab",Records="n") %>%
+  head(10) %>%
+  kable()
+```
+
 
 
 
@@ -212,14 +278,24 @@ LC$M %>% mutate(keyword = strsplit(ID,";")) %>%
   kable(caption = "重点关键词对应的文献数目和引用次数")
 ```
 
-### 关键词共词网络
+## 关键词共词网络
 
 共词网络体现不同的词语在同一篇文献中出现的现象。同时出现的关键词之间有比较密切的关联。
+
+
+```{r}
+additional_stopword_CVD <- "MICE|PROFILES|ULCERATIVE-COLITIS|UNITED-STATES|VALIDATION|HELICOBACTER_PYLORI|INDUCTION|RATS|MICE"
+nonsense_keyword <- paste0(search_keywords,additional_stopword_CVD,collapse = "|") %>% toupper()
+```
+
+
 
 ```{r fig.width=10,fig.asp=1.2,fig.cap="关键词共现网络"}
 net_matrix <- biblioNetwork(M2,analysis = "co-occurrences",network = "keywords",sep = ";")
 selected <- !str_detect(colnames(net_matrix), nonsense_keyword)
-net <- networkPlot(net_matrix[selected,selected],n=30,Title = "关键词共现网络",type="kamada",size=T,halo=T,alpha=1)
+net <- networkPlot(net_matrix[selected,selected],n=30,Title = "关键词共现网络",
+                   type="kamada",size=T,halo=T,alpha=1,edges.min=5)
+
 ```
 
 
@@ -228,11 +304,7 @@ net <- networkPlot(net_matrix[selected,selected],n=30,Title = "关键词共现�
 
 
 ```{r}
-nonsense_keyword <- paste0(search_keywords,collapse = "|") %>% toupper()
-```
-
-
-```{r}
+M2 <-  M %>% filter(str_detect(AB,toupper(keywords)))
 df <- M2 %>% mutate(keyword = strsplit(ID,";")) %>%
   unnest(keyword) %>% 
   mutate(keyword=trim(keyword)) %>%
@@ -279,14 +351,17 @@ plots <- lapply(sort(unique(df$subplot)), function(sub){
   mutate(PY=as.numeric(PY)) %>%
   ggplot(aes(PY,proportion,fill=keyword)) +
   geom_area() +
+    coord_cartesian(xlim = c(2010,2020)) +
+    scale_x_continuous(breaks = 2000:2020) +
   # geom_text(aes(x=I(2020),label=keyword),position = position_stack(0.5),size=2,color="white") +
   theme(legend.position = "right")
 })
 ```
 
 
-```{r fig.asp=1.2}
-cowplot::plot_grid(plotlist = plots,ncol = 1,align = "hv")
+```{r fig.width=10,fig.cap="近二十年显著变化的WOS关键词"}
+cowplot::plot_grid(plotlist = plots,ncol = 2,align = "hv")
+
 ```
 
 ## 关键词趋势（按照关键词数目）
@@ -334,37 +409,20 @@ df <- df %>% filter(keyword %in% stats_aov$keyword) %>% left_join(subplot) %>% u
 
 plots <- lapply(sort(unique(df$subplot)), function(sub){
   df %>% filter(subplot==sub) %>%
-  mutate(PY=as.numeric(PY)) %>%
-  ggplot(aes(PY,n,fill=keyword)) +
-  geom_area() +
+    mutate(PY=as.numeric(PY)) %>%
+    ggplot(aes(PY,n,fill=keyword)) +
+    geom_area() +
+    coord_cartesian(xlim = c(2010,2019)) +
+    scale_x_continuous(breaks = 2000:2020) +
   # geom_text(aes(x=I(2020),label=keyword),position = position_stack(0.5),size=2,color="white") +
   theme(legend.position = "right")
 })
 ```
 
 
-```{r fig.asp=2}
+```{r fig.width=10,fig.asp=1.2}
 cowplot::plot_grid(plotlist = plots,ncol = 1,align = "hv")
+
 ```
-
-## 国家、机构的数据展现
-
-```{r fig.asp=1,fig.cap="国家间的合作"}
-M2 <- metaTagExtraction(M2, Field = "AU_CO", sep = ";")
-net_matrix <- biblioNetwork(M2, analysis = "collaboration",network = "countries",sep = ";")
-net <- networkPlot(net_matrix,n=20,Title = "国家间的合作",type = "kamada",size = T,remove.multiple = F,remove.isolates = F)
-```
-
-```{r fig.asp=1,fig.cap="机构间的合作"}
-M2 <- metaTagExtraction(M2, Field = "AU_UN", sep = ";")
-net_matrix <- biblioNetwork(M2, analysis = "collaboration",network = "universities",sep = ";")
-net <- networkPlot(net_matrix,n=30,Title = "机构间的合作",type = "kamada",size = T,
-                   # weighted = T,
-                   remove.multiple = F,remove.isolates = F,halo = T)
-```
-
-## 看看有哪些中国学者
-
-
 
 

@@ -109,7 +109,7 @@ IDs <- do.call("rbind",list) %>%
 
 
 
-```{r}
+```{r eval=F}
 # 关键词每年的词云
 library(wordcloud2)
 lapply(years, function(y){

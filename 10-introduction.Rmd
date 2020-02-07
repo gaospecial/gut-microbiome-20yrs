@@ -26,6 +26,7 @@ tag_summary_n <- sapply(tag_summary, length)
 df <- data.frame(x=0, y=0, 
                  label=paste(c(nrow(M),tag_summary_n),c("文章",col_names),sep = "\n"), # 加入文章总数
                  no = 0:length(tag_summary_n))
+
 ggplot(df,aes(x,y,label=label)) +
   geom_point(shape=21,size=50,color="#467AB4",stroke=2,fill="lightblue",alpha=1/2) +
   geom_text(fontface="bold") +
@@ -127,7 +128,7 @@ U1U2_by_year <- M %>%
   pivot_longer(cols = c("total_U1","total_U2"), names_to = "type",values_to = "usage")
 ```
 
-```{r trend-U1U2, fig.cap="文献自2013年以来的使用次数和近180天的使用次数对比"}
+```{r trend-U1U2, fig.cap="文献自2013年以来的使用次数（上方蓝线）和近180天的使用次数（下方红线）对比"}
 trend_U1U2 <- ggplot(U1U2_by_year,aes(PY,usage,text=usage,color=type)) + 
   geom_line(size = 1) + 
   geom_point(size=3,fill="white",shape=21) + 
@@ -192,6 +193,10 @@ plot.ly(p)
 ```
 
 
+### 使用共现网络体现研究机构间的合作
+
+
+
 ## 作者 
 
 
@@ -213,6 +218,20 @@ plot.ly(p)
 ```
 
 此外，我们还使用 H-index 指标来确定重要的研究学者。
+
+*Hindex计算有问题*
+
+```{r}
+#' # H指数的计算
+Hindex(M, elements = df$Tab, years = 20)$H
+```
+
+### 作者的合作网络
+
+```{r eval=F}
+netmatrix <- biblioNetwork(highly_cited, network = "authors")
+net <- networkPlot(netmatrix,n=100)
+```
 
 
 
@@ -242,22 +261,75 @@ plot.ly(p)
 
 ## 关键字
 
+Web of Science 数据库为每篇文献分配了两种类型的关键词，一种是数据库系统根据文章内容指定的系统关键字，另一种是作者自己在文章中列示的关键字。我们首先看作者关键字的排行榜。在排除了我们使用的搜索限定词之后（参见 \@ref(data-source)），可以得出最受关注的关键字可以分为几类：首先，益生菌（PROBIOTICS、PROBIOTIC）是最受关注的一个词语，还包括排在第五名的PREBIOTICS，以及明星益生菌乳酸杆菌（LACTOBACILLUS）和双歧杆菌（BIFIDOBACTERIUM），这是第一类；接下来是炎症（INFLAMMATION）、肥胖（OBESITY）、失调（DYSBIOSIS）、克罗恩病（CORHN'S DISEASE）和溃疡性结肠炎（ULCERATIVE COLITIS）等一些疾病相关的关键字；其次，是短链脂肪酸、饮食、抗生素、营养、代谢等与肠道菌群的微生态密切相关的共识（图 \@ref(fig:summary-DE)）。
 
-在关键字的排行榜中（图 \@ref(fig:summary-ID)）。
 
-
-```{r summary-ID,fig.cap="系统关键字"}
-# 系统关键字
+```{r summary-DE,fig.cap="作者关键字"}
+# 作者关键字
 i <- 5
+
+# search key word regex
+search_keyword_regex <- regex(pattern = paste0(search_keywords,collapse ="|"),ignore_case = T)
+
+# 关键字去掉搜索限定词
 df <- tag_summary[[i]] %>% as.data.frame() %>%
   filter(Tab!="NA") %>%
   mutate(proportion=Freq/results$Articles) %>%
   mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
+  filter(!str_detect(Tab,search_keyword_regex))
+
+p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
   labs(x=col_names[[i]],y="文章总数")
+plot.ly(p)
+```
+
+
+```{r summary-DE-wordcloud, fig.cap="作者关键字的词云"}
+wordcloud2(head(df,200),size=0.5)
+```
+
+与作者关键词相比，系统分配的关键词则没有作者关键词那么明显的趋势（图 \@ref(fig:summary-ID)）。
+
+```{r summary-ID, fig.cap="系统关键字"}
+i <- 6 # 系统关键字
+
+# 关键字去掉搜索限定词
+df <- tag_summary[[i]] %>% as.data.frame() %>%
+  filter(Tab!="NA") %>%
+  mutate(proportion=Freq/results$Articles) %>%
+  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
+  filter(!str_detect(Tab,search_keyword_regex))
+
+p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
+  labs(x=col_names[[i]],y="文章总数")
+plot.ly(p)
+```
+
+
+```{r summary-ID-wordcloud, fig.cap="系统关键字的词云"}
+wordcloud2(head(df,200),size=0.5)
+```
+
+
+### 关键词的时序分布
+
+```{r summary-ID-growth, fig.cap="增长最迅速的系统关键字"}
+topID <- KeywordGrowth(M,Tag = "ID",top = 22)
+df <- topID %>% pivot_longer(cols = -Year) %>%
+  filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
+p <- ggplot(df,aes(Year,value,fill=name,color=name,text=name)) + geom_area() + facet_wrap(~name)
+plot.ly(p)
+```
+
+```{r summary-DE-growth, fig.cap="增长最迅猛的作者关键字"}
+topID <- KeywordGrowth(M,Tag = "DE",top = 22)
+df <- topID %>% pivot_longer(cols = -Year) %>%
+  filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
+p <- ggplot(df,aes(Year,value,fill=name,color=name,text=name)) + geom_area() + facet_wrap(~name)
 plot.ly(p)
 ```
 
@@ -269,7 +341,7 @@ plot.ly(p)
 在研究领域的排行榜中（图 \@ref(fig:summary-WC)）。
 
 
-```{r summary-WC, fig.cap="SCI数据中的研究领域"}
+```{r}
 # WC, Web of Science 类别
 i <- 7
 df <- tag_summary[[i]] %>% as.data.frame() %>%
@@ -277,14 +349,25 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
   mutate(proportion=Freq/results$Articles) %>%
   mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
   head(n)
+```
+
+
+```{r summary-WC, fig.cap="SCI数据中的研究领域"}
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
+        plot.margin = unit(c(0.5,0,5,1),"cm")) +
   labs(x=col_names[[i]],y="文章总数")
 plot.ly(p)
 ```
 
-```{r summary-SC,fig.cap="SCI数据库中的研究方向"}
+```{r}
+treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
+```
+
+
+
+```{r summary-SC,fig.cap="SCI数据库中的研究方向",fig.asp=1}
 # SC, 研究方向
 i <- 8
 df <- tag_summary[[i]] %>% as.data.frame() %>%
@@ -294,39 +377,21 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
   head(n)
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
+        plot.margin = unit(c(0.5,0,5,1),"cm")) +
   labs(x=col_names[[i]],y="文章总数")
 plot.ly(p)
 ```
 
 Web of Science类别（WC）和研究方向（SC）。
 
-
-
-
-## 按全部文献的标题生成词云
-
-**注意：检索式中已经用到的关键词已经从词云中剔除。**
-
 ```{r}
-library(wordcloud2)
-additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
-  strsplit(" ") %>% unlist()
+treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
 ```
 
 
-```{r results="asis"}
-word_freq_title <- mrgut_word_freq(tolower(M$TI),n=1000,lang = "English") %>%
-  filter(!word_segmentation %in% c(search_keywords,letters,seq(0,9),additional_stopwords)) %>%
-  filter(nchar(as.character(word_segmentation))>2)
-widget <- wordcloud2(word_freq_title)
-```
 
 
-```{r}
-widget
-# markdown_widget(widget,filename = "all_the_title.png",delay = 30)
-```
 
 
 
@@ -359,17 +424,35 @@ S <- normalizeSimilarity(NetMatrix, type = "jaccard")
 历史引证网络的思路来源于 HistCite 软件，通常按照时间的顺序将文献关联，通过文献来解释某一领域的演进过程。
 
 ```{r eval=F}
-histResults <- histNetwork(highly_cited,min.citations = 10,sep = ";")
+histResults <- histNetwork(highly_cited,min.citations = 200,sep = ";")
 net <- histPlot(histResults,size = 5)
 ```
 
 ### 共被引网络
 
-共被引是指当两篇（或多篇）文献同时被后来一篇（或多篇）论文所引用的关系，同时引用这两篇论文的文献数目则称为共被引强度。文献的共被引关系会随着时间的变化而变化。通过对文献共被引网络的研究可以探究科学的发展和演进动态。
+共被引（co-citation）是指当两篇（或多篇）文献同时被后来一篇（或多篇）论文所引用的关系，同时引用这两篇论文的文献数目则称为共被引强度。文献的共被引关系会随着时间的变化而变化。通过对文献共被引网络的研究可以探究科学的发展和演进动态。
 
 ```{r eval=F}
 NetMatrix <- biblioNetwork(highly_cited,analysis = "co-citation",network = "references")
 net <- networkPlot(NetMatrix,degree = 50)
 
 ```
+
+
+## 文章
+
+```{r}
+df <- LC$M %>% select(TC,LCS) %>% 
+  mutate(ratio=LCS/TC) %>% 
+  mutate(ratio_group=cut(ratio,breaks = 0:10/10,
+                         labels = c(paste0("≤",1:10*10,"%")),
+                         include.lowest = TRUE)) %>%
+  group_by(ratio_group) %>% 
+  summarise(count=n())
+
+p <- ggplot(df,aes(ratio_group,count)) + geom_col()
+plot.ly(p)
+```
+
+
 通过上述分析，我们可以发现全球肠道菌群研究持续升温，已走入科学研究舞台中央。
