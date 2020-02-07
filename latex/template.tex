@@ -235,12 +235,7 @@ $if(toc)$
 \tableofcontents
 }
 $endif$
-$if(lot)$
-\listoftables
-$endif$
-$if(lof)$
-\listoffigures
-$endif$
+
 $body$
 
 $if(natbib)$
@@ -264,4 +259,13 @@ $for(include-after)$
 $include-after$
 
 $endfor$
+$if(lof)$
+\listoffigures
+$endif$
+
+$if(lot)$
+\listoftables
+$endif$
+
+
 \end{document}
