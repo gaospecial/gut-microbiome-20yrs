@@ -4,16 +4,16 @@ author: "热心肠研究院"
 date: "`r Sys.Date()`"
 always_allow_html: true
 documentclass: ctexbook
-bibliography: [book.bib, packages.bib, GUT_Microbiome_20yrs.bib]
+bibliography: [book.bib, packages.bib, articles.bib]
 biblio-style: apalike
 link-citations: yes
-colorlinks: yes
-lot: yes
-lof: yes
+colorlinks: no
+lot: no
+lof: no
 geometry: [a4paper, tmargin=2.5cm, bmargin=2.5cm, lmargin=3.5cm, rmargin=2.5cm]
 site: bookdown::bookdown_site
 description: "从20年肠道菌群研究大数据看肠道菌群研究的未来"
-github-repo: gaospecial/whitePaper2020
+github-repo: "gaospecial/gut-microbiome-20yrs"
 #cover-image: images/cover.jpg
 ---
 
@@ -29,8 +29,9 @@ knitr::opts_chunk$set(fig.width = 8,
                       echo = FALSE, # 是否显示代码
                       message = FALSE, # 是否显示 message
                       warning = FALSE,  # 是否显示警告
-                      error = TRUE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
-                      cache=TRUE)  # 加速预览
+                      error = FALSE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
+                      cache=TRUE  # 加速预览
+                      ) 
 
 # disable Sys.setlocale output
 Sys.setenv(LANG="zh_CN.UTF-8")
@@ -63,6 +64,7 @@ library(knitr)
 library(bibliometrix)
 library(ggraph)
 library(plotly)
+library(treemap)
 ```
 
 ```{r colors}
@@ -99,31 +101,42 @@ theme_set(theme_light() + theme_labs)
 ```{r}
 # 读取全部论文数据
 M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
-# 高引论文
 
+# LCS
+LC <- readRDS("data/LC.RDS")
+
+# 高引论文
 highly_cited <- M %>% filter(HC==TRUE)
 
 # 一般分析结果
-results <- biblioAnalysis(M)
-result_summary <- summary(results,k=100,verbose=FALSE) # set verbose to FALSE 不打印信息
+results <- readRDS("data/results.RDS")
+result_summary <- readRDS("data/result_summary.RDS")
 
 ```
 
 
 ```{r}
 # 检索词：在词云分析是可以去掉的词语
-query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)"
+query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome OR bacteria OR metagenomics)"
 
 # 检索时使用的关键词
 search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
 ```
+
+
+```{r}
+## 分词时的干扰词
+additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
+  strsplit(" ") %>% unlist()
+```
+
 
 ```{r}
 # 函数
 
 # 使用鼠标相应事件
 plot.ly <- function(g,...){
-  ggplotly(g, tooltip = c("text"),...) %>% 
+  ggplotly(g, tooltip = c("all"),...) %>% 
     config(displaylogo = FALSE,
            modeBarButtonsToRemove = c(
              'sendDataToCloud',
