@@ -33,10 +33,12 @@
 
 ## 下载“肠道菌群”研究完整数据
 
-下载完整数据（Full Record and Cited References），保存为 `Gut_Microbiome_*.txt` 文件。
+下载完整数据（Full Record and Cited References），保存为文本文件。
 
-（每次 500 条数据，耗时约半天。）
+Web of Science 数据导出每次限制 500 条数据，需要分多次保存，全部下载完毕后，可以将所有文件合并到一起。
 
-# 后记 {#sound}
+```{sh eval=F}
+cat export.*.txt > all.text
+```
 
-呐，到这里朕的书差不多写完了，但还有几句话要交待，所以开个附录，再啰嗦几句，各位客官稍安勿躁、扶稳坐好。
+
