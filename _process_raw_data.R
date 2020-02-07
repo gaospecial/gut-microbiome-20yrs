@@ -68,3 +68,17 @@ M$AU <- M$AF
 # 保存为 RDS
 saveRDS(M,file = "data/M.RDS")
 
+# 一般分析结果
+results <- biblioAnalysis(M)
+result_summary <- summary(results,k=100,verbose=FALSE) # set verbose to FALSE 不打印信息
+
+saveRDS(results, file = "data/results.RDS")
+saveRDS(result_summary,file = "data/result_summary.RDS")
+
+
+#' # LCS 的计算
+#'
+#' 这一步计算比较耗时
+LC <- localCitations(M,fast.search=FALSE)
+saveRDS(LC, file = "data/LC.RDS")
+
