@@ -166,7 +166,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -188,7 +188,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -213,7 +213,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -254,7 +254,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -281,7 +281,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -305,7 +305,7 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
 p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -357,7 +357,7 @@ p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
         plot.margin = unit(c(0.5,0,5,1),"cm")) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -379,7 +379,7 @@ p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
         plot.margin = unit(c(0.5,0,5,1),"cm")) +
-  labs(x=col_names[[i]],y="文章总数")
+  labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
@@ -399,7 +399,7 @@ treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
 
 ### 耦合网络
 
-文献耦合是指若文献A和文献B引证了相同的参考文献，则它们之间构成耦合关系，它们所包含相同参考文献的个数成为耦合强度。从文献耦合的概念上看，一个文献引用的参考文献越多，那么它将有越多的机会与其它文献建立耦合关系。为了消除这种影响，通常需要对原始数据使用 Jaccard 或 Salton 方法进行标准化处理，来计算相对的耦合强度。文献耦合测量的是文献间的静态关系，已经发表的论文的耦合强度不会随时间的变化而变化。
+
 
 *耦合网络分析的代码运行不成功*
 
@@ -430,7 +430,7 @@ net <- histPlot(histResults,size = 5)
 
 ### 共被引网络
 
-共被引（co-citation）是指当两篇（或多篇）文献同时被后来一篇（或多篇）论文所引用的关系，同时引用这两篇论文的文献数目则称为共被引强度。文献的共被引关系会随着时间的变化而变化。通过对文献共被引网络的研究可以探究科学的发展和演进动态。
+
 
 ```{r eval=F}
 NetMatrix <- biblioNetwork(highly_cited,analysis = "co-citation",network = "references")
