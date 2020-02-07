@@ -8,7 +8,7 @@ bookdown::gitbook:
       after: |
         <li><a href="https://bookdown.org" target="blank">本书由 bookdown 强力驱动</a></li>
     download: [pdf, epub]
-    edit: https://github.com/yihui/bookdown-chinese/edit/master/%s
+    edit: "https://github.com/gaospecial/gut-microbiome-20yrs/edit/master/%s"
     sharing:
       github: yes
       facebook: no

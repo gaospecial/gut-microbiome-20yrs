@@ -1,4 +1,4 @@
-book_filename: bookdown
+book_filename: "gut-microbiome-20yrs"
 output_dir: _book
 delete_merged_file: true
 clean: [packages.bib, bookdown.bbl]
