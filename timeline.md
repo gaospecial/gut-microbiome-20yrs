@@ -50,7 +50,7 @@ section 附录
 
 section 其它
 视觉设计: des16, after des15, 7d
-
+汉化工作: des17, after des15, 7d
 
 
 ```
