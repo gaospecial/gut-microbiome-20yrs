@@ -116,6 +116,18 @@ result_summary <- readRDS("data/result_summary.RDS")
 
 ```
 
+```{r}
+# country translation
+data("countries")
+country_translations <- rjson::fromJSON(file = "data-raw/countries/countrie.json")
+country_translations <- lapply(country_translations, as_tibble)
+country_translations <- do.call("rbind",country_translations)
+country_translations <- country_translations %>% select(English,China,ISO2,ISO3,DIGITS)
+country_translations$countries <- toupper(trim(country_translations$English))
+country_multi_lang <- full_join(country_translations,countries)
+```
+
+
 
 ```{r}
 # 检索词：在词云分析是可以去掉的词语
