@@ -136,7 +136,7 @@ additional_stopwords <- "yet may one two use thus like work part either show but
 
 # 使用鼠标相应事件
 plot.ly <- function(g,...){
-  ggplotly(g, tooltip = c("all"),...) %>% 
+  ggplotly(g, tooltip = c("text"),...) %>% 
     config(displaylogo = FALSE,
            modeBarButtonsToRemove = c(
              'sendDataToCloud',
