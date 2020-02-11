@@ -439,20 +439,5 @@ net <- networkPlot(NetMatrix,degree = 50)
 ```
 
 
-## 文章
-
-```{r}
-df <- LC$M %>% select(TC,LCS) %>% 
-  mutate(ratio=LCS/TC) %>% 
-  mutate(ratio_group=cut(ratio,breaks = 0:10/10,
-                         labels = c(paste0("≤",1:10*10,"%")),
-                         include.lowest = TRUE)) %>%
-  group_by(ratio_group) %>% 
-  summarise(count=n())
-
-p <- ggplot(df,aes(ratio_group,count)) + geom_col()
-plot.ly(p)
-```
-
 
 通过上述分析，我们可以发现全球肠道菌群研究持续升温，已走入科学研究舞台中央。

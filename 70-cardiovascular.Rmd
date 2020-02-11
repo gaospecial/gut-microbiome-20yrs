@@ -14,7 +14,7 @@ papers <- read_rds(paste0(db_cache,"papers.RDS")) %>% as_tibble() %>%  mutate_al
 fragments <- read_rds(paste0(db_cache,"fragments.RDS")) %>% as_tibble() %>%  mutate_all(iconv,from="utf-8",sub=" ")
 
 real_paper <- papers %>% 
-  filter(status==3 & classify=="audit") %>%
+  filter(status==3 & classify=="audit" & journal_id=="1") %>%
   select(uuid,title,share_title,summary,remark,fragment_id) %>% 
   left_join(fragments %>% rename("fragment_id"=id) %>% select(-uuid,-title,-remark))
 ```

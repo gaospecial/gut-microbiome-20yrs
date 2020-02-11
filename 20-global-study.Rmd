@@ -3,6 +3,169 @@
 # 国家产出和国际合作 {#global}
 
 
+## 如何计算国家间的产出？
+
+一篇文章经常会出现由来自于多个国家的研究人员共同完成的情况。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
+
+
+```{r}
+# 计算各国加权发文量
+listCO <- strsplit(M$AU_CO_NR,";")
+listCO <- lapply(listCO,trim)
+nCO <- unlist(lapply(listCO,length))
+fracCO <- unlist(lapply(nCO, function(x){rep(1/x,x)}))
+
+if (length(M$PY) != length(nCO)) warning("length(PY) is not equal to length(nCO).")
+PY <- unlist(lapply(seq_along(nCO),function(x){rep(M$PY[[x]],nCO[[x]])} ))
+
+
+country_output <- data.frame(CO=unlist(listCO),
+                             PY=PY,
+                             Frac=fracCO) %>%
+  group_by(CO,PY) %>%
+  summarise(contribution=sum(Frac))
+```
+
+
+
+
+```{r}
+topN <- 10
+
+list <- lapply(unique(country_output$PY),function(y){
+  country_output %>% filter(PY==y, CO!="NA") %>%
+    arrange(desc(contribution)) %>%
+    head(topN) %>% 
+    ungroup() %>%
+    mutate(rank=row_number())
+})
+
+top_country_output <- do.call("rbind",list)
+top_country_output$rank <- factor(top_country_output$rank,levels = 20:1)
+top_country_output <- top_country_output %>%
+  left_join(country_multi_lang,by=c("CO"= "countries")) %>%
+  mutate(chinese_abbr=str_sub(China,end = 1))
+```
+
+
+如果我们按照论文发表量对各国“肠道菌群”研究进行排序，可以发现美国一直是排在第一位的，而第二名至第十名则一直在变动。在2000年，美、日、英、法、德是发文量最多的五个国家，到了2010年，前五名是美、法、日、德、英五个国家。值得一提的是，自2010年开始，中国的“肠道菌群”研究以锐不可当的势头，用了三年的时间直接从第十名升到第二名，并一直保持至今（图 \@ref(fig:top-country-ranking)）。
+
+```{r top-country-ranking, fig.cap="各国加权发文量排行榜"}
+p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,group=CO)) + 
+  geom_point(size=6) +  geom_line(size=5,alpha=1/3) +
+  geom_text(aes(label=chinese_abbr), hjust=0.5, vjust=0.5,size=3,color="grey",check_overlap = T) +
+  labs(x="",y="",title = "各国加权发文量排行榜") +
+  scale_color_manual(values = rainbow(20)) +
+  theme(plot.title = element_text(hjust = 0,size=16),
+        plot.subtitle = element_text(hjust=0,color = "grey20",size=14),
+        legend.position = "none") 
+
+plot.ly(p)
+```
+
+
+```{r top-country-output-gif, fig.cap="各国加权发文量"}
+p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
+  geom_col() + 
+  geom_text(aes(label=CO),position = position_stack(vjust = 1), hjust=0) +
+  transition_time(PY) + 
+  labs(x="",y="",title = "各国加权发文量",subtitle="年份：{round(frame_time)}") +
+  theme(axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0,size=16),
+        plot.subtitle = element_text(hjust=0,color = "grey20",size=14)) +
+  coord_flip()
+animate(p,fps = 10,start_pause=20,end_pause = 20)
+```
+
+
+## 合作网络
+
+
+国际化在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP）。在最主要的`r topN`国家中，美国的研究有近 20% 是与其它国家合作完成的，中国发表的论文中也有约 20% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
+
+
+```{r MCP-SCP, fig.cap="各国单独（蓝色）和合作发表（红色）论文的比例"}
+mostProdCountries <- result_summary$MostProdCountries %>%
+  select(Country,SCP,MCP) %>%
+  head(topN) %>%
+  mutate_all(trim) %>%
+  pivot_longer(cols = -Country) %>%
+  mutate(value=as.numeric(value),
+         Country=as_factor(as.character(Country))) %>%
+  group_by(Country) %>%
+  mutate(proportion=value/sum(value))
+mostProdCountries$Country <- factor(mostProdCountries$Country, levels=rev(levels(mostProdCountries$Country)))
+
+p <- ggplot(mostProdCountries,aes(Country,value,fill=name,text=paste0(value,"(",format(proportion*100,1),"%)"))) + 
+  geom_col() +
+  coord_flip() +
+  labs(title = "单独和合作发表论文的比例",x="",y="") +
+  theme(legend.position = )
+
+plot.ly(p)
+```
+
+
+
+我们采用网络分析的方法阐释国际合作。
+
+```{r country-collaboration-network, fig.cap="国家间的合作网络"}
+WA <- cocMatrix(M, Field = "AU_CO_NR")  # 共现矩阵
+netMatrix <- Matrix::crossprod(WA,WA)
+# netMatrix[nchar(colnames(netMatrix))!= 0, nchar(colnames(netMatrix)) !=0]
+net <- networkPlot(NetMatrix = netMatrix,n=20,Title = "国家间的合作",type = "kamada",size = T,remove.multiple = F,remove.isolates = F)
+```
+
+
+## 本地被引频次
+
+引用是印证分析的重要基础，引用次数是通常衡量一篇文献重要性的关键指标，并由此衍生出了期刊影响因子、研究人员的H因子等指标。在我们的分析中，我们使用本地被引频次作为一个关键指标，来筛选与“肠道菌群”最相关的重要文献。与Web of Science数据库中的高被引文献相比，这一方法更能够发现与“肠道菌群”密切相关的重要文献。
+
+首先，我们看一下本地被引频次的含义。
+
+**本地被引频次**，即 Local Citation Score（LCS）。它表示这篇文章在当前数据集中被引用的次数。
+
+**全局引用次数**，即 Global Citation Score （GCS），它表示这篇文章被整个WOS数据库中所有文献引用的次数，也就是在 Web of Science 网站上看到的引用次数。
+
+LCS可以快速定位一个领域的经典文献。一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。
+
+在这里，我们也相应的介绍一下本地参考文献数这一概念。
+
+**本地参考文献数**（Local Cited References，LCR）表示这篇文献的参考文献在当前数据集中的数量，即这篇文献引用别人的情况。如果一篇文章的 LCR 值高，意味着它引用了大量当前数据集中文献，极有可能是对当前数据集中研究密切相关的综述文章。
+
+**引用文献数目**（Cited Reference，CR）即文章引用的参考文献数量。如果某篇文献引用了50篇参考文献，则CR为50。
+
+我们知道引用有一定的延后性，而 LCR 可以帮助我们快速找出最新的文献中哪些是和自己研究方向最相关的文章。
+
+
+
+
+```{r}
+df <- LC$M %>% select(PY,TC,LCS) %>% 
+  mutate(ratio=LCS/TC) %>% 
+  mutate(ratio_group=cut(ratio,breaks = 0:10/10,
+                         # labels = c(paste0("≤",1:10*10,"%")),
+                         include.lowest = TRUE)) %>%
+  group_by(PY,ratio_group) %>% 
+  summarise(count=n()) %>%
+  group_by(PY) %>%
+  mutate(proportion=count/sum(count))
+
+p <- ggplot(df,aes(PY,proportion, 
+                   fill=ratio_group,
+                   text=paste0(ratio_group,", ",count,"篇 (",round(proportion*100),"%)"))) + 
+  geom_col() +
+  scale_y_continuous(labels = function(x) paste0(x*100,"%"))
+plot.ly(p)
+  
+```
+
+
+
+```{r}
+
+```
+
 
 
 先谈谈国际合作，再介绍美中两国和其它国家的研究进展。
