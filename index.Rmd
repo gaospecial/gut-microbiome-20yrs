@@ -65,6 +65,8 @@ library(bibliometrix)
 library(ggraph)
 library(plotly)
 library(treemap)
+library(gganimate)
+
 ```
 
 ```{r colors}
