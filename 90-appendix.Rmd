@@ -42,3 +42,40 @@ cat export.*.txt > all.text
 ```
 
 
+# 文献筛选
+
+
+在最初阶段我们的分析依赖于全部的5万多篇文献，但是我们很快发现这个数据量在进行较复杂的分析时，一方面会导致计算量比较大，另一方面也没有必要完整覆盖。因此寻找一个方法确定核心文献十分必要。高被引论文虽然是一个备选，但是高被引论文针对的是大的学科领域，可能并不能凸显论文对道菌群研究的重要性。且我们也可以发现2009年前是没有高被引论文在这5万多篇文献中存在的，因此对于一些特别经典的菌群研究论文有所遗漏。因此我们使用**本地被引频次**这个参数对文献做了一定的筛选，即将每年本地被引频次排在前 5% 的文献作为关键文献，进行了更为充分的分析。
+
+我们看一下本地被引频次的含义。
+**本地被引频次**，即 Local Citation Score（LCS），它表示这篇文章在当前数据集中被引用的次数。
+**全局引用次数**，即 Global Citation Score （GCS），它表示这篇文章被整个WOS数据库中所有文献引用的次数，也就是在 Web of Science 网站上看到的引用次数。
+一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。如果 LCS 很高，则说明这篇文献与你数据集中关注的领域十分相关。所以，使用 LCS 可以快速定位一个领域的经典文献。
+
+值得一提的是，我们按照 LCS 前 5% 的文献共有 `r nrow(MC)` 篇，其中覆盖了约三分之二的WoS高被引论文，比WoS高被引论文少了700多篇。不过，另外多了约800多篇新文献（图 \@ref(fig:HC-vs-MC)）。
+
+```{r HC-vs-MC, fig.cap="本地被引频次前5%的文献与WoS数据库高被引论文的重叠度",fig.width=8}
+list <- list(HC=highly_cited$SR,MC=MC$SR)
+ggVennDiagram::ggVennDiagram(list,category.names = c("WOS高被引","本地核心文献"),label="both") +
+  theme(legend.position = "none")
+
+```
+
+图 \@ref(fig:HC-vs-MC-year) 显示这些论文的差别主要在哪些年份。
+
+```{r HC-vs-MC-year, fig.cap="高被引和核心论文的差别"}
+HC_specific <- setdiff(list$HC,list$MC)
+MC_specific <- setdiff(list$MC,list$HC)
+
+df1 <- M %>% filter(SR  %in% HC_specific ) %>% group_by(PY) %>% summarise(count=-n(),type="缺少")
+df2 <- M %>% filter(SR  %in% MC_specific ) %>% group_by(PY) %>% summarise(count=n(),type="新增")
+
+p <- rbind(df1,df2) %>% ggplot(aes(PY,count,fill=type,text=paste0(type,abs(count),"篇"))) + 
+  geom_col() + 
+  coord_flip() +
+  labs(x="",y="") +
+  theme(legend.position = "none")
+plot.ly(p)
+```
+
+
