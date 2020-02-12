@@ -13,7 +13,7 @@ content <- readFiles(all_record)
 M <- convert2df(content)
 
 #' ## 标记高被引论文
-highly_cited <- "data-raw/Highly_cited.txt"
+highly_cited <- "data-raw/Highly_cited.zip"
 content <- readFiles(highly_cited)
 # 耗时2个小时读取完毕
 highly_cited <- convert2df(content)
@@ -22,7 +22,8 @@ highly_cited <- convert2df(content)
 #' 高被引论文都包括在全部论文中
 
 library(ggVennDiagram)
-ggVennDiagram(list(all=rownames(M),high=rownames(highly_cited)))
+list <- list(all=M$SR,high=highly_cited$SR)
+ggVennDiagram(list)
 
 
 #' 将高被引论文在 `M` 中做一个标记
@@ -65,8 +66,7 @@ M <- M %>% mutate(DT=ifelse(str_detect(DT,regex("article",ignore_case = T)), "AR
 # 使用AF替代AU
 M$AU <- M$AF
 
-# 保存为 RDS
-saveRDS(M,file = "data/M.RDS")
+
 
 # 一般分析结果
 results <- biblioAnalysis(M)
@@ -81,4 +81,6 @@ saveRDS(result_summary,file = "data/result_summary.RDS")
 #' 这一步计算比较耗时
 LC <- localCitations(M,fast.search=FALSE)
 saveRDS(LC, file = "data/LC.RDS")
+
+
 
