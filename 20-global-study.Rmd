@@ -3,7 +3,9 @@
 # 国家产出和国际合作 {#global}
 
 
-## 如何计算国家间的产出？
+## 国际排名的变化
+
+### 如何计算国家间的产出？
 
 一篇文章经常会出现由来自于多个国家的研究人员共同完成的情况。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
 
@@ -78,10 +80,10 @@ animate(p,fps = 10,start_pause=20,end_pause = 20)
 ```
 
 
-## 合作网络
+## 全球合作网络
 
 
-国际化在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP）。在最主要的`r topN`国家中，美国的研究有近 20% 是与其它国家合作完成的，中国发表的论文中也有约 20% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
+国际化在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r topN` 个国家中，美国的研究有近 20% 是与其它国家合作完成的，中国发表的论文中也有约 20% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
 
 
 ```{r MCP-SCP, fig.cap="各国单独（蓝色）和合作发表（红色）论文的比例"}
@@ -100,9 +102,14 @@ p <- ggplot(mostProdCountries,aes(Country,value,fill=name,text=paste0(value,"(",
   geom_col() +
   coord_flip() +
   labs(title = "单独和合作发表论文的比例",x="",y="") +
-  theme(legend.position = )
+  scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("单独发表","合作发表")) +
+  theme(legend.position = c(0.5,0.3), legend.direction = "horizontal")
 
-plot.ly(p)
+plot.ly(p) %>%
+  layout(
+    legend = list(x=0.5,y=0.3,orientation="v")
+  )
+  
 ```
 
 
@@ -112,8 +119,18 @@ plot.ly(p)
 ```{r country-collaboration-network, fig.cap="国家间的合作网络"}
 WA <- cocMatrix(M, Field = "AU_CO_NR")  # 共现矩阵
 netMatrix <- Matrix::crossprod(WA,WA)
-# netMatrix[nchar(colnames(netMatrix))!= 0, nchar(colnames(netMatrix)) !=0]
-net <- networkPlot(NetMatrix = netMatrix,n=20,Title = "国家间的合作",type = "kamada",size = T,remove.multiple = F,remove.isolates = F)
+netMatrix <- netMatrix[colnames(netMatrix)!= "NA", colnames(netMatrix)!= "NA"]
+net <- networkPlot(NetMatrix = netMatrix,
+                   n=50,                      # 节点的数目
+                   Title = "国家间的合作",
+                   type = "auto",           # 图的布局
+                   cluster = "spinglass" ,      # 聚类的方法，c("none", optimal", "louvain","infomap","edge_betweenness","walktrap", "spinglass", "leading_eigen", "fast_greedy"
+                   size = T,                  # 
+                   label.color = TRUE,        # 节点是否按群体着色
+                   halo = F,                  # 相同群体会使用同一种颜色
+                   weighted = T,
+                   remove.multiple = T,
+                   remove.isolates = F)
 ```
 
 
@@ -123,11 +140,11 @@ net <- networkPlot(NetMatrix = netMatrix,n=20,Title = "国家间的合作",type 
 
 首先，我们看一下本地被引频次的含义。
 
-**本地被引频次**，即 Local Citation Score（LCS）。它表示这篇文章在当前数据集中被引用的次数。
+**本地被引频次**，即 Local Citation Score（LCS）,它表示这篇文章在当前数据集中被引用的次数。
 
 **全局引用次数**，即 Global Citation Score （GCS），它表示这篇文章被整个WOS数据库中所有文献引用的次数，也就是在 Web of Science 网站上看到的引用次数。
 
-LCS可以快速定位一个领域的经典文献。一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。
+一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。如果 LCS 很高，则说明这篇文献与你数据集中关注的领域十分相关。所以，使用 LCS 可以快速定位一个领域的经典文献。
 
 在这里，我们也相应的介绍一下本地参考文献数这一概念。
 
@@ -135,7 +152,7 @@ LCS可以快速定位一个领域的经典文献。一篇文章GCS很高，说�
 
 **引用文献数目**（Cited Reference，CR）即文章引用的参考文献数量。如果某篇文献引用了50篇参考文献，则CR为50。
 
-我们知道引用有一定的延后性，而 LCR 可以帮助我们快速找出最新的文献中哪些是和自己研究方向最相关的文章。
+我们知道引用有一定的滞后性，而 LCR 可以帮助我们快速找出最新的文献中哪些是和自己研究方向最相关的文章。
 
 
 
