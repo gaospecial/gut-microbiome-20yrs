@@ -52,7 +52,7 @@ cat export.*.txt > all.text
 **全局引用次数**，即 Global Citation Score （GCS），它表示这篇文章被整个WOS数据库中所有文献引用的次数，也就是在 Web of Science 网站上看到的引用次数。
 一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。如果 LCS 很高，则说明这篇文献与你数据集中关注的领域十分相关。所以，使用 LCS 可以快速定位一个领域的经典文献。
 
-值得一提的是，我们按照 LCS 前 5% 的文献共有 `r nrow(MC)` 篇，其中覆盖了约三分之二的WoS高被引论文，比WoS高被引论文少了700多篇。不过，另外多了约800多篇新文献（图 \@ref(fig:HC-vs-MC)）。
+值得一提的是，我们按照 LCS 前 5% 筛选后得到的文献共有 `r nrow(MC)` 篇，其中覆盖了约三分之二的WoS高被引论文，比WoS高被引论文少了700多篇。不过，另外新增了约800多篇新文献（图 \@ref(fig:HC-vs-MC)）。
 
 ```{r HC-vs-MC, fig.cap="本地被引频次前5%的文献与WoS数据库高被引论文的重叠度",fig.width=8}
 list <- list(HC=highly_cited$SR,MC=MC$SR)
@@ -67,15 +67,86 @@ ggVennDiagram::ggVennDiagram(list,category.names = c("WOS高被引","本地核�
 HC_specific <- setdiff(list$HC,list$MC)
 MC_specific <- setdiff(list$MC,list$HC)
 
-df1 <- M %>% filter(SR  %in% HC_specific ) %>% group_by(PY) %>% summarise(count=-n(),type="缺少")
-df2 <- M %>% filter(SR  %in% MC_specific ) %>% group_by(PY) %>% summarise(count=n(),type="新增")
+df1 <- M %>% filter(SR  %in% HC_specific ) %>% group_by(PY,DT) %>% summarise(count=-n(),type="缺少")
+df2 <- M %>% filter(SR  %in% MC_specific ) %>% group_by(PY,DT) %>% summarise(count=n(),type="新增")
 
-p <- rbind(df1,df2) %>% ggplot(aes(PY,count,fill=type,text=paste0(type,abs(count),"篇"))) + 
+p <- rbind(df1,df2) %>% ggplot(aes(PY,count,fill=DT,color=type,text=paste0(type,DT,abs(count),"篇"))) + 
   geom_col() + 
   coord_flip() +
-  labs(x="",y="") +
-  theme(legend.position = "none")
-plot.ly(p)
+  scale_color_brewer(palette = "Set1") +
+  labs(x="",y="") + 
+  guides(fill=guide_legend(title = "文献类型",byrow = TRUE,ncol = 2),
+         color="none") + 
+  theme(legend.position = c(.8,.2)) 
+plot.ly(p) %>%
+  layout(showlegend=FALSE)
 ```
+
+
+国家信息不全的文章有 `r nrow(df)` 篇，大多属于信息采集不完整的情况（表\@ref(tab:AU-CO-NA)），并非软件本身存在的错误所致。数据采集不完整的情况暂时无法解决。
+
+
+```{r}
+# 国家信息错误的情况
+M %>% filter(str_detect(AU_CO_NR,"\\bNA\\b")) %>% 
+  select(AU,SO,DT,C1,AU_CO_NR)  %>% 
+  tableTag(Tag = "DT") %>%
+  barplot(las=2)
+```
+
+
+```{r AU-CO-NA}
+df <- M %>% filter(str_detect(AU_CO_NR,"\\bNA\\b")) %>% 
+  select(SR,C1,AU_CO_NR) %>% 
+  head(10)
+kable(df,filter = "top",caption = "国家信息缺失的文献信息")
+```
+
+
+
+```{r}
+# 使用自定义函数提取作者机构信息
+AU_UN_wos <- function(C1,sep=";"){
+  AFF <- trim(gsub("\\[.*?\\]","",C1))
+  listAFF <- strsplit(AFF,sep,fixed = TRUE)
+  AFFL <- lapply(listAFF,function(l){
+    affL <- strsplit(l,",",fixed = TRUE)
+    lapply(affL, function(x){
+      return(trim(x[[1]]))
+    })
+  })
+  AFF <- sapply(AFFL,function(x) paste0(x,collapse = sep))
+  AFF <- gsub("\\&","AND",AFF)
+  return(AFF)
+}
+```
+
+
+
+
+
+
+`bibliometrix` 使用一个控制字段提取机构信息，一些机构名称不含下列控制字段，因此导致机构信息提取失败。为此，我们拟使用自定义函数改进提取机制。
+
+```{r, echo=T,eval=F}
+uTags=c("UNIV","COLL","SCH","INST","ACAD","ECOLE","CTR","SCI","CENTRE","CENTER","CENTRO","HOSP","ASSOC","COUNCIL",
+          "FONDAZ","FOUNDAT","ISTIT","LAB","TECH","RES","CNR","ARCH","SCUOLA","PATENT OFF","CENT LIB","HEALTH","NATL",
+          "LIBRAR","CLIN","FDN","OECD","FAC","WORLD BANK","POLITECN","INT MONETARY FUND","CLIMA","METEOR","OFFICE","ENVIR",
+          "CONSORTIUM","OBSERVAT","AGRI", "MIT ", "INFN", "SUNY ")
+```
+
+改进后的机构信息提取机制更加准确。表 \@ref(tab:AU-UN-NA) 表示新旧方法得出不同机构信息字段的比较。`C1` 是作者信息字段，`AU_UN` 是 `bibliometrix` 软件提取的机构信息，`AU-UN2` 是改进提取方法后得出的机构信息。经过比较，可以发现新方法提取的信息更加准确和完整。
+
+```{r AU-UN-NA}
+set.seed(20200213)
+a <- M %>% sample_n(100)
+a <- metaTagExtraction(a,Field = "AU_UN")
+a$AU_UN2 <- AU_UN_wos(a$C1)
+a %>% filter(AU_UN != AU_UN2) %>%
+  select(SR,C1,AU_UN,AU_UN2) %>%
+  head(10) %>%
+  kable(caption = "不同方式获取机构信息的差异")
+```
+
 
 
