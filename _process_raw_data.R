@@ -38,9 +38,30 @@ summary(M$HC)
 # M <- metaTagExtraction(M, Field="SR")  # short tag, 在引文列表中使用
 # M <- metaTagExtraction(M, Field="CR_AU")  #	First Author of each cited reference
 M <- metaTagExtraction(M, Field="AU_CO")  #	所有作者的所有机构的国家信息，与作者并非一一对应关系。
-M <- metaTagExtraction(M, Field="AU_UN")  #	University of affiliation for each co-author and the corresponding author （同时生成的AU1_UN是一个通讯作者）
+# M <- metaTagExtraction(M, Field="AU_UN")  #	University of affiliation for each co-author and the corresponding author （同时生成的AU1_UN是一个通讯作者）
 # M <- metaTagExtraction(M, Field="AU1_CO") #	Country of affiliation for the first author(仅为第一个作者，不包括共同第一作者)
+
+# 国家去重
 M$AU_CO_NR <- unlist(lapply(strsplit(M$AU_CO,split = ";"),function(x) paste(unique(x),collapse = ";")))
+
+# 使用自定义函数提取作者机构信息
+AU_UN_wos <- function(C1,sep=";"){
+  AFF <- trim(gsub("\\[.*?\\]","",C1))
+  listAFF <- strsplit(AFF,sep,fixed = TRUE)
+  AFFL <- lapply(listAFF,function(l){
+    affL <- strsplit(l,",",fixed = TRUE)
+    lapply(affL, function(x){
+      return(trim(x[[1]]))
+    })
+  })
+  AFF <- sapply(AFFL,function(x) paste0(x,collapse = sep))
+  AFF <- gsub("\\&","AND",AFF)
+  return(AFF)
+}
+
+M$AU_UN <- AU_UN_wos(M$C1)
+
+# 机构去重
 M$AU_UN_NR <- unlist(lapply(strsplit(M$AU_UN,split = ";"),function(x) paste(unique(x),collapse = ";")))
 
 # 加入影响因子数据（最新）
