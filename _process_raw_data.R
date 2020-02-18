@@ -5,17 +5,18 @@
 library(bibliometrix)
 #' ## 全部的文献数据
 # 如果是首次使用，需要处理原始文件。否则可以直接到下一个 Chunk 读取预存的数据。
-all_record <- "data-raw/Gut_Microbiome_all.zip"
+all_record <- "data-raw/all-publications/download_Gut_Microbiome_all.txt"
 
 # 读取文件
 content <- readFiles(all_record)
 # 耗时2个小时读取完毕
 M <- convert2df(content)
 
+saveRDS(M,"data/M0.RDS")
+
 #' ## 标记高被引论文
-highly_cited <- "data-raw/Highly_cited.zip"
+highly_cited <- "data-raw/xdownload_highly_cited.txt"
 content <- readFiles(highly_cited)
-# 耗时2个小时读取完毕
 highly_cited <- convert2df(content)
 
 
@@ -30,6 +31,33 @@ ggVennDiagram(list)
 M$HC <- FALSE
 M[rownames(highly_cited),"HC"]  <- TRUE
 summary(M$HC)
+
+
+# 加入影响因子数据（最新）
+library(dplyr)
+file <- "data-raw/2019_Impact_factor.xlsx"
+journal_IF <- openxlsx::read.xlsx(file,startRow=3)  %>%
+  select(SO,impact_factor) %>%
+  mutate(SO=toupper(SO),
+         impact_factor=as.numeric(impact_factor)) %>%
+  unique()
+
+# 按照影响因子分组
+M <- M %>% left_join(journal_IF) %>%
+  mutate(group=cut(impact_factor,
+                   breaks = c(-Inf,3,5,10,20,Inf),
+                   labels = c("<3",">3",">5",">10",">20")))
+
+# 简化文献类型
+M <- M %>% mutate(DT=ifelse(str_detect(DT,regex("article",ignore_case = T)), "ARTICLE", DT)) %>%
+  mutate(DT=ifelse(str_detect(DT,regex("review",ignore_case = T)), "REVIEW",DT)) %>%
+  mutate(DT=ifelse(str_detect(DT,regex("editorial",ignore_case = T)), "EDITORIAL",DT)) %>%
+  mutate(DT=ifelse(DT %in% c("ARTICLE","REVIEW","EDITORIAL","LETTER","MEETING ABSTRACT"), DT, "OTHERS"))
+
+# 使用AF替代AU
+M$AU <- M$AF
+
+
 
 # 需要从 M 中提取作者、通讯作者、单位、国家等信息。
 # 作者全名在 M$AF ，通讯作者在 M$RP（但是只有缩写）；
@@ -64,29 +92,7 @@ M$AU_UN <- AU_UN_wos(M$C1)
 # 机构去重
 M$AU_UN_NR <- unlist(lapply(strsplit(M$AU_UN,split = ";"),function(x) paste(unique(x),collapse = ";")))
 
-# 加入影响因子数据（最新）
-library(dplyr)
-file <- "data-raw/2019_Impact_factor.xlsx"
-journal_IF <- openxlsx::read.xlsx(file,startRow=3)  %>%
-  select(SO,impact_factor) %>%
-  mutate(SO=toupper(SO)) %>%
-  unique()
-
-# 按照影响因子分组
-M <- M %>% left_join(journal_IF) %>%
-  mutate(group=cut(impact_factor,
-                   breaks = c(-Inf,3,5,10,20,Inf),
-                   labels = c("<3",">3",">5",">10",">20")))
-
-# 简化文献类型
-M <- M %>% mutate(DT=ifelse(str_detect(DT,regex("article",ignore_case = T)), "ARTICLE", DT)) %>%
-  mutate(DT=ifelse(str_detect(DT,regex("review",ignore_case = T)), "REVIEW",DT)) %>%
-  mutate(DT=ifelse(str_detect(DT,regex("editorial",ignore_case = T)), "EDITORIAL",DT)) %>%
-  mutate(DT=ifelse(DT %in% c("ARTICLE","REVIEW","EDITORIAL","LETTER","MEETING ABSTRACT"), DT, "OTHERS"))
-
-# 使用AF替代AU
-M$AU <- M$AF
-
+saveRDS(M, "data/M.RDS")
 
 
 # 一般分析结果
