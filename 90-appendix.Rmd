@@ -42,8 +42,9 @@ cat export.*.txt > all.text
 ```
 
 
-# 文献筛选
+# 文献筛选 {#core-article}
 
+## 如何确定核心文献？
 
 在最初阶段我们的分析依赖于全部的5万多篇文献，但是我们很快发现这个数据量在进行较复杂的分析时，一方面会导致计算量比较大，另一方面也没有必要完整覆盖。因此寻找一个方法确定核心文献十分必要。高被引论文虽然是一个备选，但是高被引论文针对的是大的学科领域，可能并不能凸显论文对道菌群研究的重要性。且我们也可以发现2009年前是没有高被引论文在这5万多篇文献中存在的，因此对于一些特别经典的菌群研究论文有所遗漏。因此我们使用**本地被引频次**这个参数对文献做了一定的筛选，即将每年本地被引频次排在前 5% 的文献作为关键文献，进行了更为充分的分析。
 
@@ -82,6 +83,80 @@ plot.ly(p) %>%
   layout(showlegend=FALSE)
 ```
 
+### 文献清单
+
+```{r}
+MC_specific_article <- M %>%
+  filter(CORE==TRUE, HC==FALSE) %>%
+  mutate(title=str_to_title(TI),
+         source=paste0("<a href=\"https://doi.org/",DI,"\">原文</a>")) %>%
+  tibble::column_to_rownames("SR")
+  
+HC_specific_article <- M %>%
+  filter(CORE==FALSE, HC==TRUE) %>%
+  mutate(title=str_to_title(TI),
+         source=paste0("<a href=\"https://doi.org/",DI,"\">原文</a>")) %>%
+  tibble::column_to_rownames("SR")
+
+MC_HC_article <- M %>%
+  filter(CORE==TRUE, HC==TRUE) %>%
+  mutate(title=str_to_title(TI),
+         source=paste0("<a href=\"https://doi.org/",DI,"\">原文</a>")) %>%
+  tibble::column_to_rownames("SR")
+```
+
+针对于图 \@ref(fig:HC-vs-MC) 中的差异，我们分别统计了仅在LCS核心论文中出现和仅在高被引论文中出现的文章列表。
+
+下表显示仅在LCS核心论文中出现的文章（图 \@ref(fig:HC-specific-article)）[^data-table]。
+
+[^data-table]: 这幅图中显示的表格支持交互操作，可以点击标题排序、在搜索框搜索和按不同的行过滤。
+
+```{r eval=F}
+# Lists elements are written to individual worksheets, using list names as sheet names if available
+list <- list("LCS-specific"=MC_specific_article,
+          "HighlyCited-specific"=HC_specific_article,
+          "LCS-and-HighlyCited" = MC_HC_article)
+l <- lapply(list, function(x){
+            x[,c("title","PY","impact_factor","LCS","TC","source")]
+          })
+names(l) <- names(list)
+openxlsx::write.xlsx(l,file = "MC-specific-articles.xlsx",asTable=TRUE,rowNames=TRUE)
+
+```
+
+
+```{r MC-specific-article, fig.cap="仅在LCS核心论文中出现的文章"}
+library(DT)
+datatable(MC_specific_article[,c("PY","impact_factor","LCS","TC","title","source")],
+          colnames = c("年份","IF","LCS","GCS","标题","原文"),
+          escape = FALSE,
+          filter = "top",
+          caption = "仅在LCS核心论文中出现的文章")
+```
+
+下面的表格列出了仅在WoS高被引论文中出现的文章（图 \@ref(fig:HC-specific-article)）。
+
+```{r HC-specific-article,fig.cap="仅在WoS高被引论文中出现的文章"}
+datatable(HC_specific_article[,c("PY","impact_factor","LCS","TC","title","source")],
+          colnames = c("年份","IF","LCS","GCS","标题","原文"),
+          escape = FALSE,
+          filter = "top",
+          caption = "仅在WoS高被引论文中出现的文章")
+```
+
+下面的表格列出了既为WoS高被引又为LCS核心论文的文章（图 \@ref(fig:MC-HC-article)）。
+
+
+```{r MC-HC-article,fig.cap="既为WoS高被引又为LCS核心论文的文章"}
+datatable(MC_HC_article[,c("PY","impact_factor","LCS","TC","title","source")],
+          colnames = c("年份","IF","LCS","GCS","标题","原文"),
+          escape = FALSE,
+          filter = "top",
+          caption = "既为WoS高被引又为LCS核心论文的文章")
+```
+
+
+## 数据库资料信息不全的情形
 
 国家信息不全的文章有 `r nrow(df)` 篇，大多属于信息采集不完整的情况（表\@ref(tab:AU-CO-NA)），并非软件本身存在的错误所致。数据采集不完整的情况暂时无法解决。
 
@@ -90,8 +165,9 @@ plot.ly(p) %>%
 # 国家信息错误的情况
 M %>% filter(str_detect(AU_CO_NR,"\\bNA\\b")) %>% 
   select(AU,SO,DT,C1,AU_CO_NR)  %>% 
-  tableTag(Tag = "DT") %>%
-  barplot(las=2)
+  data.frame() %>%
+  tableTag(Tag = "DT") %>%   # tableTag() 函数针对有些行失效了？如果每个元素都没有分隔符，则会出现失效的情况。
+  barplot()
 ```
 
 
@@ -143,10 +219,91 @@ a <- M %>% sample_n(100)
 a <- metaTagExtraction(a,Field = "AU_UN")
 a$AU_UN2 <- AU_UN_wos(a$C1)
 a %>% filter(AU_UN != AU_UN2) %>%
-  select(SR,C1,AU_UN,AU_UN2) %>%
+  select(SR,AU_UN,AU_UN2) %>%
   head(10) %>%
   kable(caption = "不同方式获取机构信息的差异")
 ```
 
+
+# 影响因子 {#impact-factor}
+
+在我们的分析中，并没有对影响因子这一指标进行过多涉及，而主要是基于引用次数来评价文章的重要性。相对于影响因子，引用次数更能反映文章的重要性。引用次数本身就是影响因子的基础，是期刊所有论文引用次数除以发文量之后得到的一个指标。然而，即便是同一本期刊上发表论文的引用次数事实上也存在巨大差异，用一个平均指标不利于发现那些最重要的文献。与此同时，同一篇文章的全局被引频次和本地被引频次也会存在明显差异，考虑到我们主要立足点是“肠道菌群”研究，那些本地被引频次更高的文献理论上更加重要。
+
+当然，我们也对影响因子进行了一些探索。
+
+```{r}
+# 按影响因子分析文章数量和比例
+plot_by_IF <- function(df){
+  p1 <- ggplot(df,aes(PY,n,fill=group,text=paste0(PY,"(",n,")"))) + 
+    geom_col() + 
+    facet_wrap(~group,ncol = 1,scales = "free_y")  +
+    labs(x="论文发表年份",y="数量") +
+    theme(strip.text = element_blank(),
+          axis.text.x = element_text(),
+          axis.ticks.x = element_line())
+
+  p2 <- ggplot(df,aes(PY,proportion,fill=group)) +
+    geom_col() + 
+    scale_y_continuous(labels = function(x)paste0(x*100,"%"),
+                       breaks = 0:10/10) +
+    labs(x="论文发表年份",y="比例") +
+    guides(fill=guide_legend(title="Impact\nFactor")) + 
+    theme(legend.position = "right")
+  
+  plot_grid(p1,p2)
+}
+```
+
+在所有的论文中，影响因子介于3到5之间的论文数目最多，小于3的论文次之，数目最少的是影响因子大于10（小于20）和大于20的论文（图 \@ref(fig:all-article-group-by-IF)）。每年影响因子在5以上的论文基本上占30%左右。
+
+```{r all-article-group-by-IF, fig.cap="全部论文影响因子的分布情况"}
+df <- M  %>% group_by(PY,group) %>% 
+  summarise(n=n()) %>%
+  group_by(PY) %>%
+  mutate(proportion=n/sum(n))
+
+plot_by_IF(df)
+```
+
+而在高被引论文中，影响因子小于3的论文数量最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当。大体上有50%的高被引论文影响因子在10分以上，另外有50%的高被引论文在10分以下（图 \@ref(fig:HC-article-group-by-IF)）。
+
+```{r HC-article-group-by-IF, fig.cap="WoS高被引论文影响因子的分布情况"}
+df <- M %>% filter(HC==TRUE)  %>% group_by(PY,group) %>% 
+  summarise(n=n()) %>%
+  group_by(PY) %>%
+  mutate(proportion=n/sum(n))
+
+
+plot_by_IF(df)
+
+```
+
+基于 LCS 得到的核心文献中，与高被引论文的影响因子分组情况较为相似，同样可以发现影响因子小于3的论文同样最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当（图 \@ref(fig:LCS-core-article-group-by-IF)）。
+
+```{r LCS-core-article-group-by-IF, fig.cap="LCS核心论文影响因子的分布情况"}
+df <- M %>% filter(CORE==TRUE) %>% group_by(PY,group) %>% summarise(n=n()) %>%
+  group_by(PY) %>%
+  mutate(proportion=n/sum(n))
+
+
+plot_by_IF(df)
+```
+
+在前面 \@ref(core-article) 我们曾经列出了 LCS 核心文献和 WoS 高被引论文的清单，现在我们再来看一下这些不同类型文献的影响因子分布情况。
+如图 \@ref(fig:core-vs-HC-boxplot) 中，可以发现 WoS 高被引特有的文献较 LCS 核心特有的文献具有更小的四分位数和中位数影响因子。这说明如果从影响因子的角度考虑，总体上 LCS 核心文献的影响因子较 WoS 高被引论文还更大一些。
+
+```{r core-vs-HC-boxplot, fig.cap="LCS核心文献和WoS高被引文献的影响因子分布差异"}
+list <- list("LCS-specific"=MC_specific_article,
+          "HighlyCited-specific"=HC_specific_article,
+          "LCS-and-HighlyCited" = MC_HC_article)
+names <- names(list)
+l <- lapply(seq_along(list),function(i){
+  data.frame(group=names[[i]], IF=list[[i]]$impact_factor)
+})
+df <- do.call("rbind",l)
+
+p <- ggplot(df,aes(group,IF)) + geom_boxplot() + coord_cartesian(ylim = c(0,50))
+ggplotly(p)
+```
 
 
