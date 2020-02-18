@@ -1,0 +1,47 @@
+# 方法论 {#method}
+
+## 使用本地被引频次确定**核心文献**
+
+引用是印证分析的重要基础，引用次数是通常衡量一篇文献重要性的关键指标，并由此衍生出了期刊影响因子、研究人员的H因子等指标。在我们的分析中，我们使用本地被引频次作为一个关键指标，来筛选与“肠道菌群”最相关的重要文献。与Web of Science数据库中的高被引文献相比，这一方法更能够发现与“肠道菌群”密切相关的重要文献。
+
+首先，我们看一下本地被引频次的含义。
+
+**本地被引频次**，即 Local Citation Score（LCS）,它表示这篇文章在当前数据集中被引用的次数。
+
+**全局被引频次**，即 Global Citation Score （GCS），它表示这篇文章被整个WOS数据库中所有文献引用的次数，也就是在 Web of Science 网站上看到的引用次数。
+
+一篇文章GCS很高，说明被全球科学家关注较多。但是如果一篇GCS很高，而LCS很小，说明这种关注主要来自与你不是同一领域的科学家。此时，这篇文献对你的参考意义可能不大。如果 LCS 很高，则说明这篇文献与你数据集中关注的领域十分相关。所以，使用 LCS 可以快速定位一个领域的经典文献。
+
+图 \@ref(fig:LCS-GCS) 表示每年发表论文中本地被引频次与全局被引频次比值的区间和比例。
+
+```{r LCS-GCS, fig.cap="LCS/GCS的比值"}
+df <- LC$M %>% select(PY,TC,LCS) %>% 
+  mutate(ratio=LCS/TC) %>% 
+  mutate(ratio_group=cut(ratio,breaks = 0:10/10,
+                         # labels = c(paste0("≤",1:10*10,"%")),
+                         include.lowest = TRUE)) %>%
+  group_by(PY,ratio_group) %>% 
+  summarise(count=n()) %>%
+  group_by(PY) %>%
+  mutate(proportion=count/sum(count))
+
+p <- ggplot(df,aes(PY,proportion, 
+                   fill=ratio_group,
+                   text=paste0(ratio_group,", ",count,"篇 (",round(proportion*100),"%)"))) + 
+  geom_col() +
+  scale_y_continuous(labels = function(x) paste0(x*100,"%")) +
+  labs(x="",y="比例")
+plot.ly(p)
+  
+```
+
+
+在这里，我们也相应的介绍一下本地参考文献数这一概念。
+
+**本地引用文献数**（Local Cited References，LCR）表示这篇文献的参考文献在当前数据集中的数量，即这篇文献引用别人的情况。如果一篇文章的 LCR 值高，意味着它引用了大量当前数据集中文献，极有可能是对当前数据集中研究密切相关的综述文章。
+
+**引用文献数目**（Cited Reference，CR）即文章引用的参考文献数量。如果某篇文献引用了50篇参考文献，则CR为50。
+
+我们知道引用有一定的滞后性，而 LCR 可以帮助我们快速找出最新的文献中哪些是和自己研究方向最相关的文章。
+
+
