@@ -54,7 +54,11 @@ lapply(packages, function(pkg) {
 
 ```{r load_pacakges}
 # load frequentely used packages
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(forcats)
 library(lubridate)
 library(mrgut)
 library(RColorBrewer)
@@ -67,7 +71,9 @@ library(ggraph)
 library(plotly)
 library(treemap)
 library(gganimate)
-
+library(wordcloud2)
+library(visNetwork)
+library(magrittr)
 ```
 
 ```{r colors}
@@ -103,10 +109,19 @@ theme_set(theme_light() + theme_labs)
 
 ```{r}
 # 读取全部论文数据
-M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
+# M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
 
 # LCS
 LC <- readRDS("data/LC.RDS")
+
+# 核心文献 M core
+LC$M <- LC$M %>% group_by(PY) %>% 
+  mutate(CORE=ifelse(percent_rank(LCS)>=0.95,TRUE,FALSE)) %>% 
+  ungroup()
+MC <- LC$M %>% filter(CORE==TRUE)
+
+# 全部文献
+M <- as.data.frame(LC$M)
 
 # 高引论文
 highly_cited <- M %>% filter(HC==TRUE)
@@ -177,11 +192,11 @@ plot.ly <- function(g,...){
 
 作为热心肠研究院最为知名的产品之一，《热心肠日报》持续追踪“肠道菌群”研究进展已经有四年了。在四年的持续输出下，《日报》已经成为广大用户了解相关研究进展的一个窗口，受到很多老师、同学的喜爱和赞誉。但我们深知，《日报》仅能管中窥豹，难免会有错漏之处。在2019年底，在“肠道菌群研究的七大事实和五大倡议”一文创作期间，我们下载分析了 Web of Science 数据库中“肠道菌群”研究的全部论文数据，为文章提供数据支撑。
 
-蓦然回首，特别是2008年美国国立卫生研究院（NIH）率先提出人体微生物组计划[^1]以来，“肠道菌群”已经兴起了十余年。而“肠道菌群”的研究岂止于此，2019年6月 Nature 杂志特别总结了“人类微生物组”研究的里程碑事件，将研究追溯到最早 1944 年的厌氧微生物分离培养 [@clarkCulturingAnaerobes2019]。
+蓦然回首，特别是2008年美国国立卫生研究院（NIH）率先提出人体微生物组计划[^index-1]以来，“肠道菌群”已经兴起了十余年。而“肠道菌群”的研究岂止于此，2019年6月 Nature 杂志特别总结了“人类微生物组”研究的里程碑事件，将研究追溯到最早 1944 年的厌氧微生物分离培养 [@clarkCulturingAnaerobes2019]。
 
 热心肠研究院长期关注“肠道”，并将“**让人们拥有更健康的肠道**”作为公司的使命。在进入 2020 年的最初几天，我们很快有一个想法，就是以“肠道菌群”研究这一人体微生物组研究的主要领域为切入点，系统调研过去二十年“肠道菌群”研究的发展历程，从数据层面展示“肠道菌群”研究的全景、国际研究格局和研究热点的变迁等，为未来的“肠道菌群”研究提供参考，为未来的“肠道产业”发展理清方向。
 
-[^1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)。
+[^index-1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)。
 
 于是，我们写了一本书。这本书是这样的，第一部分是“肠道菌群”研究的概述，包括第 \@ref(intro) 章，介绍了肠道菌群研究的概述；第二部分是国际研究格局，包括第 \@ref(global) - \@ref(china-study) 章，分别介绍研究的国际协作、不同国家主要的研究力量的分布、主要的科学研究中心（机构、高校等）和研究团队等；第三部分是主要的研究发现和变迁，包括第 \@ref(milestone) - \@ref(CVD) 章，对“肠道菌群”研究取得的主要成果及其研究的脉络进行阐述。
 
