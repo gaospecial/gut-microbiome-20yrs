@@ -68,7 +68,7 @@ p <- ggplot(count_by_year,aes(PY,count,text=count)) +
 plot.ly(p)
 ```
 
-每年的发文量从 2000 年的三百余篇增长到 2019 年的近一万篇，增长了近三十倍。年均同比增长率基本保持在 10% 以上，特别是 2012-2017 年间连续六年同比增长率保持在 20% 以上。2018年以来，虽然较之有所下降，但仍然在 10% 以上（图 \@ref(fig:trend-publications-increasing-rate）。不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
+每年的发文量从 2000 年的三百余篇增长到 2019 年的近一万篇，增长了近三十倍。年均同比增长率基本保持在 10% 以上，特别是 2012-2017 年间连续六年同比增长率保持在 20% 以上。2018年以来，虽然较之有所下降，但仍然在 10% 以上（图 \@ref(fig:trend-publications-increasing-rate)）。不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
 
 
 ```{r trend-publications-increasing-rate, fig.cap="发文量的同比增长率"}
@@ -243,7 +243,7 @@ net <- networkPlot(netmatrix,n=100)
 i <- 4
 ```
 
-在期刊的排行榜中（图 \@ref(fig:summary-journal)），发文量最大的是三本开放获取期刊，分别是PLoS ONE，Scientific Reports和Frontier in Microbiology等。
+在期刊的排行榜中（图 \@ref(fig:summary-journal)），发文量最大的是三本开放获取期刊，分别是PLoS ONE，Scientific Reports和Frontier in Microbiology等。虽然开放获取期刊在国内的名声不佳，但是借助于巨大的发文量，这三本期刊在“肠道菌群”研究中也有不可忽视的影响力，这其中包括了高被引论文和我们依据本地被引频次定义的核心文献。
 
 
 ```{r summary-journal,fig.cap="发文量最高的期刊"}
@@ -337,9 +337,10 @@ plot.ly(p)
 
 ## 研究领域
 
+Web of Science 的研究领域分为研究类别（WC）和研究方向（SC）两个类型（与关键词系统类似？）。
 
 
-在研究领域的排行榜中（图 \@ref(fig:summary-WC)）。
+在研究领域的排行榜中（图 \@ref(fig:summary-WC)），微生物学、胃肠病和肝病学、免疫学、多学科交叉科学和营养学等为排名前五主要的研究领域。
 
 
 ```{r}
@@ -366,7 +367,7 @@ plot.ly(p)
 treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
 ```
 
-
+在WoS给出的研究方向中（图 \@ref(fig:summary-SC)）中，排在前五的分别是微生物学、胃肠病和肝病学、免疫学、生物化学分子生物学、科学技术等。
 
 ```{r summary-SC,fig.cap="SCI数据库中的研究方向",fig.asp=1}
 # SC, 研究方向
@@ -384,7 +385,6 @@ p <- ggplot(df, aes(Tab,Freq,text=text)) +
 plot.ly(p)
 ```
 
-Web of Science类别（WC）和研究方向（SC）。
 
 ```{r}
 treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
