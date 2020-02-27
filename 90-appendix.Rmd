@@ -117,7 +117,7 @@ list <- list("LCS-specific"=MC_specific_article,
           "HighlyCited-specific"=HC_specific_article,
           "LCS-and-HighlyCited" = MC_HC_article)
 l <- lapply(list, function(x){
-            x[,c("title","PY","impact_factor","LCS","TC","source")]
+            x[,c("title","PY","DT","ID","impact_factor","LCS","TC","source")]
           })
 names(l) <- names(list)
 openxlsx::write.xlsx(l,file = "MC-specific-articles.xlsx",asTable=TRUE,rowNames=TRUE)
@@ -225,22 +225,23 @@ a %>% filter(AU_UN != AU_UN2) %>%
 ```
 
 
-# 影响因子 {#impact-factor}
+# 使用影响因子评价 {#impact-factor}
 
 在我们的分析中，并没有对影响因子这一指标进行过多涉及，而主要是基于引用次数来评价文章的重要性。相对于影响因子，引用次数更能反映文章的重要性。引用次数本身就是影响因子的基础，是期刊所有论文引用次数除以发文量之后得到的一个指标。然而，即便是同一本期刊上发表论文的引用次数事实上也存在巨大差异，用一个平均指标不利于发现那些最重要的文献。与此同时，同一篇文章的全局被引频次和本地被引频次也会存在明显差异，考虑到我们主要立足点是“肠道菌群”研究，那些本地被引频次更高的文献理论上更加重要。
 
-当然，我们也对影响因子进行了一些探索。
+当然，我们也基于影响因子指标进行了一些分析。
 
 ```{r}
 # 按影响因子分析文章数量和比例
 plot_by_IF <- function(df){
-  p1 <- ggplot(df,aes(PY,n,fill=group,text=paste0(PY,"(",n,")"))) + 
+  p1 <- ggplot(df,aes(PY,n,fill=group)) + 
     geom_col() + 
     facet_wrap(~group,ncol = 1,scales = "free_y")  +
     labs(x="论文发表年份",y="数量") +
     theme(strip.text = element_blank(),
           axis.text.x = element_text(),
-          axis.ticks.x = element_line())
+          axis.ticks.x = element_line(),
+          legend.position = "none")
 
   p2 <- ggplot(df,aes(PY,proportion,fill=group)) +
     geom_col() + 
@@ -250,13 +251,14 @@ plot_by_IF <- function(df){
     guides(fill=guide_legend(title="Impact\nFactor")) + 
     theme(legend.position = "right")
   
+  # return(p1)
   plot_grid(p1,p2)
 }
 ```
 
-在所有的论文中，影响因子介于3到5之间的论文数目最多，小于3的论文次之，数目最少的是影响因子大于10（小于20）和大于20的论文（图 \@ref(fig:all-article-group-by-IF)）。每年影响因子在5以上的论文基本上占30%左右。
+在所有的论文中，影响因子介于3到5之间的论文数目最多，小于3的论文次之，数目最少的是影响因子大于10（小于20）和大于20的论文（图 \@ref(fig:all-article-group-by-IF)）。每年影响因子在5以上的论文基本上不超过30%。
 
-```{r all-article-group-by-IF, fig.cap="全部论文影响因子的分布情况"}
+```{r all-article-group-by-IF, fig.cap="全部论文影响因子的分布情况",cache=FALSE}
 df <- M  %>% group_by(PY,group) %>% 
   summarise(n=n()) %>%
   group_by(PY) %>%
@@ -267,7 +269,7 @@ plot_by_IF(df)
 
 而在高被引论文中，影响因子小于3的论文数量最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当。大体上有50%的高被引论文影响因子在10分以上，另外有50%的高被引论文在10分以下（图 \@ref(fig:HC-article-group-by-IF)）。
 
-```{r HC-article-group-by-IF, fig.cap="WoS高被引论文影响因子的分布情况"}
+```{r HC-article-group-by-IF, fig.cap="WoS高被引论文影响因子的分布情况",cache=F}
 df <- M %>% filter(HC==TRUE)  %>% group_by(PY,group) %>% 
   summarise(n=n()) %>%
   group_by(PY) %>%
@@ -280,7 +282,7 @@ plot_by_IF(df)
 
 基于 LCS 得到的核心文献中，与高被引论文的影响因子分组情况较为相似，同样可以发现影响因子小于3的论文同样最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当（图 \@ref(fig:LCS-core-article-group-by-IF)）。
 
-```{r LCS-core-article-group-by-IF, fig.cap="LCS核心论文影响因子的分布情况"}
+```{r LCS-core-article-group-by-IF, fig.cap="LCS核心论文影响因子的分布情况",cache=F}
 df <- M %>% filter(CORE==TRUE) %>% group_by(PY,group) %>% summarise(n=n()) %>%
   group_by(PY) %>%
   mutate(proportion=n/sum(n))
@@ -292,7 +294,7 @@ plot_by_IF(df)
 在前面 \@ref(core-article) 我们曾经列出了 LCS 核心文献和 WoS 高被引论文的清单，现在我们再来看一下这些不同类型文献的影响因子分布情况。
 如图 \@ref(fig:core-vs-HC-boxplot) 中，可以发现 WoS 高被引特有的文献较 LCS 核心特有的文献具有更小的四分位数和中位数影响因子。这说明如果从影响因子的角度考虑，总体上 LCS 核心文献的影响因子较 WoS 高被引论文还更大一些。
 
-```{r core-vs-HC-boxplot, fig.cap="LCS核心文献和WoS高被引文献的影响因子分布差异"}
+```{r core-vs-HC-boxplot, fig.cap="LCS核心文献和WoS高被引文献的影响因子分布差异",fig.align="center",fig.width=6}
 list <- list("LCS-specific"=MC_specific_article,
           "HighlyCited-specific"=HC_specific_article,
           "LCS-and-HighlyCited" = MC_HC_article)

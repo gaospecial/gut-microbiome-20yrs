@@ -13,7 +13,7 @@ col_names <- c("国家/地区","研究机构","作者","期刊","作者关键字
 
 # table class 分类计数
 tag_summary <- lapply(columns, function(col){
-  tableTag(M, Tag = col)
+  tableTag(data.frame(M), Tag = col)
 })
 
 # 每个分类的总的数目
@@ -193,6 +193,133 @@ p <- ggplot(df, aes(Tab,Freq,text=text)) +
 plot.ly(p)
 ```
 
+我们使用 Google Geocoding API 解析了作者的地址信息，从而得到各研究机构的坐标。
+
+
+```{r affiliation-location, fig.cap="主要研究机构在全球的分布"}
+json_list <- readRDS("data-raw/affiliation/json_list.RDS")
+
+
+#' # 画地图
+#'
+#' ## 获取坐标
+#'
+#' 简便起见，针对同一地址解析出多个结果的情况，我们只取其第一个。
+#'
+
+# 获取经纬度
+geocode_results_geometry_location <- function(object){
+  if (hasName(object,"status")) status <- object$status
+  if (status == "ZERO_RESULTS"){
+    return(NA)
+  } else if (status == "OK"){
+    return(object$results[[1]]$geometry$location)
+  } else {
+    return(NA)
+  }
+}
+
+# 获取国家
+geocode_results_address <- function(object,type=c("country","locality")){
+  if (hasName(object,"status")) status <- object$status
+  if (status == "ZERO_RESULTS"){
+    return(NA)
+  } else if (status == "OK"){
+    components <- object$results[[1]]$address_components
+    is_country <- lapply(components, function(x){
+       types <- x$types
+       any(types %in% type)
+    })
+
+    id <- which(unlist(is_country)==TRUE)
+    if (length(id)<1) return(NA)
+    components[[id]]$long_name
+  } else {
+    return(NA)
+  }
+}
+
+location <- lapply(json_list, geocode_results_geometry_location)
+location <- do.call("rbind",location) %>% data.frame()
+
+country <- unlist(lapply(json_list, geocode_results_address,type="country"))
+city <- unlist(lapply(json_list, geocode_results_address,type="locality"))
+
+address <- data.frame(id = 1:nrow(location),
+                      lat = unlist(location$lat),
+                      lng = unlist(location$lng),
+                      country=country,
+                      city=city)
+
+
+#' ## 画地图
+#'
+#' 首先是一副点图。每个点都是一个位置。
+world <- map_data('world')
+world <- world[world$region != "Antarctica", ]
+world <- world %>% left_join(address %>%
+                               group_by(country) %>%
+                               summarise(n=n()) %>%
+                               ungroup() %>%
+                               mutate(region=ifelse(country=="United States","USA",country)))
+
+ggplot()  +
+  geom_map(aes(long,lat,group=group,map_id=region),
+           color="lightblue",
+           fill="grey",
+           alpha=1/3,
+           map = world,
+           data = world) +
+  geom_point(aes(lng,lat),data=address,alpha=1/5,size=1) +
+  # geom_density2d(aes(lng,lat),data = address) +
+  theme_void() +
+  theme(plot.background = element_blank())
+```
+
+全球主要的“肠道菌群”研究机构主要分布在北美（主要是美国）、欧洲（包括英国）和东北亚（包括中日韩）等三个地带，其次在巴西、澳大利亚、新西兰、以色列、伊朗等国家也有较多分布（图 \@ref(fig:affiliation-location)）。
+
+```{r affiliation-location-country, fig.cap="主要的研究机构在不同国家中的分布情况"}
+#' 按国家统计
+cols <- brewer.pal(5,name = "Blues")
+ggplot()  +
+  geom_map(aes(long,lat,group=group,map_id=region,fill=n),
+           color="lightblue",
+           map = world,
+           data = world) +
+  scale_fill_gradient(low = cols[[1]],high = cols[[5]],na.value = "white",trans="log10") +
+  # geom_point(aes(lng,lat),data=address,alpha=1/5,size=1) +
+  # geom_density2d(aes(lng,lat),data = address) +
+  guides(fill=guide_colorbar(title="数量")) +
+  theme_void() +
+  theme(plot.background = element_blank())
+```
+
+我们按照国家和城市对机构所在地进行汇总，得到了图 \@ref(fig:affiliation-location-country) 和 \@ref(fig:affiliation-location-city)。
+
+```{r affiliation-location-city, fig.cap="研究机构在城市的分布"}
+# 按城市绘图
+map_city <- address %>% group_by(city) %>%
+  summarise(lat=mean(lat),lng=mean(lng),n=n()) %>%
+  mutate(popup = paste0(city,"<br \\>",n),
+         r = sqrt(n)*1.5)
+
+require(leaflet)
+library(geonames)
+
+leaflet() %>%
+  addTiles() %>%
+  setView(118, 35, zoom = 4) %>%
+  addCircleMarkers(data = map_city %>% filter(n>5), 
+                   radius = ~ r, 
+                   popup =  ~popup, 
+                   lng = ~lng,
+                   lat = ~lat,
+                   stroke = TRUE
+                   )
+
+```
+
+
 
 ### 使用共现网络体现研究机构间的合作
 
@@ -201,8 +328,12 @@ plot.ly(p)
 ## 作者 
 
 
-在作者的排行榜中（图 \@ref(fig:summary-author)），KNIGHT ROB 以 260 篇的总发文量拔得头筹。
+在作者[^author-fullname]的排行榜中（图 \@ref(fig:summary-author)），KNIGHT ROB 以 260 篇的总发文量拔得头筹。
 
+
+[^author-fullname]: 对作者进行区分是业界一项尚未解决的难题。为了避免重名带来的影响，我们使用作者全名进行分析。
+这最大程度上避免了外文姓名的重复，但是对于中文姓名的区分度仍然较低。因此，可能无法区分类似“汪俊”、“王军”等
+广大的来自中国的研究人员。
 
 ```{r summary-author,fig.cap="表现突出的研究人员"}
 i <- 3
@@ -218,21 +349,73 @@ p <- ggplot(df, aes(Tab,Freq,text=text)) +
 plot.ly(p)
 ```
 
-此外，我们还使用 H-index 指标来确定重要的研究学者。
+当然，仅凭发文数量不足以说明研究人员的影响力。为此，我们使用 LCS 指标来衡量头部学者的学术表现。
+在本地被引频次排行榜中（图 \@ref(fig:top-author-localcitations)），
+“Gordon, Jeffrey I.”和“Knight，Rob”是领域内当之无愧的“大佬”，他们的本地被引频次累计超过了 35000 次，
+是第三名“Ley，Ruth E.”的两倍以上。相较于第三名及以后的研究人员的本地被引频次差异较小，
+两位“大佬”与其他研究人员的数值区分度非常明显。
 
-*Hindex计算有问题*
+
+
 
 ```{r}
 #' # H指数的计算
-Hindex(M, elements = df$Tab, years = 20)$H
+topAU <- LC$Authors %>% head(n=30) %>% 
+  mutate(Author=as.character(Author)) %>% 
+  arrange(desc(Author))
 ```
 
-### 作者的合作网络
 
-```{r eval=F}
-netmatrix <- biblioNetwork(highly_cited, network = "authors")
-net <- networkPlot(netmatrix,n=100)
+```{r top-author-localcitations, fig.cap="Top学者的本地被引频次",fig.asp=1.5}
+p <- ggplot(topAU,
+            aes(fct_reorder(Author,LocalCitations),
+                LocalCitations,
+                text=paste0(Author,": ",LocalCitations)
+                )
+            ) +
+  geom_col() +
+  coord_flip() +
+  labs(x="",y="",title = "Top学者的本地被引频次")
+plot.ly(p,tooltip = "text")
 ```
+
+有意思的是，我们发现一个署名为“Gordon，JI”的作者在年度发文量动态中与“Gordon，Jeffrey I.”在时间上衔接了起来
+（图 \@ref(fig:top-author-production-over-time)）。经过检查，基本可以确定二者同为一人。
+在2006年以前署名为“Gordon，JI”，2006年以后开始署名为“Gordon，Jeffrey I.”。
+这样的话，“Gordon，Jeffrey I.”的本地被引频次达到了惊人的50000次以上，成为领域内当之无愧的最有影响力的科学家。
+
+
+```{r}
+author_prod <- lapply(topAU$Author,function(x){
+  x <- as.character(x)
+  m <- M %>% filter(str_detect(AU, x)) %>%
+    group_by(PY) %>%
+    summarise(record=n(),
+              TC = sum(TC,na.rm = T),
+              LCS = sum(LCS, na.rm = T))
+  m$author <- x
+  return(m)
+})
+
+author_prod <- do.call("rbind",author_prod)
+author_prod$author <- as_factor(author_prod$author)
+```
+
+
+
+```{r top-author-production-over-time, fig.cap="Top学者发表论文的数量和本地被引频次",fig.asp=1.5}
+p <- ggplot(author_prod, aes(PY,author,size=record,color=LCS)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2000,2019,by=2)) +
+  scale_color_gradient(low = brewer.pal(5,"Blues")[[3]],high = brewer.pal(5,"Blues")[[5]]) +
+  labs(x="",y="",title = "Top学者发表论文的数量和本地被引频次") +
+  scale_size(range = c(0.1,5))
+
+plot.ly(p, tooltip = c("y","x","size","colour"))
+```
+
+
+
 
 
 

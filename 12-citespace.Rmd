@@ -121,12 +121,268 @@ include_graphics("citespace/citespace-highlycited-keyword-network.png")
 
 
 
-- 期刊的共被引分析
+# LCS 核心文献的网络分析 {#core-article-network}
+
+
+为了理清 LCS 核心文献随时间演变的脉络，我们构建了一个历史共被引网络（historical co-citation network）。
+
+
+```{r}
+# histNet <- histNetwork(MC,min.citations = 10)
+# saveRDS(histNet,"data/histNet.RDS")
+histNet <- readRDS("data/histNet.RDS")
+histNetGraph <- histPlot(histNet,n=30)
+```
 
 
 
-- 机构的合作网络
+
+```{r}
+# 计算出现矩阵
+MC <- data.frame(MC)
+matrix <- cocMatrix(MC, Field = "CR")
+colnames(matrix) <- trimws(colnames(matrix))
+rownames(matrix) <- gsub(pattern = ",", replacement = "",MC$SR)
+```
+
+
+```{r}
+# 去掉外围文献，法一：通过名称选取
+from <- rownames(matrix)
+to <- colnames(matrix)
+idx <- intersect(from,to)
+mat <- matrix[idx,idx]
+
+# 去掉外围文献，法二：通过提取Top节点
+order(colSums(matrix))
+```
+
+
+```{r}
+# 利用出现矩阵计算 nodes 和 edges
+df <- as.data.frame.matrix(mat)
+nodes <- data.frame(name = rownames(mat))
+colnames(df) <- seq_along(nodes$name)
+df$from <- seq_along(nodes$name)
+edges <- df %>% 
+  pivot_longer(cols = - from, names_to = "to") %>%
+  filter(value > 0) %>%
+  select(-value) %>%
+  mutate_all(as.numeric)
+```
+
+```{r}
+require(tidygraph)
+graph <- tbl_graph(nodes = nodes, edges = edges)
+```
+
+## 共被引网络
+
+```{r eval=F}
+n <- 100
+MC <- data.frame(MC)
+rownames(MC) <- MC$SR
+WA <- cocMatrix(MC, Field = "CR")
+s <- head(order(colSums(WA),decreasing = TRUE),n)
+m <- Matrix::crossprod(WA[,s],WA[,s])
+m <- normalizeSimilarity(m,type = "jaccard")
+graph <- graph_from_adjacency_matrix(m, mode = "undirected",weighted = TRUE)
+graph <- simplify(graph)
+graph$layout <- layout_with_kk(graph)
+group <- cluster_fast_greedy(graph)
+reference_cocitation_network <- list(graph=graph,group=group)
+saveRDS(reference_cocitation_network, file = "data/reference_cocitation_network.RDS")
+
+```
 
 
 
-- 国家的合作网络
+```{r reference-cocitation-network, fig.cap="LCS核心论文的共被引网络（100篇）"}
+reference_cocitation_network <- readRDS("data/reference_cocitation_network.RDS")
+graph <- reference_cocitation_network$graph
+group <- reference_cocitation_network$group
+plot(group,
+     graph,
+     vertex.label=NA,
+     edge.color = "black",
+     edge.curved = TRUE)  # 不显示点的名称
+```
+
+LCS 核心文献的共被引网络的结构是非常紧密的（图 \@ref(fig:reference-cocitation-network)），
+其模块化水平仅有 `r modularity(group)` （数值越小，模块化水平越低）。
+在这幅图中，节点按照 `r length(unique(membership(group)))` 个组分别着色。
+准确的说，在这样的100篇核心论文中，当使用 `cluster_fast_greedy()` 方法聚类时，
+分别有 `r paste0(table(membership(group)),collapse="/")` 个元素（图 \@ref(fig:co-citation-network-group)）。
+
+根据共被引的定义，当两篇文献同时被后来发表的一篇文献引用时，
+先发表的这两篇文献就具有了共被引关系。
+因此，在文献总量较大的背景下，前一百篇引用次数最多的文献中，
+任意两篇被共引的概率还是相当大的。
+这就导致共被引网络形成了一个联系非常紧密的结构。
+
+
+```{r co-citation-network-group, fig.width=6,fig.cap="聚类后每个簇的节点数目"}
+barplot(table(membership(group)))
+```
+
+
+## 文献耦合网络
+
+文献耦合是衡量研究相似性的一个方法，耦合度高的文献研究内容理论上更接近。
+因此，我们使用耦合网络来分析研究中不同的方向。
+耦合网络与共被引不同的一点在于耦合关系是固定的，不随时间变动。
+因此，我们可以分别获得每年发表文献之间的耦合关系。
+
+```{r eval=F}
+reference_coupling_networks <- lapply(2000:2019, function(year){
+  m <- MC %>% filter(PY==year)
+  m <- data.frame(m)
+  rownames(m) <- m$SR
+  mat <- biblioNetwork(m, network = "references")
+  net <- networkPlot(NetMatrix = mat, 
+                     normalize = "jaccard", 
+                     weighted = TRUE,        # set to TRUE if use normalized matrix 
+                     n=50, 
+                     type="kamada",
+                     halo=TRUE,
+                     cluster="fast_greedy",
+                     Title = year, 
+                     verbose = FALSE)
+  return(net)
+})
+
+saveRDS(reference_coupling_networks, file = "data/reference_coupling_networks.RDS")
+```
+
+```{r}
+reference_coupling_networks <- readRDS("data/reference_coupling_networks.RDS")
+```
+
+2019年的文献耦合网络展示前 50 篇文献间的耦合关系。
+从图中可以看出（图 \@ref(fig:reference-coupling-network-2019)），
+它们的耦合关系也是非常密切的。
+
+```{r reference-coupling-network-2019,fig.cap="2019年的文献耦合网络"}
+g <- reference_coupling_networks[[20]]$graph
+plot(g, vertex.label=NA)
+```
+
+
+## 合作网络
+
+```{r eval=F}
+author_collaboration_networks <- lapply(2000:2019, function(year){
+  m <- MC %>% filter(PY==year)
+  m <- data.frame(m)
+  rownames(m) <- m$SR
+  mat <- biblioNetwork(m, analysis = "co-occurrences", network = "authors")
+  net <- networkPlot(NetMatrix = mat, 
+                     n=300, 
+                     cluster = "fast_greedy",
+                     type="kamada",
+                     halo=TRUE,
+                     Title = year, 
+                     verbose = FALSE)
+  return(net)
+})
+
+saveRDS(author_collaboration_networks, file = "data/author_collaboration_networks.RDS")
+```
+
+```{r}
+author_collaboration_networks <- readRDS("data/author_collaboration_networks.RDS")
+
+```
+
+
+```{r author-collaboration-network-2019,fig.cap="2019年的作者合作网络"}
+g <- author_collaboration_networks[[20]]$graph
+plot(g, vertex.label=NA)
+```
+
+2019年的作者合作网络展示前 300 名作者之间的合作关系。
+从图中可以看出（图 \@ref(fig:author-collaboration-network-2019)），
+作者的合作网络是一个模块化比较明显的网络，
+其模块化水平为 `r modularity(cluster_fast_greedy(g))`。
+
+但是，需要警惕的是：这种模块化可能仅仅代表着几篇重要论文的共同作者而已，
+并不能代表研究人员之间广泛的合作。
+
+## 国家的合作网络
+
+
+```{r eval=F}
+country_collaboration_networks <- lapply(2000:2019, function(year){
+  m <- MC %>% filter(PY==year)
+  m <- data.frame(m)
+  rownames(m) <- m$SR
+  mat <- biblioNetwork(m, analysis = "co-occurrences", network = "countries")
+  net <- networkPlot(NetMatrix = mat, 
+                     weighted = TRUE,
+                     n=100, 
+                     Title = year, 
+                     verbose = FALSE)
+  return(net)
+})
+
+saveRDS(country_collaboration_networks, file = "data/country_collaboration_networks.RDS")
+```
+
+```{r}
+country_collaboration_networks <- readRDS("data/country_collaboration_networks.RDS")
+```
+
+```{r country-collaboration-network-2019,fig.cap="2019年的关键词共词网络"}
+g <- country_collaboration_networks[[20]]$graph
+plot(g, vertex.label=NA)
+```
+
+2019年的国家合作网络展示前 100 名国家之间的合作关系。
+从图中可以看出（图 \@ref(fig:country-collaboration-network-2019)），
+国家的合作网络是一个模块化不明显的网络，
+其模块化水平为 `r modularity(cluster_fast_greedy(g))`。
+
+
+
+## 关键词共词网络
+
+```{r eval=F}
+keyword_cooccurrence_networks <- lapply(2000:2019, function(year){
+  m <- MC %>% filter(PY==year)
+  m <- data.frame(m)
+  rownames(m) <- m$SR
+  mat <- biblioNetwork(m, analysis = "co-occurrences", network = "keywords")
+  net <- networkPlot(NetMatrix = mat, 
+                     # normalize = "jaccard", 
+                     weighted = TRUE,
+                     n=300, 
+                     Title = year, 
+                     verbose = FALSE)
+  return(net)
+})
+
+saveRDS(keyword_cooccurrence_networks, file = "data/keyword_cooccurrence_networks.RDS")
+
+```
+
+```{r}
+keyword_cooccurrence_networks <- readRDS("data/keyword_cooccurrence_networks.RDS")
+```
+
+
+```{r keyword-cooccurrence-network-2019,fig.cap="2019年的关键词共词网络"}
+g <- keyword_cooccurrence_networks[[20]]$graph
+plot(g, vertex.label=NA)
+```
+
+
+2019年关键词共词网络展示前 300 个关键词之间的联系（图 \@ref(fig:keyword-cooccurrence-network-2019)）。
+
+总体来看，网络的连接度普遍较强。
+为了降低连接度，下一步应当对网络中的连接强度进行过滤，
+即使用带权重的网络进行分析。
+
+
+
+
+
