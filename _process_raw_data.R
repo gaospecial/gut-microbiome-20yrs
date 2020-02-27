@@ -12,7 +12,6 @@ content <- readFiles(all_record)
 # 耗时2个小时读取完毕
 M <- convert2df(content)
 
-saveRDS(M,"data/M0.RDS")
 
 #' ## 标记高被引论文
 highly_cited <- "data-raw/xdownload_highly_cited.txt"
@@ -31,6 +30,8 @@ ggVennDiagram(list)
 M$HC <- FALSE
 M[rownames(highly_cited),"HC"]  <- TRUE
 summary(M$HC)
+
+saveRDS(M,"data/M0.RDS")
 
 
 # 加入影响因子数据（最新）
@@ -109,5 +110,10 @@ saveRDS(result_summary,file = "data/result_summary.RDS")
 LC <- localCitations(M,fast.search=FALSE)
 saveRDS(LC, file = "data/LC.RDS")
 
+# 合并 LCS 到 M 中
+M1 <- left_join(M,LC$M[,c("TI","SO","SR","UT","LCS")])
+M1 <- M1 %>% mutate(LCS=ifelse(is.na(LCS),0,LCS))
+
+saveRDS(M1, file = "data/M1.RDS")
 
 
