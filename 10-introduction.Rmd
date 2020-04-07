@@ -4,12 +4,18 @@
 
 # 研究概述 {#intro}
 
-现在我们可以看看全景式的大数据了。
+在这一章节，通过展示WoS数据库中相关研究二十年（2000-2019）的大数据[^data-source]，我们将对肠道菌群研究的概况做一个梳理。
+
+[^data-source]: 关于数据源的说明，请查看“附录-数据来源”部分的说明。
 
 
-```{r}
+在WoS收录的每一篇论文中，都记载着文章的作者、发表期刊、研究机构、关键词和学科分类等信息。其中，关键词又分为两类：一是作者标记的关键词；二是数据库为每一篇文章分配的关键词。在本书中，我们将前者统一称为“作者关键词”，后者称为“系统关键词”，以示区别。另外，根据选择标准的差异，学科分类也分为“研究类别”和“研究方向”两块。
+
+通过对这些项目的汇总，我们首先可以有一个**大体印象**。
+
+```{r M-summary,fig.asp=1,fig.width=6,fig.cap=paste(nrow(M), "篇文献的大数据")}
 columns <- c("AU_CO_NR","AU_UN_NR","AF","J9","DE","ID","WC","SC")
-col_names <- c("国家/地区","研究机构","作者","期刊","作者关键字","系统关键字","系统类别","系统研究方向")
+col_names <- c("国家/地区","研究机构","作者","期刊","作者关键词","系统关键词","研究类别","研究方向")
 
 # table class 分类计数
 tag_summary <- lapply(columns, function(col){
@@ -18,16 +24,12 @@ tag_summary <- lapply(columns, function(col){
 
 # 每个分类的总的数目
 tag_summary_n <- sapply(tag_summary, length)
-```
 
-
-
-
-```{r M-summary,fig.asp=1,fig.width=6,fig.cap=paste(nrow(M), "篇文献的大数据")}
+# 画图所用的数据
 df <- data.frame(x=0, y=0, 
                  label=paste(c(nrow(M),tag_summary_n),c("文章",col_names),sep = "\n"), # 加入文章总数
                  no = 0:length(tag_summary_n))
-
+# 画图
 ggplot(df,aes(x,y,label=label)) +
   geom_point(shape=21,size=50,color="#467AB4",stroke=2,fill="lightblue",alpha=1/2) +
   geom_text(fontface="bold") +
@@ -41,9 +43,14 @@ ggplot(df,aes(x,y,label=label)) +
 
 二十年间，一共发表了 `r nrow(M)` 篇“肠道菌群”相关的研究论文。这些文献由来自于世界 `r tag_summary_n[[1]]` 个国家和地区 `r tag_summary_n[[2]]` 个研究机构的累计 `r tag_summary_n[[3]]` 个不同的作者（依全名区分）发表在 `r tag_summary_n[[4]]` 种不同的期刊上。这些文献的作者为它们指定了 `r tag_summary_n[[5]]` 个不同的关键字，而Web of Science数据库系统为它们分配了 `r tag_summary_n[[6]]` 个不同的关键字，并将其归为 `r tag_summary_n[[7]]` 大类、 `r tag_summary_n[[8]]` 个不同的大的研究方向（图 \@ref(fig:M-summary)）。
 
-## 发文量、引用量和使用次数
 
-首先，我们关注总发文量随时间的变化趋势（图 \@ref(fig:trend-publications) 和 \@ref(fig:trend-publications-cumsum) ）。
+如果没有做这一个统计，很难想象这二十年的肠道菌群研究会有这样的结果。尤其是这 5 万多篇文章居然有多达 2 万多个机构和 18 万以上的研究人员完成。特别是，我们对于作者的区分仅仅局限为全名，尚没有考虑重名的现象（重名现象在中国人中是非常普遍的，例如汪俊、王军等的拼音都是Wang Jun）。可想而知这些文章背后是一个多么**庞大的学术团体**。
+
+此外，5 万多篇文章有多达 4.6 万的作者关键词和 4.7 万的系统关键词。平均下来几乎每一篇论文都贡献了一个不同的关键词出来。或者说，如果每一篇文章都只有一个关键词的话，每篇文章的关键词都不相同。这充分体现了肠道菌群研究所涉及到的**广度和细分度**。
+
+## 肠道菌群是一个高速发展的研究领域
+
+“日积跬步，以致千里”。肠道菌群研究发展到如此巨大的一个体量，是日积月累的一个结果。且值得注意的一点是，这个积累的过程并非是匀速向前的，而是以一种近乎指数增长的趋势进行的。图 \@ref(fig:trend-publications) 展示了每年发文量和累计发文量的增长趋势，累计发文量的增长趋势在这幅图中可见一斑。从曲线的走势上看，“肠道菌群”研究在今后相当长的时间应当仍是一门快速增长的研究领域，会持续不断有更多的研究论文面世。
 
 
 ```{r}
@@ -57,18 +64,22 @@ count_by_year <- M %>% group_by(PY) %>% summarise(count=n()) %>%
 ```
 
 
-```{r trend-publications, fig.cap="每年发表的文章数量"}
-p <- ggplot(count_by_year,aes(PY,count,text=count)) + 
-  geom_line(size = 1) + 
-  geom_point(size=3,fill="white",shape=21) + 
+```{r trend-publications, fig.cap="每年发表的文章数量（柱状图）和累计发文量的增长情况（折线图）"}
+p <- ggplot(count_by_year) + 
+  aes(x=PY) +
+  geom_line(aes(y=cumsum), size = 1) + 
+  geom_point(aes(y=cumsum,text=cumsum),size=3,fill="white",shape=21) + 
+  geom_col(aes(y=count,text=count)) +
   # geom_text(aes(y=count+10,label=count),hjust=1,vjust=-0.2) +
-  labs(x="年份",y="文献数目") + 
+  labs(x="年份",y="数量",title = "每年发文量和累计发文量的增长情况") + 
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4),"万"),
+                    breaks=1:10*1e4) +
   xlim(c(2000,2020)) +
   theme_labs
-plot.ly(p)
+plot.ly(p) 
 ```
 
-每年的发文量从 2000 年的三百余篇增长到 2019 年的近一万篇，增长了近三十倍。年均同比增长率基本保持在 10% 以上，特别是 2012-2017 年间连续六年同比增长率保持在 20% 以上。2018年以来，虽然较之有所下降，但仍然在 10% 以上（图 \@ref(fig:trend-publications-increasing-rate)）。不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
+具体到每年的发文量，从 2000 年的三百余篇增长到 2019 年的近一万篇，增长了近三十倍。年均同比增长率基本保持在 10% 以上，特别是 2012-2017 年间连续六年同比增长率保持在 20% 以上。2018年以来，虽然较之有所下降，但仍然在 10% 以上（图 \@ref(fig:trend-publications-increasing-rate)）。
 
 
 ```{r trend-publications-increasing-rate, fig.cap="发文量的同比增长率"}
@@ -77,46 +88,35 @@ p <- ggplot(count_by_year,aes(PY,increasing_rate)) +
   geom_line(size = 1) + 
   geom_point(aes(text=text),size=3,fill="white",shape=21) + 
   # geom_text(aes(y=count+10,label=count),hjust=1,vjust=-0.2) +
-  labs(x="年份",y="同比增长率") + 
+  labs(x="年份",y="同比增长率",title="发表文章数量较去年的同比增长率") + 
   xlim(c(2000,2020)) +
   scale_y_continuous(labels = function(x)paste(x*100,"%"))
-plot.ly(p)
+plot.ly(p,tooltip = c("x","text"))
 ```
 
-由于每年的发文量均同比显著增长，我们可以看到累计文章数目在快速增长（图 \@ref(fig:trend-publications-cumsum)）。从曲线的走势上看，“肠道菌群”研究在今后相当长的时间应当仍是一门快速增长的研究领域，会持续不断有更多的研究论文面世。
+### 肠道菌群研究仍然在收获持续的关注
 
-```{r trend-publications-cumsum, fig.cap="论文总量"}
-p <- ggplot(count_by_year,aes(PY,cumsum,text=cumsum)) + 
-  geom_line(size = 1) + 
-  geom_point(size=3,fill="white",shape=21)  +
-  labs(x="年份",y="论文总量") + 
-  xlim(c(2000,2020)) +
-  theme_labs
+在发文量的基础上，我们进一步的研究了论文引用量的变化趋势（图 \@ref(fig:trend-TC)）。与论文发表量不同，论文的总的引用次数呈现出一个“S”型曲线出来。这主要是由于最近 5 年的论文引用次数下降造成的。这是不是就意味着，肠道菌群研究已经不再那么引人关注了呢？答案是否定的。我们认为出现这一情况的主要原因是由于引用这一行为具有滞后性，导致近几年发表的文献尚需时日才能被广泛引用，所以才会出现 2014 年以后发表的新文献的引用次数较2014年的文献引用次数呈逐渐下降的趋势。
 
-plot.ly(p)
-```
-
-
-我们也研究了论文引用量的变化趋势（图 \@ref(fig:trend-TC)）。很明显，由于近几年发表的文献尚需时日才能被广泛引用，因此 2014 年以后发表的新文献的引用次数会有一个下降的趋势。
-
-```{r}
+```{r trend-TC, fig.cap="文献年度被引频次（柱状图）和累计被引频次（折线图）的变化趋势"}
 TC_by_year <- M %>% group_by(PY) %>%
   summarise(total=sum(TC,na.rm = TRUE)) %>%
   mutate(cumsum=cumsum(total))
 
-trend_TC <- ggplot(TC_by_year,aes(PY,total,text=total)) + 
-  geom_line(size = 1) + 
-  geom_point(size=3,fill="white",shape=21) + 
-  labs(x="年份",y="引用次数") + 
-  xlim(c(2000,2020)) +
-  ylim(c(0,NA))
-```
+trend_TC <- ggplot(TC_by_year,aes(PY)) + 
+  geom_line(aes(y=cumsum),size = 1) + 
+  geom_point(aes(y=cumsum,text=total),size=3,fill="white",shape=21) + 
+  geom_col(aes(y=total,text=total)) +
+  labs(x="年份",y="被引频次",title = "文献年度被引频次和累计被引频次") + 
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4),"万"),
+                    breaks=seq(0,200,by=50)*1e4) +
+  xlim(c(2000,2020))
 
-```{r trend-TC, fig.cap="总引用次数的变化趋势"}
 plot.ly(trend_TC)
 ```
 
-SCI 数据库中保留了最近 180 天和 2013 年至今的文献使用次数，相比引用次数，使用次数更加能够显示近期人们对相关论文的关注度。
+
+为了进一步说明这个问题，我们不妨来看一下**文献使用次数**这一重要参数。SCI 数据库中保留了最近 180 天（半年）的文献使用次数。每条数据被访问一次，会被记录为一次使用。相比引用次数，使用次数具有更高的时效性，因此更加能够显示近期人们对相关论文的关注度。
 
 
 ```{r}
@@ -124,31 +124,34 @@ U1U2_by_year <- M %>%
   mutate_at(c("U1","U2"),as.numeric) %>%
   group_by(PY) %>%
   summarise(total_U1=sum(U1,na.rm = TRUE),
-            total_U2=sum(U2,na.rm = TRUE)) %>%
-  ungroup() %>%
-  pivot_longer(cols = c("total_U1","total_U2"), names_to = "type",values_to = "usage")
+            total_U2=sum(U2,na.rm = TRUE))
 ```
 
 ```{r trend-U1U2, fig.cap="文献自2013年以来的使用次数（上方蓝线）和近180天的使用次数（下方红线）对比"}
-trend_U1U2 <- ggplot(U1U2_by_year,aes(PY,usage,text=usage,color=type)) + 
+trend_U1U2 <- ggplot(U1U2_by_year,aes(PY,total_U1,text=total_U1)) + 
   geom_line(size = 1) + 
   geom_point(size=3,fill="white",shape=21) + 
   labs(x="年份",y="使用次数") + 
   xlim(c(2000,2020)) +
-  ylim(c(0,NA))
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4),"万"),
+                    breaks=1:10*1e4) 
 
 plot.ly(trend_U1U2)
 ```
 
-从使用次数的数据上看，很容易发现2013年以来的使用次数与近 180 天的使用次数在逐渐接近。这说明近期发表的文献会被更多的人关注，即人们阅读文献时会选择新文献（图 \@ref(fig:trend-U1U2)）。近 180 天内研究人员对新文献的关注程度仍然在持续上升，这很好的说明未来的“肠道菌群”研究仍将继续活跃。
+从图 \@ref(fig:trend-U1U2) 中看，可以发现最近半年间人们对肠道菌群相关文献的访问次数呈现显著的增长趋势。这当然是因为人们在阅读的时候更愿意去看最近发表的文献，另一方面也说明研究人员对肠道菌群研究的最新成果仍然保有持续的关注。可以预见，这些关注将在未来的几年逐渐反映到引用次数的增加上去。
+
+
 
 ```{r}
 # 以下项目将展示前面几条
 n <- 20
 ```
 
+不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
 
-## 国家（地区）
+
+## 从国家看国际研究格局
 
 
 在国家（地区）层面，美国的发文量最多，占了全部文章的三分之一以上。发文量排第二位的是中国大陆，约为总文章数的八分之一。发文量排在前二十位的国家（地区）还有英国、德国、法国、意大利、加拿大、日本、西班牙、荷兰、澳大利亚、瑞典、比利时、芬兰、巴西、韩国、丹麦、爱尔兰、芬兰和印度等国（图 \@ref(fig:summary-country)）。
@@ -157,23 +160,148 @@ n <- 20
 ```{r summary-country, fig.cap="发文量最大的国家（地区）"}
 # data
 i <- 1
-df <- tag_summary[[i]] %>% as.data.frame() %>%
+df <- tag_summary[[i]] %>% data.frame(stringsAsFactors = FALSE) %>%
   filter(Tab!="NA") %>%
   mutate(proportion=Freq/results$Articles) %>%
   mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
+  head(n) %>%
+  arrange(Freq) %>%
+  mutate(Tab=as_factor(as.character(Tab)))
 
 # plot
 p <- ggplot(df, aes(Tab,Freq,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  coord_flip() +
   labs(x="",y="文章总数")
 plot.ly(p)
 ```
 
 
+国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国发表的论文中也有约 70% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
 
-## 研究机构
+
+```{r MCP-SCP, fig.cap="各国单独（SCP）和多国合作发表（MCP）论文的比例"}
+mostProdCountries <- tableTag(M, Tag = "AU_CO_NR") 
+mostProdCountries <- as_tibble(mostProdCountries) 
+colnames(mostProdCountries) <- c("Country","all")
+
+scp <- tableTag(M %>% filter(str_detect(AU_CO_NR,";")), "AU_CO_NR")
+scp <- as_tibble(scp)
+colnames(scp) <- c("Country","SCP")
+
+mcp <- tableTag(M %>% filter(!str_detect(AU_CO_NR,";")), Tag = "AU_CO_NR")
+mcp <- as_tibble(mcp)
+colnames(mcp) <- c("Country","MCP")
+
+mostProdCountries <- mostProdCountries %>%
+  filter(Country != "NA") %>%
+  left_join(scp) %>% 
+  left_join(mcp) %>%
+  head(n) %>%
+  select(Country,SCP,MCP) %>%
+  mutate_all(trim) %>%
+  pivot_longer(cols = -Country) %>%
+  mutate(value=as.numeric(value),
+         Country=as_factor(as.character(Country))) %>%
+  group_by(Country) %>%
+  mutate(proportion=value/sum(value))
+mostProdCountries$Country <- factor(mostProdCountries$Country, levels=rev(levels(mostProdCountries$Country)))
+
+p <- ggplot(mostProdCountries,aes(Country,value,fill=name,text=paste0(value,"(",format(proportion*100,1),"%)"))) + 
+  geom_col() +
+  coord_flip() +
+  labs(title = "单独和合作发表论文的比例",x="",y="") +
+  scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("单独发表","合作发表")) +
+  theme(legend.position = c(0.5,0.3), legend.direction = "horizontal")
+
+plot.ly(p) %>%
+  layout(
+    legend = list(x=0.5,y=0.3,orientation="v")
+  )
+  
+```
+
+
+
+### 国际排名的变化
+
+### 如何计算国家间的产出？
+
+一篇文章经常会出现由来自于多个国家的研究人员共同完成的情况。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
+
+
+```{r}
+# 计算各国加权发文量
+listCO <- strsplit(M$AU_CO_NR,";")
+listCO <- lapply(listCO,trim)
+nCO <- unlist(lapply(listCO,length))
+fracCO <- unlist(lapply(nCO, function(x){rep(1/x,x)}))
+
+if (length(M$PY) != length(nCO)) warning("length(PY) is not equal to length(nCO).")
+PY <- unlist(lapply(seq_along(nCO),function(x){rep(M$PY[[x]],nCO[[x]])} ))
+
+
+country_output <- data.frame(CO=unlist(listCO),
+                             PY=PY,
+                             Frac=fracCO) %>%
+  group_by(CO,PY) %>%
+  summarise(contribution=sum(Frac))
+```
+
+
+
+
+```{r}
+topN <- 10
+
+list <- lapply(unique(country_output$PY),function(y){
+  country_output %>% filter(PY==y, CO!="NA") %>%
+    arrange(desc(contribution)) %>%
+    head(topN) %>% 
+    ungroup() %>%
+    mutate(rank=row_number())
+})
+
+top_country_output <- do.call("rbind",list)
+top_country_output$rank <- factor(top_country_output$rank,levels = 20:1)
+top_country_output <- top_country_output %>%
+  left_join(country_multi_lang,by=c("CO"= "countries")) %>%
+  mutate(chinese_abbr=str_sub(China,end = 1))
+```
+
+
+如果我们按照论文发表量对各国“肠道菌群”研究进行排序，可以发现美国一直是排在第一位的，而第二名至第十名则一直在变动。在2000年，美、日、英、法、德是发文量最多的五个国家，到了2010年，前五名是美、法、日、德、英五个国家。值得一提的是，自2010年开始，中国的“肠道菌群”研究以锐不可当的势头，用了三年的时间直接从第十名升到第二名，并一直保持至今（图 \@ref(fig:top-country-ranking)）。
+
+```{r top-country-ranking, fig.cap="各国加权发文量排行榜"}
+p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,group=CO)) + 
+  geom_point(size=6) +  geom_line(size=5,alpha=1/3) +
+  geom_text(aes(label=chinese_abbr), hjust=0.5, vjust=0.5,size=3,color="grey",check_overlap = T) +
+  labs(x="",y="",title = "各国加权发文量排行榜") +
+  scale_color_manual(values = rainbow(20)) +
+  theme(plot.title = element_text(hjust = 0,size=16),
+        plot.subtitle = element_text(hjust=0,color = "grey20",size=14),
+        legend.position = "none") 
+
+plot.ly(p)
+```
+
+
+```{r top-country-output-gif, fig.cap="各国加权发文量"}
+p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
+  geom_col() + 
+  geom_text(aes(label=CO),position = position_stack(vjust = 1), hjust=0) +
+  transition_time(PY) + 
+  labs(x="",y="",title = "各国加权发文量",subtitle="年份：{round(frame_time)}") +
+  theme(axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0,size=16),
+        plot.subtitle = element_text(hjust=0,color = "grey20",size=14)) +
+  coord_flip()
+
+if (knitr:::is_html_output()) animate(p,fps = 10,start_pause=20,end_pause = 20)
+```
+
+
+## 顶尖研究机构
 
 
 在研究机构的排行榜中（图 \@ref(fig:summary-affiliation)），哈佛大学（美国）、哥本哈根大学（丹麦）和伊利诺伊斯大学（美国）拔得三甲。我国的浙江大学、上海交通大学总发文量在全球各大机构中排在第17、18位，发文量分别是427篇和423篇。
@@ -452,8 +580,7 @@ Web of Science 数据库为每篇文献分配了两种类型的关键词，一�
 # 作者关键字
 i <- 5
 
-# search key word regex
-search_keyword_regex <- regex(pattern = paste0(search_keywords,collapse ="|"),ignore_case = T)
+
 
 # 关键字去掉搜索限定词
 df <- tag_summary[[i]] %>% as.data.frame() %>%
@@ -498,6 +625,10 @@ plot.ly(p)
 wordcloud2(head(df,200),size=0.5)
 ```
 
+### 关键词的点阵图
+
+
+
 
 ### 关键词的时序分布
 
@@ -509,6 +640,38 @@ p <- ggplot(df,aes(Year,value,fill=name,color=name,text=name)) + geom_area() + f
 plot.ly(p)
 ```
 
+
+图 \@ref(fig:LCS-summary-ID-growth-table) 是LCS论文中增长最迅速的关键字。
+
+```{r LCS-summary-ID-growth-table, fig.cap="LCS论文中增长最迅速的关键字"}
+topID <- KeywordGrowth(MC,Tag = "ID",top = 60)
+df <- topID %>% pivot_longer(cols = -Year) %>%
+  filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
+
+
+DT::datatable(df, 
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         # list(width="35%",targets=0)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
+```
+
+
+
 ```{r summary-DE-growth, fig.cap="增长最迅猛的作者关键字"}
 topID <- KeywordGrowth(M,Tag = "DE",top = 22)
 df <- topID %>% pivot_longer(cols = -Year) %>%
@@ -516,6 +679,8 @@ df <- topID %>% pivot_longer(cols = -Year) %>%
 p <- ggplot(df,aes(Year,value,fill=name,color=name,text=name)) + geom_area() + facet_wrap(~name)
 plot.ly(p)
 ```
+
+
 
 
 ## 研究领域

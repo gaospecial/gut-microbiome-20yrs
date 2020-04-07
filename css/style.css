@@ -25,3 +25,6 @@ blockquote > p:last-child {
 blockquote > p:first-child {
   text-align: inherit;
 }
+.book .book-body .page-wrapper .page-inner {
+  max-width: 1200px !important;
+}
