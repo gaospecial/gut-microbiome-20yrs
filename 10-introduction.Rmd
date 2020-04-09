@@ -94,7 +94,7 @@ p <- ggplot(count_by_year,aes(PY,increasing_rate)) +
 plot.ly(p,tooltip = c("x","text"))
 ```
 
-### 肠道菌群研究仍然在收获持续的关注
+## 肠道菌群研究仍然在收获持续的关注
 
 在发文量的基础上，我们进一步的研究了论文引用量的变化趋势（图 \@ref(fig:trend-TC)）。与论文发表量不同，论文的总的引用次数呈现出一个“S”型曲线出来。这主要是由于最近 5 年的论文引用次数下降造成的。这是不是就意味着，肠道菌群研究已经不再那么引人关注了呢？答案是否定的。我们认为出现这一情况的主要原因是由于引用这一行为具有滞后性，导致近几年发表的文献尚需时日才能被广泛引用，所以才会出现 2014 年以后发表的新文献的引用次数较2014年的文献引用次数呈逐渐下降的趋势。
 
@@ -116,7 +116,7 @@ plot.ly(trend_TC)
 ```
 
 
-为了进一步说明这个问题，我们不妨来看一下**文献使用次数**这一重要参数。SCI 数据库中保留了最近 180 天（半年）的文献使用次数。每条数据被访问一次，会被记录为一次使用。相比引用次数，使用次数具有更高的时效性，因此更加能够显示近期人们对相关论文的关注度。
+为了进一步说明这个问题，我们不妨另外来看**文献使用次数**这一重要参数。SCI 数据库中保留了最近 180 天（半年）的文献使用次数。每条数据被访问一次，会被记录为一次使用。相比引用次数，使用次数具有更高的时效性，因此更加能够显示近期人们对相关论文的关注度。
 
 
 ```{r}
@@ -154,33 +154,44 @@ n <- 20
 ## 从国家看国际研究格局
 
 
-在国家（地区）层面，美国的发文量最多，占了全部文章的三分之一以上。发文量排第二位的是中国大陆，约为总文章数的八分之一。发文量排在前二十位的国家（地区）还有英国、德国、法国、意大利、加拿大、日本、西班牙、荷兰、澳大利亚、瑞典、比利时、芬兰、巴西、韩国、丹麦、爱尔兰、芬兰和印度等国（图 \@ref(fig:summary-country)）。
+在国家（地区）层面，美国的发文量最多，占了全部文章的三分之一以上（33.6%）。发文量排第二位的是中国（包括港澳台），约为总文章数的七分之一（14.4%）。发文量排在前二十位的国家（地区）还有英国、德国、法国、意大利、加拿大、日本、西班牙、荷兰、澳大利亚、瑞典、比利时、芬兰、巴西、韩国、丹麦、爱尔兰、芬兰和印度等国（图 \@ref(fig:summary-country)）。
 
 
-```{r summary-country, fig.cap="发文量最大的国家（地区）"}
+```{r summary-country, fig.cap="二十年间在肠道菌群研究中发文量最大的国家（地区）"}
 # data
 i <- 1
-df <- tag_summary[[i]] %>% data.frame(stringsAsFactors = FALSE) %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
+df <- tag_summary[[i]] %>% as_tibble()
+colnames(df) <- c("Country","all")
+  
+df <- df %>%
+  filter(Country!="NA") %>%
+  mutate(Country=ifelse(is.part_of_china(Country),"CHINA",Country)) %>%
+  group_by(Country) %>%
+  summarise_at("all",sum) %>%
+  mutate(proportion=all/nrow(M)) %>%
+  mutate(text=paste(all," (",round(proportion*100,1),"%)",sep = "")) %>%
+  left_join(country_multi_lang,by=c("Country"="countries")) %>%
+  arrange(desc(all)) %>%
   head(n) %>%
-  arrange(Freq) %>%
-  mutate(Tab=as_factor(as.character(Tab)))
+  arrange(all) %>%
+  mutate(Country=as_factor(as.character(Country)),
+         China=as_factor(as.character(China)))
 
 # plot
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
+p <- ggplot(df, aes(China,all,text=text)) +
   geom_col() +
   coord_flip() +
-  labs(x="",y="文章总数")
+  labs(x="",y="文章总数",title = "发文量最大的国家（地区）")  +
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
+                    breaks=(0:20)/2*1e4) 
 plot.ly(p)
 ```
 
 
-国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国发表的论文中也有约 70% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
+国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国与其它国家合作发表论文的比例更高，占到全部文章的 70% 以上；英、德、法、意、加等国的合作研究比例在 30% 以上。所有这些国家中，对外合作发表文章的比例为 `r paste0(round(mean(mostProdCountries$proportion)*100),"%")`。这充分说明了**国际合作在肠道菌群研究中占重要地位**。
 
 
-```{r MCP-SCP, fig.cap="各国单独（SCP）和多国合作发表（MCP）论文的比例"}
+```{r MCP-SCP, fig.cap="各国独立发表（SCP）和多国合作发表（MCP）论文的比例"}
 mostProdCountries <- tableTag(M, Tag = "AU_CO_NR") 
 mostProdCountries <- as_tibble(mostProdCountries) 
 colnames(mostProdCountries) <- c("Country","all")
@@ -193,26 +204,36 @@ mcp <- tableTag(M %>% filter(!str_detect(AU_CO_NR,";")), Tag = "AU_CO_NR")
 mcp <- as_tibble(mcp)
 colnames(mcp) <- c("Country","MCP")
 
+top_country <- mostProdCountries$Country %>% head(n)
+
 mostProdCountries <- mostProdCountries %>%
   filter(Country != "NA") %>%
   left_join(scp) %>% 
-  left_join(mcp) %>%
-  head(n) %>%
-  select(Country,SCP,MCP) %>%
-  mutate_all(trim) %>%
-  pivot_longer(cols = -Country) %>%
+  left_join(mcp)  %>% 
+  mutate(Country=ifelse(is.part_of_china(Country),"CHINA",Country)) %>%
+  group_by(Country) %>%
+  summarise_all(sum) %>%
+  filter(Country %in% top_country) %>%
+  left_join(country_multi_lang,by=c("Country"="countries")) %>%
+  pivot_longer(cols = c("SCP","MCP"),names_to = "name",values_to = "value") %>%
   mutate(value=as.numeric(value),
          Country=as_factor(as.character(Country))) %>%
-  group_by(Country) %>%
-  mutate(proportion=value/sum(value))
-mostProdCountries$Country <- factor(mostProdCountries$Country, levels=rev(levels(mostProdCountries$Country)))
+  mutate(proportion=value/all) %>%
+  ungroup() %>%
+  arrange(all) %>%
+  mutate(Country = as_factor(as.character(Country)),
+         China = as_factor(as.character(China)))
 
-p <- ggplot(mostProdCountries,aes(Country,value,fill=name,text=paste0(value,"(",format(proportion*100,1),"%)"))) + 
+
+library(ggflags)
+p <- ggplot(mostProdCountries,
+            aes(China,value,fill=name,text=paste0(value,"(",format(proportion*100,1),"%)"))) + 
   geom_col() +
   coord_flip() +
-  labs(title = "单独和合作发表论文的比例",x="",y="") +
-  scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("单独发表","合作发表")) +
-  theme(legend.position = c(0.5,0.3), legend.direction = "horizontal")
+  # geom_flag(aes(country=tolower(ISO2)),y=-200,size=10) +
+  labs(title = "各国独立和合作发表论文的比例",x="",y="") +
+  scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("独立发表","合作发表")) +
+  theme(legend.position = c(0.5,0.3))
 
 plot.ly(p) %>%
   layout(
@@ -223,11 +244,7 @@ plot.ly(p) %>%
 
 
 
-### 国际排名的变化
-
-### 如何计算国家间的产出？
-
-一篇文章经常会出现由来自于多个国家的研究人员共同完成的情况。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
+由于国际合作研究的盛行，一半左右的文章会出现由来自于多个国家的研究人员共同完成的情况。所以，只仅仅通过加和计算国家间的贡献可能有失公允。因此，我们进一步计算了加权发文量。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
 
 
 ```{r}
@@ -252,12 +269,11 @@ country_output <- data.frame(CO=unlist(listCO),
 
 
 ```{r}
-topN <- 10
 
 list <- lapply(unique(country_output$PY),function(y){
   country_output %>% filter(PY==y, CO!="NA") %>%
     arrange(desc(contribution)) %>%
-    head(topN) %>% 
+    head(10) %>% 
     ungroup() %>%
     mutate(rank=row_number())
 })
@@ -270,7 +286,7 @@ top_country_output <- top_country_output %>%
 ```
 
 
-如果我们按照论文发表量对各国“肠道菌群”研究进行排序，可以发现美国一直是排在第一位的，而第二名至第十名则一直在变动。在2000年，美、日、英、法、德是发文量最多的五个国家，到了2010年，前五名是美、法、日、德、英五个国家。值得一提的是，自2010年开始，中国的“肠道菌群”研究以锐不可当的势头，用了三年的时间直接从第十名升到第二名，并一直保持至今（图 \@ref(fig:top-country-ranking)）。
+如果我们按照加权后的论文发表量对各国“肠道菌群”研究进行排序，可以发现美国一直是排在第一位的，而第二名至第十名则一直在变动。在2000年，美、日、英、法、德是发文量最多的五个国家，到了2010年，前五名是美、法、日、德、英五个国家。值得一提的是，自2010年开始，中国的“肠道菌群”研究以锐不可当的势头，用了三年的时间直接从第十名升到第二名，并一直保持至今（图 \@ref(fig:top-country-ranking)）。
 
 ```{r top-country-ranking, fig.cap="各国加权发文量排行榜"}
 p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,group=CO)) + 
@@ -278,13 +294,13 @@ p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,gr
   geom_text(aes(label=chinese_abbr), hjust=0.5, vjust=0.5,size=3,color="grey",check_overlap = T) +
   labs(x="",y="",title = "各国加权发文量排行榜") +
   scale_color_manual(values = rainbow(20)) +
-  theme(plot.title = element_text(hjust = 0,size=16),
-        plot.subtitle = element_text(hjust=0,color = "grey20",size=14),
-        legend.position = "none") 
+  theme(legend.position = "none") 
 
 plot.ly(p)
 ```
 
+
+`r if (knitr:::is_html_output()) '如果您正在查看的是在线版，则可以通过下面的动画了解主要国家发文量的排行变化情况。'`
 
 ```{r top-country-output-gif, fig.cap="各国加权发文量"}
 p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
@@ -301,6 +317,8 @@ if (knitr:::is_html_output()) animate(p,fps = 10,start_pause=20,end_pause = 20)
 ```
 
 
+在本书的第二部分，我们将对国际研究格局有进一步的阐释。
+
 ## 顶尖研究机构
 
 
@@ -314,9 +332,12 @@ df <- tag_summary[[i]] %>% as.data.frame() %>%
   mutate(proportion=Freq/results$Articles) %>%
   mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
   head(n)
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
+
+
+
+p <- ggplot(df, aes(forcats::fct_rev(Tab),Freq,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  coord_flip() +
   labs(x="",y="文章总数")
 plot.ly(p)
 ```
