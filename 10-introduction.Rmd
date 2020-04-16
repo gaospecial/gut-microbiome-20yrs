@@ -127,7 +127,7 @@ U1U2_by_year <- M %>%
             total_U2=sum(U2,na.rm = TRUE))
 ```
 
-```{r trend-U1U2, fig.cap="文献自2013年以来的使用次数（上方蓝线）和近180天的使用次数（下方红线）对比"}
+```{r trend-U1U2, fig.cap="每年发表的文献在近180天的使用次数"}
 trend_U1U2 <- ggplot(U1U2_by_year,aes(PY,total_U1,text=total_U1)) + 
   geom_line(size = 1) + 
   geom_point(size=3,fill="white",shape=21) + 
@@ -142,16 +142,16 @@ plot.ly(trend_U1U2)
 从图 \@ref(fig:trend-U1U2) 中看，可以发现最近半年间人们对肠道菌群相关文献的访问次数呈现显著的增长趋势。这当然是因为人们在阅读的时候更愿意去看最近发表的文献，另一方面也说明研究人员对肠道菌群研究的最新成果仍然保有持续的关注。可以预见，这些关注将在未来的几年逐渐反映到引用次数的增加上去。
 
 
+所以说，肠道菌群研究仍然在收获持续的关注。不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
 
 ```{r}
 # 以下项目将展示前面几条
 n <- 20
 ```
 
-不过，2018年以来的新趋势也提醒我们，“肠道菌群”研究已经进入深水区，如果没有原创性的亮点工作，未来发文的难度应当会有所增加。
 
 
-## 从国家看国际研究格局
+## 肠道菌群研究建立在广泛的全球合作之上
 
 
 在国家（地区）层面，美国的发文量最多，占了全部文章的三分之一以上（33.6%）。发文量排第二位的是中国（包括港澳台），约为总文章数的七分之一（14.4%）。发文量排在前二十位的国家（地区）还有英国、德国、法国、意大利、加拿大、日本、西班牙、荷兰、澳大利亚、瑞典、比利时、芬兰、巴西、韩国、丹麦、爱尔兰、芬兰和印度等国（图 \@ref(fig:summary-country)）。
@@ -188,7 +188,6 @@ plot.ly(p)
 ```
 
 
-国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国与其它国家合作发表论文的比例更高，占到全部文章的 70% 以上；英、德、法、意、加等国的合作研究比例在 30% 以上。所有这些国家中，对外合作发表文章的比例为 `r paste0(round(mean(mostProdCountries$proportion)*100),"%")`。这充分说明了**国际合作在肠道菌群研究中占重要地位**。
 
 
 ```{r MCP-SCP, fig.cap="各国独立发表（SCP）和多国合作发表（MCP）论文的比例"}
@@ -233,6 +232,8 @@ p <- ggplot(mostProdCountries,
   # geom_flag(aes(country=tolower(ISO2)),y=-200,size=10) +
   labs(title = "各国独立和合作发表论文的比例",x="",y="") +
   scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("独立发表","合作发表")) +
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
+                    breaks=(0:20)/2*1e4) +
   theme(legend.position = c(0.5,0.3))
 
 plot.ly(p) %>%
@@ -243,6 +244,7 @@ plot.ly(p) %>%
 ```
 
 
+国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国与其它国家合作发表论文的比例更高，占到全部文章的 70% 以上；英、德、法、意、加等国的合作研究比例在 30% 以上。所有这些国家中，对外合作发表文章的比例为 `r paste0(round(mean(mostProdCountries$proportion)*100),"%")`。这充分说明了**国际合作在肠道菌群研究中占重要地位**。
 
 由于国际合作研究的盛行，一半左右的文章会出现由来自于多个国家的研究人员共同完成的情况。所以，只仅仅通过加和计算国家间的贡献可能有失公允。因此，我们进一步计算了加权发文量。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
 
@@ -294,6 +296,7 @@ p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,gr
   geom_text(aes(label=chinese_abbr), hjust=0.5, vjust=0.5,size=3,color="grey",check_overlap = T) +
   labs(x="",y="",title = "各国加权发文量排行榜") +
   scale_color_manual(values = rainbow(20)) +
+  xlim(c(2000,2020)) +
   theme(legend.position = "none") 
 
 plot.ly(p)
@@ -302,10 +305,13 @@ plot.ly(p)
 
 `r if (knitr:::is_html_output()) '如果您正在查看的是在线版，则可以通过下面的动画了解主要国家发文量的排行变化情况。'`
 
-```{r top-country-output-gif, fig.cap="各国加权发文量"}
+```{r , eval=FALSE}
+library(ggflags)
+# 生成图片保存在 images 文件夹
 p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
   geom_col() + 
   geom_text(aes(label=CO),position = position_stack(vjust = 1), hjust=0) +
+  # geom_flag(aes(country=tolower(ISO2)), size=20)+
   transition_time(PY) + 
   labs(x="",y="",title = "各国加权发文量",subtitle="年份：{round(frame_time)}") +
   theme(axis.text.y = element_blank(),
@@ -316,33 +322,104 @@ p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) +
 if (knitr:::is_html_output()) animate(p,fps = 10,start_pause=20,end_pause = 20)
 ```
 
+```{r top-country-output-gif, fig.cap="各国加权发文量"}
+if (knitr:::is_html_output()) include_graphics("images/top-country-output.gif")
+
+```
+
+
 
 在本书的第二部分，我们将对国际研究格局有进一步的阐释。
 
-## 顶尖研究机构
+## 全球范围内的知名大学和研究所广泛参与
 
 
-在研究机构的排行榜中（图 \@ref(fig:summary-affiliation)），哈佛大学（美国）、哥本哈根大学（丹麦）和伊利诺伊斯大学（美国）拔得三甲。我国的浙江大学、上海交通大学总发文量在全球各大机构中排在第17、18位，发文量分别是427篇和423篇。
+```{r}
+# 计算各研究机构加权发文量
+listUN <- strsplit(M$AU_UN,";")
+listUN <- lapply(listUN,trim)
+nUN <- unlist(lapply(listUN,length))
+fracUN <- unlist(lapply(nUN, function(x){rep(1/x,x)}))
+
+if (length(M$PY) != length(nUN)) warning("length(PY) is not equal to length(nUN).")
+PY <- unlist(lapply(seq_along(nUN),function(x){rep(M$PY[[x]],nUN[[x]])} ))
+
+
+AFF_output <- data.frame(AFF=unlist(listUN),
+                             PY=PY,
+                             Frac=fracUN) %>%
+  group_by(AFF,PY) %>%
+  summarise(contribution=sum(Frac))
+
+top_AFF <- AFF_output %>% group_by(AFF) %>%
+  summarise(total=sum(contribution)) %>%
+  arrange(desc(total)) %>%
+  filter(AFF != "NA") %>%
+  mutate(ranking=row_number()) %>%
+  mutate(portion=total/sum(total))
+```
+
+
+```{r fig-nAFF, fig.cap="每篇论文中包括的研究机构数目（去重复）"}
+# 论文有几个机构
+listUN_NR <- strsplit(M$AU_UN_NR, split=";")
+nUN_NR <- lapply(listUN_NR, length) %>% 
+  unlist %>% 
+  cut(breaks=c(0,2,5,10,20,Inf),include.lowest = TRUE,
+      labels = c("1-2","3-5","6-10","11-20",">20")) %>%
+  table() %>%
+  as_tibble()
+colnames(nUN_NR) <- c("nAFF","count")
+nUN_NR$nAFF <- as_factor(nUN_NR$nAFF)
+nUN_NR$portion <- nUN_NR$count/sum(nUN_NR$count)
+
+ggplot(nUN_NR,aes(x="",y=count,fill=nAFF)) + 
+  geom_col() +
+  ggrepel::geom_text_repel(aes(label=paste0(nAFF,"\n(",round(portion*100,1),"%)")),position = position_stack(0.5)) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  theme(legend.position = "none")
+
+```
+
+```{r}
+# 机构数最多的一篇论文的行号是 37338.
+```
+
+
+
+粗劣统计，全部论文一共涉及有 `r tag_summary_n[[2]]` 个不同的研究机构，平均每个机构发表论文 2 篇。在去重后，64% 的论文由 1-2 个研究机构共同完成，30% 的论文有 3-5 个研究机构共同完成，5% 的论文由 6-10 个研究机构完成（\@ref(fig:fig-nAFF)）。有个别论文的研究机构非常多，例如 `r M$PY[[37338]]` 年发表在 `r M$SO[[37338]]` 上的一篇题为 `r stringr::str_to_title(M$TI[[37338]])` 的论文（[原文](`r paste0("http://doi.org/",M$DI[[37338]])`)），有 `r length(unlist(strsplit(M$AU_UN_NR[[37338]],split=";")))` 个研究机构共同完成。与国家间合作发表论文的情况相似，这也反映了合作在肠道菌群研究中的普遍存在。
+
+
 
 
 ```{r summary-affiliation, fig.cap="表现突出的研究机构"}
-i <- 2
-df <- tag_summary[[i]] %>% as.data.frame() %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
-
-
-
-p <- ggplot(df, aes(forcats::fct_rev(Tab),Freq,text=text)) +
+df <- head(top_AFF,20) %>%
+  arrange(total) %>%
+  mutate(AFF=as_factor(AFF),
+         text=paste0(round(total,1)," (",round(portion*100,2),"%)"))
+p <- ggplot(df, aes(AFF,total,text=text)) +
   geom_col() +
   coord_flip() +
-  labs(x="",y="文章总数")
+  labs(x="",y="加权文章总数",title="顶尖研究机构（Top20）")
 plot.ly(p)
 ```
 
-我们使用 Google Geocoding API 解析了作者的地址信息，从而得到各研究机构的坐标。
+
+如果我们按照加权的论文发表量对各研究机构进行排序，那么在研究机构的排行榜中（图 \@ref(fig:summary-affiliation)），哈佛大学（美国）、伊利诺伊斯大学（美国）、加州大学戴维斯分校（美国）、密歇根大学（美国）、中国科学院和哥本哈根大学（丹麦）位列前茅。此外，我国的上海交通大学和浙江大学总发文量在全球各大机构中排在第11、15位，加权的发文量分别是 239.7 篇和 232.4 篇。其余的研究机构多是美国的大学，包括圣路易斯华盛顿大学、北卡罗纳大学、加州大学圣地亚哥分校、芝加哥大学、佛罗里达大学等。法国国家农业研究院（INRA）、爱尔兰国立科克大学（UNIV COLL CORk）和西班牙高等科学研究理事会（CSIC）也榜上有名。
+
+
+```{r eval=FALSE}
+# 查看前10/100/1000研究机构的发文量占比数字
+top_AFF %>% mutate(cumsum=cumsum(total)) %>% mutate(p2=cumsum/sum(total)) %>% filter(ranking==10)
+top_AFF %>% mutate(cumsum=cumsum(total)) %>% mutate(p2=cumsum/sum(total)) %>% filter(ranking==100)
+top_AFF %>% mutate(cumsum=cumsum(total)) %>% mutate(p2=cumsum/sum(total)) %>% filter(ranking==1000)
+
+```
+
+虽然前 20 名研究机构的发文量差异不大，但是实际上论文的发表集中度总体上是非常高的。具体说来，发文量最多的 10 家机构发表了全部论文的 5%；最多的 100 家机构发表了全部论文的 28%，最多的 1000 家机构发表了全部论文的 70%。所以说，会有一些研究水平较高的顶尖研究机构。
+
+
 
 
 ```{r affiliation-location, fig.cap="主要研究机构在全球的分布"}
@@ -415,19 +492,22 @@ world <- world %>% left_join(address %>%
 ggplot()  +
   geom_map(aes(long,lat,group=group,map_id=region),
            color="lightblue",
-           fill="grey",
-           alpha=1/3,
+           fill="lightblue",
+           alpha=1,
            map = world,
            data = world) +
-  geom_point(aes(lng,lat),data=address,alpha=1/5,size=1) +
+  geom_point(aes(lng,lat),color="wheat",data=address,alpha=1/5,size=1) +
   # geom_density2d(aes(lng,lat),data = address) +
   theme_void() +
-  theme(plot.background = element_blank())
+  theme(plot.background = element_rect(fill = "black",size=0))
 ```
 
-全球主要的“肠道菌群”研究机构主要分布在北美（主要是美国）、欧洲（包括英国）和东北亚（包括中日韩）等三个地带，其次在巴西、澳大利亚、新西兰、以色列、伊朗等国家也有较多分布（图 \@ref(fig:affiliation-location)）。
+我们简单解析了前 5000 个研究机构的地址，从而得到各研究机构在全球的分布情况。很显然，全球主要的“肠道菌群”研究机构主要分布在北美（主要是美国）、欧洲（包括英国）和东北亚（包括中日韩）等三个地带，其次在巴西、澳大利亚、新西兰、以色列、伊朗等国家也有较多分布（图 \@ref(fig:affiliation-location)）。
 
-```{r affiliation-location-country, fig.cap="主要的研究机构在不同国家中的分布情况"}
+关于这些研究机构，在以后的章节中会重点介绍。
+
+
+```{r affiliation-location-country, fig.cap="主要的研究机构在不同国家中的分布情况",eval=FALSE}
 #' 按国家统计
 cols <- brewer.pal(5,name = "Blues")
 ggplot()  +
@@ -443,9 +523,10 @@ ggplot()  +
   theme(plot.background = element_blank())
 ```
 
-我们按照国家和城市对机构所在地进行汇总，得到了图 \@ref(fig:affiliation-location-country) 和 \@ref(fig:affiliation-location-city)。
 
-```{r affiliation-location-city, fig.cap="研究机构在城市的分布"}
+```{r affiliation-location-city, fig.cap="研究机构在城市的分布",eval=FALSE}
+# 我们按照国家和城市对机构所在地进行汇总，得到了图 \@ref(fig:affiliation-location-country) 和 \@ref(fig:affiliation-location-city)。
+
 # 按城市绘图
 map_city <- address %>% group_by(city) %>%
   summarise(lat=mean(lat),lng=mean(lng),n=n()) %>%
@@ -469,54 +550,101 @@ leaflet() %>%
 ```
 
 
-
-### 使用共现网络体现研究机构间的合作
-
+## 来看看本领域内最负盛名的科学家
 
 
-## 作者 
-
-
-在作者[^author-fullname]的排行榜中（图 \@ref(fig:summary-author)），KNIGHT ROB 以 260 篇的总发文量拔得头筹。
+前面提到，仅以作者全名论[^author-fullname]，在肠道菌群研究领域内就有 `r tag_summary_n[[3]]` 个研究人员。我们不妨来看看有哪些人发表论文的数量最多？哪些人发表的论文引用次数最多？
 
 
 [^author-fullname]: 对作者进行区分是业界一项尚未解决的难题。为了避免重名带来的影响，我们使用作者全名进行分析。
 这最大程度上避免了外文姓名的重复，但是对于中文姓名的区分度仍然较低。因此，可能无法区分类似“汪俊”、“王军”等
 广大的来自中国的研究人员。
 
-```{r summary-author,fig.cap="表现突出的研究人员"}
+
+```{r eval=FALSE}
+# 看看每篇文章的作者数量、国家信息、机构信息是否对得上
+M %>% 
+  sample_n(10000) %>%
+  select(AU,C1,AU_CO,AU_UN) %>% 
+  as_tibble() %>% 
+  mutate(nAU=sapply(strsplit(AU,";"),length),
+         nAU_CO=sapply(strsplit(AU_CO,";"),length),
+         nAU_UN=sapply(strsplit(AU_UN,";"),length)) -> a
+
+a %>% 
+  filter(nAU!=nAU_UN) %>% nrow
+
+a %>% 
+  filter(nAU_CO!=nAU_UN) %>% nrow
+
+## nAU_CO 与 nAU_UN 不等的情况比较少见(0.14%)，但是二者与 nAU 的数量不等的情况很多(85%)。
+## 多是因为作者地址在 C1 中是合并或（和）分开列示的。
+```
+
+
+```{r summary-author,fig.cap="发表文章数量最多的科学家"}
 i <- 3
-df <- tag_summary[[i]] %>% as.data.frame() %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
+df <- tag_summary[[i]] %>% as_tibble()
+colnames(df) <- c("Author","nRecord")
+df <- df %>%
+  filter(Author!="NA") %>%
+  mutate(Author = ifelse(Author == "GORDON JI","GORDON JEFFREY I", Author)) %>%
+  group_by(Author) %>%
+  summarise(nRecord=sum(nRecord)) %>%
+  ungroup() %>%
+  mutate(proportion=nRecord/results$Articles) %>%
+  mutate(text=paste(nRecord," (",round(proportion*100,1),"%)",sep = "")) %>%
+  arrange(desc(nRecord))
+
+top_author_by_nRecord <- df %>%
+  head(n) %>%
+  arrange(nRecord) %>%
+  mutate(Author=as_factor(Author))
+# top_author_by_nRecord
+p <- ggplot(top_author_by_nRecord, aes(Author,nRecord,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x="",y="文章总数")
+  coord_flip() +
+  labs(x="",y="文章总数",title="发表文章数量最多的科学家（Top20）")
 plot.ly(p)
 ```
 
-当然，仅凭发文数量不足以说明研究人员的影响力。为此，我们使用 LCS 指标来衡量头部学者的学术表现。
-在本地被引频次排行榜中（图 \@ref(fig:top-author-localcitations)），
-“Gordon, Jeffrey I.”和“Knight，Rob”是领域内当之无愧的“大佬”，他们的本地被引频次累计超过了 35000 次，
-是第三名“Ley，Ruth E.”的两倍以上。相较于第三名及以后的研究人员的本地被引频次差异较小，
-两位“大佬”与其他研究人员的数值区分度非常明显。
-
-
+在作者的排行榜中（图 \@ref(fig:summary-author)），[KNIGHT ROB](https://www.mr-gut.cn/search?q=KNIGHT+ROB "查看《热心肠日报》解读的论文") 以 260 篇的总发文量拔得头筹，占全部文章的 0.5%。这是一个非常恐怖的数字，相当于在总共的几万篇文献中，每 200 篇中就有一篇是他的文章。[Knight 的实验室](https://knightlab.ucsd.edu/)主要开发**最先进的**的用于菌群研究的生物信息学工具和实验技术，其中包括最常使用的 QIIME 和 QIIME2 等分析平台。
 
 
 ```{r}
-#' # H指数的计算
-topAU <- LC$Authors %>% head(n=30) %>% 
-  mutate(Author=as.character(Author)) %>% 
-  arrange(desc(Author))
+Gordon_publications <- M %>% filter(str_detect(AU,"GORDON, JEFFREY") | str_detect(AU,"GORDON, JI"))
+nArticle_Gordon <- nrow(Gordon_publications)
+# Gordon_publications %>% pull(TC) %>% sum()/nArticle_Gordon
+# Gordon_publications %>% pull(LCS) %>% sum()/nArticle_Gordon
+
+   
 ```
+当然，仅凭发文数量可能还不足以说明研究人员的影响力。为此，我们使用被引次数来衡量顶尖学者的学术表现。
+在本地被引频次排行榜中（图 \@ref(fig:top-author-localcitations)），[Gordon Jeffrey I.](https://www.mr-gut.cn/search?q=GORDON+JEFFREY) 力压 Knight Rob，成为领域内当之无愧的“大佬”，他的本地被引频次累计超过了 50000 多次。
+
+这真是一个令人叹为观止的数字，小编一度以为是计算出现了问题。假如他只发表了 1 篇论文的话，这相当于几乎所有的文献都引用了他的文章。当然，实际上他总共发表了 `r nArticle_Gordon` 篇论文，平均每篇的本地被引频次为 `r Gordon_publications %>% pull(LCS) %>% sum()/nArticle_Gordon %>% round() ` 次。
+
+Gordon Jeffrey 教授现任圣路易斯华盛顿大学医学院基因组科学和系统生物学中心主任，是肠道菌群研究领域的泰斗级人物。[Gordon Jeffrey I.](https://gordonlab.wustl.edu/) 的实验室是关注肠道菌群与人体相互作用、菌群的演化机制等基本型问题，特别是肠道菌群在影响营养代谢中发挥的重要作用。他提倡用“菌群导向性食物（microbiota-directed foods）”改善儿童营养不良和治疗肠道菌群失调引起的疾病等。
+
 
 
 ```{r top-author-localcitations, fig.cap="Top学者的本地被引频次",fig.asp=1.5}
-p <- ggplot(topAU,
+# 对 LC 结果进行整理，去掉作者空格，标点符号之后，对作者的LCS进行合并
+LC_authors <- LC$Authors %>% 
+  mutate(Author=trimws(as.character(Author)))  %>%
+  mutate(Author = str_remove_all(Author,pattern = "[[:punct:]]")) %>%
+  mutate(Author = ifelse(Author == "GORDON JI","GORDON JEFFREY I", Author)) %>%
+  group_by(Author) %>%
+  summarise(LocalCitations=sum(LocalCitations))%>% 
+  arrange(desc(LocalCitations))
+
+
+
+#' # H指数的计算
+topAU_by_LCS <- LC_authors %>%
+  head(n=20)
+
+p <- ggplot(topAU_by_LCS,
             aes(fct_reorder(Author,LocalCitations),
                 LocalCitations,
                 text=paste0(Author,": ",LocalCitations)
@@ -524,18 +652,22 @@ p <- ggplot(topAU,
             ) +
   geom_col() +
   coord_flip() +
-  labs(x="",y="",title = "Top学者的本地被引频次")
+  labs(x="",y="",title = "发表文章本地被引频次最多的科学家（Top20）") +
+  scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
+                    breaks=(0:20)*1e4) 
 plot.ly(p,tooltip = "text")
+
+## GORDON JEFFREY I 的本地被引频次居然达到了不可思议的 50000+，相当于几乎所有的文章都引用了他的论文。
+## 这种情况是怎么出现的呢？是因为他本身发表有多篇论文，一篇文章如果引用了他十篇文章，那么一篇论文给他带来的本地被引频次就是 10。
+
 ```
 
-有意思的是，我们发现一个署名为“Gordon，JI”的作者在年度发文量动态中与“Gordon，Jeffrey I.”在时间上衔接了起来
-（图 \@ref(fig:top-author-production-over-time)）。经过检查，基本可以确定二者同为一人。
-在2006年以前署名为“Gordon，JI”，2006年以后开始署名为“Gordon，Jeffrey I.”。
-这样的话，“Gordon，Jeffrey I.”的本地被引频次达到了惊人的50000次以上，成为领域内当之无愧的最有影响力的科学家。
+Gordon 教授现在已经 70 多岁了，从图 \@ref(fig:top-author-production-over-time) 可以发现，他是唯一一位自 2001 年就开始在这一研究领域发表重要论文的研究人员。虽然最近两年的文章发表数量（点的大小表示发表数量的多少）已经较之前有所下降，但是仍然在产出重要成果。
 
 
 ```{r}
-author_prod <- lapply(topAU$Author,function(x){
+topAU_origin <- LC$Authors %>% head(30)
+author_prod <- lapply(topAU_origin$Author,function(x){
   x <- as.character(x)
   m <- M %>% filter(str_detect(AU, x)) %>%
     group_by(PY) %>%
@@ -547,16 +679,26 @@ author_prod <- lapply(topAU$Author,function(x){
 })
 
 author_prod <- do.call("rbind",author_prod)
-author_prod$author <- as_factor(author_prod$author)
+
+author_prod <- author_prod %>% mutate(Author=trimws(as.character(author)))  %>%
+  mutate(Author = str_remove_all(Author,pattern = "[[:punct:]]")) %>%
+  mutate(Author = ifelse(Author == "GORDON JI","GORDON JEFFREY I", Author)) %>%
+  group_by(PY, Author) %>%
+  summarise_at(c("record","TC","LCS"), sum) %>%
+  ungroup() %>% 
+  filter(Author %in% topAU_by_LCS$Author)
+
+author_prod$Author <- factor(author_prod$Author,levels = rev(topAU_by_LCS$Author))
+
 ```
 
 
 
-```{r top-author-production-over-time, fig.cap="Top学者发表论文的数量和本地被引频次",fig.asp=1.5}
-p <- ggplot(author_prod, aes(PY,author,size=record,color=LCS)) +
+```{r top-author-production-over-time, fig.cap="Top学者发表论文的数量（点大表示文章数量多）和本地被引频次（颜色深代表被引次数多）",fig.asp=1.5}
+p <- ggplot(author_prod, aes(PY,Author,size=record,color=LCS)) +
   geom_point() +
   scale_x_continuous(breaks = seq(2000,2019,by=2)) +
-  scale_color_gradient(low = brewer.pal(5,"Blues")[[3]],high = brewer.pal(5,"Blues")[[5]]) +
+  scale_color_gradient(low = brewer.pal(9,"Blues")[[3]],high = brewer.pal(9,"Blues")[[9]]) +
   labs(x="",y="",title = "Top学者发表论文的数量和本地被引频次") +
   scale_size(range = c(0.1,5))
 
@@ -565,6 +707,7 @@ plot.ly(p, tooltip = c("y","x","size","colour"))
 
 
 
+在这一章节，我们对其他学者并不一一做详细介绍，如果想了解学者的研究方向，建议访问 [热心肠日报](https://mr-gut.cn) 搜索作者姓名，可以得到中文解读的研究论文。
 
 
 
