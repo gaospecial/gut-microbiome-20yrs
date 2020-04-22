@@ -422,7 +422,7 @@ top_AFF %>% mutate(cumsum=cumsum(total)) %>% mutate(p2=cumsum/sum(total)) %>% fi
 
 
 
-```{r affiliation-location, fig.cap="主要研究机构在全球的分布"}
+```{r affiliation-location, fig.cap="主要研究机构（图中黄色的点）在全球的分布"}
 json_list <- readRDS("data-raw/affiliation/json_list.RDS")
 
 
@@ -619,16 +619,10 @@ nArticle_Gordon <- nrow(Gordon_publications)
 
    
 ```
-当然，仅凭发文数量可能还不足以说明研究人员的影响力。为此，我们使用被引次数来衡量顶尖学者的学术表现。
-在本地被引频次排行榜中（图 \@ref(fig:top-author-localcitations)），[Gordon Jeffrey I.](https://www.mr-gut.cn/search?q=GORDON+JEFFREY) 力压 Knight Rob，成为领域内当之无愧的“大佬”，他的本地被引频次累计超过了 50000 多次。
-
-这真是一个令人叹为观止的数字，小编一度以为是计算出现了问题。假如他只发表了 1 篇论文的话，这相当于几乎所有的文献都引用了他的文章。当然，实际上他总共发表了 `r nArticle_Gordon` 篇论文，平均每篇的本地被引频次为 `r Gordon_publications %>% pull(LCS) %>% sum()/nArticle_Gordon %>% round() ` 次。
-
-Gordon Jeffrey 教授现任圣路易斯华盛顿大学医学院基因组科学和系统生物学中心主任，是肠道菌群研究领域的泰斗级人物。[Gordon Jeffrey I.](https://gordonlab.wustl.edu/) 的实验室是关注肠道菌群与人体相互作用、菌群的演化机制等基本型问题，特别是肠道菌群在影响营养代谢中发挥的重要作用。他提倡用“菌群导向性食物（microbiota-directed foods）”改善儿童营养不良和治疗肠道菌群失调引起的疾病等。
 
 
 
-```{r top-author-localcitations, fig.cap="Top学者的本地被引频次",fig.asp=1.5}
+```{r top-author-localcitations, fig.cap="Top学者的本地被引频次"}
 # 对 LC 结果进行整理，去掉作者空格，标点符号之后，对作者的LCS进行合并
 LC_authors <- LC$Authors %>% 
   mutate(Author=trimws(as.character(Author)))  %>%
@@ -655,17 +649,18 @@ p <- ggplot(topAU_by_LCS,
   labs(x="",y="",title = "发表文章本地被引频次最多的科学家（Top20）") +
   scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
                     breaks=(0:20)*1e4) 
-plot.ly(p,tooltip = "text")
-
-## GORDON JEFFREY I 的本地被引频次居然达到了不可思议的 50000+，相当于几乎所有的文章都引用了他的论文。
-## 这种情况是怎么出现的呢？是因为他本身发表有多篇论文，一篇文章如果引用了他十篇文章，那么一篇论文给他带来的本地被引频次就是 10。
+plot.ly(p)
 
 ```
 
-Gordon 教授现在已经 70 多岁了，从图 \@ref(fig:top-author-production-over-time) 可以发现，他是唯一一位自 2001 年就开始在这一研究领域发表重要论文的研究人员。虽然最近两年的文章发表数量（点的大小表示发表数量的多少）已经较之前有所下降，但是仍然在产出重要成果。
+当然，仅凭发文数量可能还不足以说明研究人员的影响力。为此，我们使用被引次数来衡量顶尖学者的学术表现。
+在本地被引频次排行榜中（图 \@ref(fig:top-author-localcitations)），[Gordon Jeffrey I](https://www.mr-gut.cn/search?q=GORDON+JEFFREY) 力压 Knight Rob，成为领域内当之无愧的“大佬”，他的本地被引频次累计超过了 50000 多次。
 
+这真是一个令人叹为观止的数字，小编一度以为是计算出现了问题。假如他只发表了 1 篇论文的话，这相当于几乎所有的文献都引用了他的文章。当然，实际上他总共发表了 `r nArticle_Gordon` 篇论文，平均每篇的本地被引频次为 `r round(sum(Gordon_publications$LCS)/nArticle_Gordon)` 次。
 
-```{r}
+Gordon Jeffrey 教授现任圣路易斯华盛顿大学医学院基因组科学和系统生物学中心主任，是肠道菌群研究领域的泰斗级人物。[Gordon Jeffrey I](https://gordonlab.wustl.edu/) 的实验室是关注肠道菌群与人体相互作用、菌群的演化机制等基本型问题，特别是肠道菌群在影响营养代谢中发挥的重要作用。他提倡用“菌群导向性食物（microbiota-directed foods）”改善儿童营养不良和治疗肠道菌群失调引起的疾病等。
+
+```{r top-author-production-over-time, fig.cap="Top学者发表论文的数量（点大表示文章数量多）和本地被引频次（颜色深代表被引次数多）"}
 topAU_origin <- LC$Authors %>% head(30)
 author_prod <- lapply(topAU_origin$Author,function(x){
   x <- as.character(x)
@@ -690,20 +685,20 @@ author_prod <- author_prod %>% mutate(Author=trimws(as.character(author)))  %>%
 
 author_prod$Author <- factor(author_prod$Author,levels = rev(topAU_by_LCS$Author))
 
-```
 
-
-
-```{r top-author-production-over-time, fig.cap="Top学者发表论文的数量（点大表示文章数量多）和本地被引频次（颜色深代表被引次数多）",fig.asp=1.5}
 p <- ggplot(author_prod, aes(PY,Author,size=record,color=LCS)) +
   geom_point() +
-  scale_x_continuous(breaks = seq(2000,2019,by=2)) +
+  scale_x_continuous(breaks = seq(2000,2020,by=2),limits = c(2000,2020)) +
   scale_color_gradient(low = brewer.pal(9,"Blues")[[3]],high = brewer.pal(9,"Blues")[[9]]) +
   labs(x="",y="",title = "Top学者发表论文的数量和本地被引频次") +
   scale_size(range = c(0.1,5))
-
+# p
 plot.ly(p, tooltip = c("y","x","size","colour"))
 ```
+
+
+Gordon 教授现在已经 70 多岁了，从图 \@ref(fig:top-author-production-over-time) 可以发现，他是唯一一位自 2001 年就开始在这一研究领域发表重要论文的研究人员。虽然最近两年的文章发表数量（点的大小表示发表数量的多少）已经较之前有所下降，但是仍然在产出重要成果。
+
 
 
 
@@ -711,92 +706,247 @@ plot.ly(p, tooltip = c("y","x","size","colour"))
 
 
 
-## 期刊
+## 发表肠道菌群研究的主流期刊有哪些？
 
-```{r}
+
+
+在期刊的排行榜中（图 \@ref(fig:fig-top-J9-by-nRecord)），发文量最大的是三本开放获取期刊，分别是 PLoS ONE，Scientific Reports 和 Frontier in Microbiology 等。虽然开放获取期刊在国内的名声不佳，但是借助于巨大的发文量，这三本期刊在“肠道菌群”研究中也有不可忽视的影响力，这其中包括了相当数量的 SCI 高被引论文。
+
+
+```{r summary-journal,fig.cap="发文量最高的期刊",eval=keep_but_not_include}
 # 下一节
 i <- 4
+
+df <- tag_summary[[i]] %>% as.data.frame() %>%
+  filter(Tab!="NA") %>%
+  mutate(proportion=Freq/results$Articles) %>%
+  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
+  head(n) 
+p <- ggplot(df, aes(fct_reorder(Tab,Freq),Freq,text=text)) +
+  geom_col() +
+  # theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
+  labs(x="",y="文章总数") +
+  coord_flip()
+plot.ly(p)
 ```
 
-在期刊的排行榜中（图 \@ref(fig:summary-journal)），发文量最大的是三本开放获取期刊，分别是PLoS ONE，Scientific Reports和Frontier in Microbiology等。虽然开放获取期刊在国内的名声不佳，但是借助于巨大的发文量，这三本期刊在“肠道菌群”研究中也有不可忽视的影响力，这其中包括了高被引论文和我们依据本地被引频次定义的核心文献。
+```{r fig-top-J9-by-nRecord, fig.cap="发表文章数量最多的期刊中高被引论文（绿色）的比例"}
+journal_summary <- M %>% 
+  group_by(J9,HC) %>% 
+  summarise(nRecord=n(),total_TC=sum(TC)) %>%  
+  ungroup() %>%
+  complete(J9, HC, fill = list("nRecord"=0,"totoal_TC"=0))
 
 
-```{r summary-journal,fig.cap="发文量最高的期刊"}
+top_J9_by_nRecord <- journal_summary %>%
+  group_by(J9) %>%
+  summarise(nRecord = sum(nRecord)) %>%
+  arrange(desc(nRecord)) %>%
+  head(n)
+
+top_journal <- journal_summary %>%
+  filter(J9 %in% top_J9_by_nRecord$J9) %>%
+  mutate(ave_TC=total_TC/nRecord,
+         J9 = factor(J9,levels = rev(top_J9_by_nRecord$J9)))
+
+
+p <- ggplot(top_journal,aes(J9,nRecord,fill=HC)) + 
+  geom_col(show.legend=FALSE) +
+  labs(x="",y="文章总数") +
+  coord_flip()
+
+p
+# plot.ly(p,tooltip = c("y")) 
+  
+```
+
+值得关注的是，PNAS、GUT、Cell Host Microbe 这三个期刊不但发文量特别高，高被引论文的数量也特别多。这个结果形象的展示了这 3 个期刊在“肠道菌群”研究中的巨大影响力。
+
+```{r fig-top-J9-citation,fig.cap="不同期刊发表论文中高被引论文（绿色）和非高被引论文（红色）的评价引用次数差异",eval=keep_but_not_include}
+p <- ggplot(top_journal,aes(J9,ave_TC,fill=HC)) + 
+  geom_col(position = "dodge") +
+  labs(x="",y="平均引用次数") +
+  coord_flip()
+plot.ly(p,tooltip = c("y"))
+
+```
+
+
+影响因子是评价期刊的重要指标。在所有的论文中，影响因子介于3到5之间的论文数目最多，小于3的论文次之，数目最少的是影响因子大于10（小于20）和大于20的论文（图 \@ref(fig:all-article-group-by-IF)）。每年影响因子在5以上的论文基本上不超过30%。
+
+```{r all-article-group-by-IF, fig.cap="论文影响因子的分布情况"}
+# 按影响因子分析文章数量和比例
+library(dplyr)
+plot_by_IF <- function(df){
+  p1 <- ggplot(df,aes(PY,n,fill=group)) + 
+    geom_col() + 
+    facet_wrap(~group,ncol = 1,scales = "free_y")  +
+    labs(x="论文发表年份",y="数量") +
+    theme(strip.text = element_blank(),
+          axis.text.x = element_text(),
+          axis.ticks.x = element_line(),
+          legend.position = "none")
+
+  p2 <- ggplot(df,aes(PY,proportion,fill=group)) +
+    geom_col() + 
+    scale_y_continuous(labels = function(x)paste0(x*100,"%"),
+                       breaks = 0:10/10) +
+    labs(x="论文发表年份",y="比例") +
+    guides(fill=guide_legend(title="Impact\nFactor")) + 
+    theme(legend.position = "right")
+  
+  # return(p1)
+  plot_grid(p1,p2)
+}
+
+df <-  M  %>%
+  group_by(PY,group) %>%
+  summarise(n=n())  %>%
+  group_by(PY) %>%
+  mutate(proportion=n/sum(n))
+
+plot_by_IF(df)
+```
+
+
+## 研究领域和研究内容一瞥
+
+
+在研究领域[^WC]的排行榜中（图 \@ref(fig:summary-WC)），微生物学、胃肠病和肝病学、免疫学、多学科交叉科学和营养学等为排名前五主要的研究领域。而在前 20 的学科分类中，还包括生物化学和分子生物学、食品科学与技术、药学、农学、兽医学、神经科学、肿瘤学等多种不同学科类型，学科间的差异化程度之高，充分体现了**肠道菌群研究是一门系统科学**的内涵。
+
+[^WC]: WoS给出的研究方向与研究领域重合度较高，在此不做展示。
+
+```{r summary-WC,fig.cap="研究领域排行榜"}
+# WC, Web of Science 类别
+i <- 7
 df <- tag_summary[[i]] %>% as.data.frame() %>%
   filter(Tab!="NA") %>%
   mutate(proportion=Freq/results$Articles) %>%
   mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
   head(n)
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
-  labs(x="",y="文章总数")
-plot.ly(p)
+
+treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
 ```
 
 
-## 关键字
-
-Web of Science 数据库为每篇文献分配了两种类型的关键词，一种是数据库系统根据文章内容指定的系统关键字，另一种是作者自己在文章中列示的关键字。我们首先看作者关键字的排行榜。在排除了我们使用的搜索限定词之后（参见 \@ref(data-source)），可以得出最受关注的关键字可以分为几类：首先，益生菌（PROBIOTICS、PROBIOTIC）是最受关注的一个词语，还包括排在第五名的PREBIOTICS，以及明星益生菌乳酸杆菌（LACTOBACILLUS）和双歧杆菌（BIFIDOBACTERIUM），这是第一类；接下来是炎症（INFLAMMATION）、肥胖（OBESITY）、失调（DYSBIOSIS）、克罗恩病（CORHN'S DISEASE）和溃疡性结肠炎（ULCERATIVE COLITIS）等一些疾病相关的关键字；其次，是短链脂肪酸、饮食、抗生素、营养、代谢等与肠道菌群的微生态密切相关的共识（图 \@ref(fig:summary-DE)）。
+Web of Science 数据库为每篇文献分配了两种类型的关键词，一种是数据库系统根据文章内容指定的系统关键字，另一种是作者自己在文章中列示的关键字。我们首先看作者关键字的排行榜。
 
 
-```{r summary-DE,fig.cap="作者关键字"}
-# 作者关键字
-i <- 5
+```{r summary-keyword, fig.cap="作者关键词和系统关键词"}
 
-
-
-# 关键字去掉搜索限定词
-df <- tag_summary[[i]] %>% as.data.frame() %>%
+# 作者关键词和系统关键词
+df1 <- tag_summary[[5]] %>% as_tibble %>%
   filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
+  mutate(Tab=ifelse(Tab=="PROBIOTIC","PROBIOTICS",Tab)) %>%
+  mutate(Tab=ifelse(Tab=="PREBIOTIC","PREBIOTICS",Tab)) %>%
+  group_by(Tab) %>%
+  summarise(n=sum(n)) %>%
+  filter(!str_detect(Tab,search_keyword_regex)) %>%
+  arrange(desc(n))
+
+df1_top <- df1 %>%
+  head(n) %>%
+  mutate(type="作者关键词") %>%
+  arrange(n)
+
+df2 <- tag_summary[[6]] %>% as_tibble() %>%
+  filter(Tab!="NA") %>%
   filter(!str_detect(Tab,search_keyword_regex))
 
-p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
-  labs(x="",y="文章总数")
-plot.ly(p)
-```
-
-
-```{r summary-DE-wordcloud, fig.cap="作者关键字的词云"}
-wordcloud2(head(df,200),size=0.5)
-```
-
-与作者关键词相比，系统分配的关键词则没有作者关键词那么明显的趋势（图 \@ref(fig:summary-ID)）。
-
-```{r summary-ID, fig.cap="系统关键字"}
-i <- 6 # 系统关键字
+df2_top <- df2 %>%
+  head(n) %>%
+  mutate(type="系统关键词") %>%
+  arrange(n)
 
 # 关键字去掉搜索限定词
-df <- tag_summary[[i]] %>% as.data.frame() %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  filter(!str_detect(Tab,search_keyword_regex))
+df <- rbind(df1_top,df2_top) %>%
+  mutate(type=as_factor(type)) %>%
+  arrange(n) %>%
+  mutate(Tab=as_factor(Tab)) %>%
+  mutate(proportion=n/results$Articles) %>%
+  mutate(text=paste(n," (",round(proportion*100,1),"%)",sep = ""))
 
-p <- ggplot(head(df,n), aes(Tab,Freq,text=text)) +
+p <- ggplot(df, aes(Tab,n,text=text)) +
   geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1)) +
-  labs(x="",y="文章总数")
-plot.ly(p)
+  facet_wrap(~type,scales = "free") +
+  labs(x="",y="文章总数") +
+  coord_flip()
+
+p
+# plot.ly(p)
+```
+
+在排除了我们使用的搜索限定词之后（参见 \@ref(data-source)），可以得出最受关注的关键字可以分为几类：首先，益生菌（PROBIOTICS）是最受关注的一个词语，还包括排在后面的PREBIOTICS，以及明星益生菌乳酸杆菌（LACTOBACILLUS）和双歧杆菌（BIFIDOBACTERIUM），这是第一类；接下来是炎症（INFLAMMATION）、肥胖（OBESITY）、失调（DYSBIOSIS）、克罗恩病（CORHN'S DISEASE）和溃疡性结肠炎（ULCERATIVE COLITIS）等一些疾病相关的关键字；其次，是短链脂肪酸、饮食、抗生素、营养、代谢等与肠道菌群的微生态密切相关的共识（图 \@ref(fig:summary-keyword)）。
+
+
+系统关键词与作者关键词的关注点有所不同（图 \@ref(fig:summary-keyword)），多样性（DIVERSITY）是最常见的关键词，文章数量有近 4000 篇；其次是疾病（DISEASE）、炎症（INFLAMMATION）、健康（HEALTH）、克罗恩病（CROHN'S DISEASE）、感染（INFECTION）、肥胖（OBESITY）/风险（RISK）和溃疡性结肠炎（ULCERATIVE COLITIS）等于疾病密切相关的关键词；再次，是表达（EXPRESSION）、鉴定（IDENTIFICATION）、小鼠（MICE）、双盲（DOUBLE BLIND）、体外（IN VITRO）和细胞（CELL）等于实验设计密切相关的字眼；最后是饮食（DIET）和代谢（METABOLISM）等其它相关字眼。
+
+
+```{r summary-keyword-wordcloud, fig.cap="关键字词云"}
+df <-  rbind(df1,df2) %>% group_by(Tab) %>% summarise(n=sum(n)) %>% arrange(desc(n)) %>% head(100)
+wordcloud2(df,size=0.4,fontFamily = "微软雅黑")
 ```
 
 
-```{r summary-ID-wordcloud, fig.cap="系统关键字的词云"}
-wordcloud2(head(df,200),size=0.5)
-```
+二者共同关注的内容在于几种常见的肠道相关疾病以及益生元等几个点，下面的词云展示了作者关键词和系统关键词合并之后最常见的200个关键词频次（图 \@ref(fig:summary-keyword-wordcloud)）。
 
+```{r top200-keyword-cluster-heatmap,fig.width=10,fig.asp=0.9, fig.cap="使用次数最多的前200个关键词在二十年间的使用频次变化",eval=keep_but_not_include}
 ### 关键词的点阵图
 
 
+# keyword每年的频次（作者关键词和系统关键词）
+keyword <- M %>% select(PY,ID,DE) %>% as_tibble() %>%
+  unite(keyword,ID,DE,sep = ";") %>%
+  separate_rows(keyword,sep = ";") %>%
+  mutate(keyword=trimws(keyword)) %>%
+  filter(keyword!="NA") %>%
+  mutate(keyword=ifelse(keyword=="PROBIOTIC","PROBIOTICS",keyword)) %>%
+  mutate(keyword=ifelse(keyword=="PREBIOTIC","PREBIOTICS",keyword)) %>%
+  filter(!str_detect(keyword,search_keyword_regex))
+
+top200_keyword <- table(keyword$keyword) %>% sort(decreasing = TRUE) %>% head(200)
+top200_keyword_matrix <- keyword %>% 
+  filter(keyword %in% names(top200_keyword)) %>%
+  group_by(PY,keyword) %>%
+  summarise(freq=n()) %>%
+  pivot_wider(id_cols = "keyword",names_from = "PY",values_from = "freq",values_fill = list("freq"=0))
+mat <- log10(as.matrix(top200_keyword_matrix[-1]) + 1)
+rownames(mat) <- top200_keyword_matrix$keyword
+mat <- scale(mat)
+k4 <- cutree(hclust(dist(mat),method = "ward.D"),k=3)
+anno_cols <- data.frame(group=rep(c("2000-2009","2010-2019"),each=10))
+rownames(anno_cols) <- 2000:2019
+plots <- lapply(1:3,function(i){
+  keyword_name <- names(k4[k4==i])
+  m <- mat[keyword_name,]
+  pheatmap::pheatmap(m,cluster_cols = FALSE,
+                     fontsize = 6,
+                     method = "ward.D",
+                     legend_breaks = c(-4,4),
+                     silent = TRUE,
+                     legend = FALSE,
+                     show_colnames = TRUE,
+                     # annotation_col = anno_cols,
+                     cutree_cols = 2)
+})
+
+plot_grid(plots[[1]]$gtable,plots[[2]]$gtable,plots[[3]]$gtable,ncol = 3,rel_widths = c(12,12,12),align = "v")
+
+```
+
+```{r}
+# 计算keyword之间的关系
+```
 
 
+
+
+
+
+
+
+```{r summary-ID-growth, fig.cap="增长最迅速的系统关键字",eval=keep_but_not_include}
 ### 关键词的时序分布
-
-```{r summary-ID-growth, fig.cap="增长最迅速的系统关键字"}
 topID <- KeywordGrowth(M,Tag = "ID",top = 22)
 df <- topID %>% pivot_longer(cols = -Year) %>%
   filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
@@ -805,9 +955,9 @@ plot.ly(p)
 ```
 
 
-图 \@ref(fig:LCS-summary-ID-growth-table) 是LCS论文中增长最迅速的关键字。
 
-```{r LCS-summary-ID-growth-table, fig.cap="LCS论文中增长最迅速的关键字"}
+```{r LCS-summary-ID-growth-table, fig.cap="LCS论文中增长最迅速的关键字",eval=keep_but_not_include}
+## 图 \@ref(fig:LCS-summary-ID-growth-table) 是LCS论文中增长最迅速的关键字。
 topID <- KeywordGrowth(MC,Tag = "ID",top = 60)
 df <- topID %>% pivot_longer(cols = -Year) %>%
   filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
@@ -836,7 +986,7 @@ DT::datatable(df,
 
 
 
-```{r summary-DE-growth, fig.cap="增长最迅猛的作者关键字"}
+```{r summary-DE-growth, fig.cap="增长最迅猛的作者关键字",eval=keep_but_not_include}
 topID <- KeywordGrowth(M,Tag = "DE",top = 22)
 df <- topID %>% pivot_longer(cols = -Year) %>%
   filter(!str_detect(name,search_keyword_regex)) # 去掉搜索词
@@ -846,110 +996,6 @@ plot.ly(p)
 
 
 
-
-## 研究领域
-
-Web of Science 的研究领域分为研究类别（WC）和研究方向（SC）两个类型（与关键词系统类似？）。
-
-
-在研究领域的排行榜中（图 \@ref(fig:summary-WC)），微生物学、胃肠病和肝病学、免疫学、多学科交叉科学和营养学等为排名前五主要的研究领域。
-
-
-```{r}
-# WC, Web of Science 类别
-i <- 7
-df <- tag_summary[[i]] %>% as.data.frame() %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
-```
-
-
-```{r summary-WC, fig.cap="SCI数据中的研究领域"}
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
-        plot.margin = unit(c(0.5,0,5,1),"cm")) +
-  labs(x="",y="文章总数")
-plot.ly(p)
-```
-
-```{r}
-treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
-```
-
-在WoS给出的研究方向中（图 \@ref(fig:summary-SC)）中，排在前五的分别是微生物学、胃肠病和肝病学、免疫学、生物化学分子生物学、科学技术等。
-
-```{r summary-SC,fig.cap="SCI数据库中的研究方向",fig.asp=1}
-# SC, 研究方向
-i <- 8
-df <- tag_summary[[i]] %>% as.data.frame() %>%
-  filter(Tab!="NA") %>%
-  mutate(proportion=Freq/results$Articles) %>%
-  mutate(text=paste(Freq," (",round(proportion*100,1),"%)",sep = "")) %>%
-  head(n)
-p <- ggplot(df, aes(Tab,Freq,text=text)) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 60,vjust = 1,hjust = 1),
-        plot.margin = unit(c(0.5,0,5,1),"cm")) +
-  labs(x="",y="文章总数")
-plot.ly(p)
-```
-
-
-```{r}
-treemap(df,index = "Tab",vSize = "Freq",vColor = "Tab",title = "")
-```
-
-
-
-
-
-
-
-## 引用网络
-
-### 耦合网络
-
-
-
-*耦合网络分析的代码运行不成功*
-
-```{r eval=F}
-# 分析 LCS 排名靠前的文献引用网络，对网络进行聚类。
-
-# 对引用网络进行简化的几个途径：
-# 
-# - 只考虑高被引论文。高被引论文可以是SCI数据库定义的高被引论文，也可以是基于LCS的高被引论文，或者是本地GCS排名前1%的论文。
-# - 需要考虑论文发表的时间，对发表时间长短不一的论文进行归一化之后才能比较。
-# - 只考虑综述？
-
-
-
-NetMatrix <- biblioNetwork(highly_cited,analysis = "coupling",network = "references",sep = ";")
-
-S <- normalizeSimilarity(NetMatrix, type = "jaccard")
-```
-
-### 历史引证网络
-
-历史引证网络的思路来源于 HistCite 软件，通常按照时间的顺序将文献关联，通过文献来解释某一领域的演进过程。
-
-```{r eval=F}
-histResults <- histNetwork(highly_cited,min.citations = 200,sep = ";")
-net <- histPlot(histResults,size = 5)
-```
-
-### 共被引网络
-
-
-
-```{r eval=F}
-NetMatrix <- biblioNetwork(highly_cited,analysis = "co-citation",network = "references")
-net <- networkPlot(NetMatrix,degree = 50)
-
-```
 
 
 
