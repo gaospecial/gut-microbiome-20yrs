@@ -1,8 +1,8 @@
 # 方法论 {#method}
 
-为了剖析肠道菌群的研究格局、历史脉络、研究热点，我们从知名的文献数据库中采集了历史文献信息，并采用文献计量学的方法分层推进、逐步深入，由总体到局部、由概况到细节，综合采用了多种分析手段，才最终得到了本文中涉及的一些相关结论。
+为了剖析肠道菌群的研究格局、历史脉络、研究热点，我们从知名的文献数据库中采集了历史文献信息，并采用文献计量学的方法分层推进、逐步深入，由总体到局部、由概况到细节，综合采用了多种分析手段，才最终得到了本文中涉及的一些相关结论。除了文献的数量，我们还特别关注了少数重要的核心文献，用于提炼研究热点，比较研究水平等；此外，还采用文献网络分析的手段对引证关系、合作关系和共词关系进行分析和可视化。
 
-在这一部分，我们将对分析中采用的方法论做一个简单的描述。
+在这一部分，我们将对分析中采用的这两个重要方法做一个简单的描述。
 
 
 ## 如何确定核心文献？
@@ -44,6 +44,7 @@ db_cache <- "E:/Spring_Work/Corporate_Bussiness/C40_Data/cache/"
 papers <- readRDS(paste0(db_cache,"papers.RDS")) %>% as_tibble()
 fragments <- readRDS(paste0(db_cache,"fragments.RDS")) %>% as_tibble()
 
+
 real_paper <- papers %>% 
   filter(status==3 & classify=="audit" & journal_id=="1") %>%
   select(uuid,title,share_title,summary,remark,fragment_id) %>% 
@@ -51,6 +52,7 @@ real_paper <- papers %>%
   mutate(DI=toupper(doi)) %>% 
   select(DI,uuid,share_title)
 
+rm(papers,fragments)
 
 MC_HC_article <- M %>%
   filter(CORE==TRUE, HC==TRUE) %>%
@@ -70,15 +72,14 @@ MC_HC_article <- M %>%
                            mrgut_permanent_link(type = "html",
                                                 uuid = uuid,
                                                 title = share_title,
-                                                alt = ""))) %>%
-  select(title_en,daily_cn,PY,J9,LCS)
+                                                alt = "")))
+
 J9_lvl <- MC_HC_article %>% group_by(J9) %>%
   summarise(avg_LCS=sum(LCS)) %>%
   arrange(desc(avg_LCS))
-  mutate(J9=as.factor(J9))
 MC_HC_article$J9 <- factor(MC_HC_article$J9,levels = J9_lvl$J9)
 
-DT::datatable(MC_HC_article, 
+DT::datatable(MC_HC_article %>% select(title_en,daily_cn,PY,J9,LCS), 
               colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
           escape = FALSE,
           rownames = FALSE,
@@ -92,7 +93,7 @@ DT::datatable(MC_HC_article,
                          'pageLength',
                          list(extend='copy'),
                          list(extend="excel",
-                              filename="export",
+                              filename="VIP-article-in-gut-microbiome-study",
                               header=TRUE,
                               title="")
                          ),
@@ -170,6 +171,11 @@ include_graphics("citespace/co-occurance-example.png")
 ```
 
 
+## 核心论文的分类
+
+```{r}
+library(textreuse)
+```
 
 
 
