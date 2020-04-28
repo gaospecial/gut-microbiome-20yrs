@@ -1,164 +1,111 @@
 # (PART) 国际研究格局 {-}
 
-# 国家产出和国际合作 {#global}
+# 全球合作网络 {#global}
 
 
-## 国际排名的变化
-
-### 如何计算国家间的产出？
-
-一篇文章经常会出现由来自于多个国家的研究人员共同完成的情况。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
+在这一部分，我们将解析肠道菌群研究的国际合作关系，并更为详细的解读美中两国的肠道菌群研究格局。
 
 
-```{r}
-# 计算各国加权发文量
-listCO <- strsplit(M$AU_CO_NR,";")
-listCO <- lapply(listCO,trim)
-nCO <- unlist(lapply(listCO,length))
-fracCO <- unlist(lapply(nCO, function(x){rep(1/x,x)}))
 
-if (length(M$PY) != length(nCO)) warning("length(PY) is not equal to length(nCO).")
-PY <- unlist(lapply(seq_along(nCO),function(x){rep(M$PY[[x]],nCO[[x]])} ))
+```{r top-country-collaboration-sankey, fig.cap="主要国家间的合作关系", fig.asp=2,fig.width=5}
+# WA <- cocMatrix(data.frame(M), Field = "AU_CO_NR")  # 共现矩阵
+# all_country <- colnames(WA)
+# china_part <- all_country[is.part_of_china(all_country)]
+# CHINA <- Matrix::rowSums(WA[,china_part])
+# WA <- WA[, !all_country %in% c(china_part,"NA")]
+# WA <- cbind(WA,CHINA)
+# netMatrix <- Matrix::crossprod(WA,WA)
+# country_collaboration_netMatrix <- netMatrix[colnames(netMatrix)!= "NA", colnames(netMatrix)!= "NA"]
+# saveRDS(country_collaboration_netMatrix,file = "data/country_collaboration_networks.RDS")
+netMatrix <- readRDS("data/country_collaboration_networks.RDS")
+mostProdCountries <- readRDS("data/mostProdCountries.RDS")
+top_country <- levels(mostProdCountries$Country)
+top_country_adj_matrix <- netMatrix[top_country,top_country]
+
+m <- top_country_adj_matrix
+# m[upper.tri(m,diag = TRUE)] <- 0
+sankey_df <- as.matrix(m) %>%
+  data.frame(check.names = FALSE) %>%
+  rownames_to_column() %>%
+  pivot_longer(cols = -rowname) %>%
+  filter(value > 0)
+colnames(sankey_df) <- c("source","target","value")
+sankey_df <- sankey_df %>%
+  filter(source!=target)
+sankey_df$target <- paste(sankey_df$target," ",sep = "")
+# From these flows we need to create a node data frame: it lists every entities involved in the flow
+nodes <- data.frame(name=c(rev(top_country),paste(rev(top_country)," ",sep = "")),stringsAsFactors = FALSE) %>%
+  mutate(countries=trimws(name)) %>%
+  left_join(country_translations)
+# nodes <- data.frame(name=c(as.character(sankey_df$source), as.character(sankey_df$target)) %>% unique())
 
 
-country_output <- data.frame(CO=unlist(listCO),
-                             PY=PY,
-                             Frac=fracCO) %>%
-  group_by(CO,PY) %>%
-  summarise(contribution=sum(Frac))
+# With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
+sankey_df$IDsource=match(sankey_df$source, nodes$name)-1 
+sankey_df$IDtarget=match(sankey_df$target, nodes$name)-1
+
+# prepare colour scale
+ColourScal ='d3.scaleOrdinal() .range(["#FDE725FF","#B4DE2CFF","#6DCD59FF","#35B779FF","#1F9E89FF","#26828EFF","#31688EFF","#3E4A89FF","#482878FF","#440154FF"])'
+# Make the Network
+library(networkD3)
+sankeyNetwork(Links = sankey_df, Nodes = nodes,
+                     Source = "IDsource", Target = "IDtarget",
+                     Value = "value", NodeID = "China", 
+                     sinksRight=FALSE, colourScale=ColourScal, nodeWidth=40, fontSize=13, nodePadding=20,
+              iterations=0)
 ```
 
 
+首先，我们看一下全球肠道菌群研究前 `r length(top_country)` 个国家间合作发表论文的情况。在图 \@ref(fig:top-country-collaboration-sankey) 中，展示了两两之间合作发表论文的数量。例如，中美合作发表论文的数目有 1378 篇，这是所有国家中最多的；其次是英美之间合作发表论文的情形，有 898 篇；其次是美加之间合作发表论文 800 篇；再次是美德之间合作发表论文 705 篇；第五名是美法之间合作发表论文 522 篇。
+
+这前五名中，都有**美国**的出现，说明了美国科学家在合作研究中占有的核心地位。
 
 
-```{r}
-topN <- 10
+```{r country-collaboration-network, fig.cap="国家间的合作网络",fig.width=6,fig.asp=1}
+adj_mat <- top_country_adj_matrix
+# adj_mat <- netMatrix
+g <- graph_from_adjacency_matrix(adj_mat,weighted = TRUE,mode = "undirected")
 
-list <- lapply(unique(country_output$PY),function(y){
-  country_output %>% filter(PY==y, CO!="NA") %>%
-    arrange(desc(contribution)) %>%
-    head(topN) %>% 
-    ungroup() %>%
-    mutate(rank=row_number())
-})
+g <- simplify(g)
+vertex.attributes(g)$centrality <- eigen_centrality(g)[[1]]
+vertex.attributes(g)$size <- ( vertex.attributes(g)$centrality * 100 ) %>% sqrt() * 3
 
-top_country_output <- do.call("rbind",list)
-top_country_output$rank <- factor(top_country_output$rank,levels = 20:1)
-top_country_output <- top_country_output %>%
-  left_join(country_multi_lang,by=c("CO"= "countries")) %>%
-  mutate(chinese_abbr=str_sub(China,end = 1))
-```
+edge.attributes(g)$width <- log10(edge.attributes(g)$weight)
+# plot(g)
 
-
-如果我们按照论文发表量对各国“肠道菌群”研究进行排序，可以发现美国一直是排在第一位的，而第二名至第十名则一直在变动。在2000年，美、日、英、法、德是发文量最多的五个国家，到了2010年，前五名是美、法、日、德、英五个国家。值得一提的是，自2010年开始，中国的“肠道菌群”研究以锐不可当的势头，用了三年的时间直接从第十名升到第二名，并一直保持至今（图 \@ref(fig:top-country-ranking)）。
-
-```{r top-country-ranking, fig.cap="各国加权发文量排行榜"}
-p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,group=CO)) + 
-  geom_point(size=6) +  geom_line(size=5,alpha=1/3) +
-  geom_text(aes(label=chinese_abbr), hjust=0.5, vjust=0.5,size=3,color="grey",check_overlap = T) +
-  labs(x="",y="",title = "各国加权发文量排行榜") +
-  scale_color_manual(values = rainbow(20)) +
-  theme(plot.title = element_text(hjust = 0,size=16),
-        plot.subtitle = element_text(hjust=0,color = "grey20",size=14),
-        legend.position = "none") 
-
-plot.ly(p)
-```
-
-
-```{r top-country-output-gif, fig.cap="各国加权发文量"}
-p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
-  geom_col() + 
-  geom_text(aes(label=CO),position = position_stack(vjust = 1), hjust=0) +
-  transition_time(PY) + 
-  labs(x="",y="",title = "各国加权发文量",subtitle="年份：{round(frame_time)}") +
-  theme(axis.text.y = element_blank(),
-        plot.title = element_text(hjust = 0,size=16),
-        plot.subtitle = element_text(hjust=0,color = "grey20",size=14)) +
-  coord_flip()
-animate(p,fps = 10,start_pause=20,end_pause = 20)
-```
-
-
-## 全球合作网络
-
-
-国际化在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r topN` 个国家中，美国的研究有近 20% 是与其它国家合作完成的，中国发表的论文中也有约 20% 的文章是与其它国家合作完成的；英、法、德、意、加等国的合作研究比例在 30% 附近或者更高。比较例外的是日本，仅有 13% 的研究与其它国家合作完成。
-
-
-```{r MCP-SCP, fig.cap="各国单独（蓝色）和合作发表（红色）论文的比例"}
-mostProdCountries <- result_summary$MostProdCountries %>%
-  select(Country,SCP,MCP) %>%
-  head(topN) %>%
-  mutate_all(trim) %>%
-  pivot_longer(cols = -Country) %>%
-  mutate(value=as.numeric(value),
-         Country=as_factor(as.character(Country))) %>%
-  group_by(Country) %>%
-  mutate(proportion=value/sum(value))
-mostProdCountries$Country <- factor(mostProdCountries$Country, levels=rev(levels(mostProdCountries$Country)))
-
-p <- ggplot(mostProdCountries,aes(Country,value,fill=name,text=paste0(value,"(",format(proportion*100,1),"%)"))) + 
-  geom_col() +
-  coord_flip() +
-  labs(title = "单独和合作发表论文的比例",x="",y="") +
-  scale_fill_discrete(name="",breaks=c("SCP","MCP"),labels=c("单独发表","合作发表")) +
-  theme(legend.position = c(0.5,0.3), legend.direction = "horizontal")
-
-plot.ly(p) %>%
-  layout(
-    legend = list(x=0.5,y=0.3,orientation="v")
-  )
-  
-```
-
-
-
-我们采用网络分析的方法阐释国际合作。
-
-```{r}
-WA <- cocMatrix(data.frame(M), Field = "AU_CO_NR")  # 共现矩阵
-netMatrix <- Matrix::crossprod(WA,WA)
-netMatrix <- netMatrix[colnames(netMatrix)!= "NA", colnames(netMatrix)!= "NA"]
-net <- networkPlot(NetMatrix = netMatrix,
-                   n=50,                      # 节点的数目
-                   Title = "国家间的合作",
-                   type = "auto",           # 图的布局
-                   cluster = "spinglass" ,      # 聚类的方法，c("none", optimal", "louvain","infomap","edge_betweenness","walktrap", "spinglass", "leading_eigen", "fast_greedy"
-                   size = T,                  # 
-                   label.color = TRUE,        # 节点是否按群体着色
-                   halo = F,                  # 相同群体会使用同一种颜色
-                   weighted = T,
-                   remove.multiple = T,
-                   remove.isolates = F,
-                   verbose = F                # 不画图
-                   )
-```
-
-
-```{r country-collaboration-network, fig.cap="国家间的合作网络"}
-data <- toVisNetworkData(net$graph)
+data <- toVisNetworkData(g)
 data$nodes %<>% mutate(id=str_to_title(id))
 data$edges %<>% mutate_at(c("from","to"),str_to_title)
-visNetwork(nodes=data$nodes, edges = data$edges,width = 800) %>%
-  visIgraphLayout() %>%
-  visNodes(size = "size",color = "red",group = "community") %>%
+
+pal_Reds <- brewer.pal(n=7,name = "Reds")
+Reds <- colorRampPalette(pal_Reds)(nrow(data$nodes))
+data$nodes <- data$nodes %>% arrange(size) %>%
+  mutate(color=Reds)
+
+visNetwork(nodes=data$nodes, edges = data$edges) %>%
+  visIgraphLayout(physics = TRUE) %>%
+  visNodes(size = "size",color = "color",shadow = TRUE) %>%
+  visEdges(width = "width",color = "#B3B3B3") %>%
   visOptions(
     selectedBy = "id",
-    highlightNearest = list(enabled=TRUE,degree=1)
-  )
+    highlightNearest = TRUE
+  ) %>% 
+  visInteraction(navigationButtons = TRUE)
 
 ```
 
-## 大国的合作网络
 
-```{r eval=F}
-library(networkD3)
-sankeyNetwork(filter(data$edges,from=="Usa"),Nodes = data$nodes,Source = "from",Target = "to",Value = "weight",NodeID = "id")
-```
+为了更直观的观察全球的合作网络，我们采用网络分析的方法进一步阐述。点的大小代表*特征向量中心性*，线的宽度表示国家间合作关系的多少（图 \@ref(fig:country-collaboration-network)）。这个网络是一个基本上完全连接的网络，即所有的 `r length(top_country)` 个国家与其它所有国家间都有合作关系的存在。*特征向量中心性*大的节点对相连的节点影响更大，因此可以直观的看到各个国家在整个合作网络中的重要性。
 
 
 
+## 美国是肠道菌群研究的领跑者
+
+### 美国的菌群研究开展的最早，体量最大，领域最广泛
+
+### 各大高校、研究所和社会力量共同助力肠道菌群研究
+
+### 肠道转化应用异军突起，从临床到产业革命
 
 
 
