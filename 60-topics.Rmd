@@ -1,9 +1,160 @@
-
-
 # 研究热点 {#research-topic}
 
 
-## 五年研究热点
+## 研究热点的变迁
+
+
+```{r}
+
+diet_keywords <- list(primary=c("\\bdiet[:alpha:]+"), 
+                      secondary = c("food","nutrition","supplement","fasting","calorie restriction",
+                                    "fibre|fiber","carbohydrate","meat","fish","egg","milk","dairy",
+                                    "fruit","vegetable","additives","sweetener"))
+
+immunity_keywords <- list(primary=c("immun[:alpha:]+"),
+                          secondary = c("inflamm[:alpha:]+","barrier","defense","T cell","B cell",
+                                        "lymphocyte","macrophage","cytokine","dendritic","neutrophil",
+                                        "interleukin","antibody"))
+
+metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
+                            secondary = c("obesity","diabet[:alpha:]+","insulin","lipid","\\bfat[:alpha:]+",
+                                          "adipose","NAFLD","NASH","nonalcoholic steatohepatitis","SCFA"))
+
+cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
+                        secondary = c("CRC","CAC","PDAC","HCC"))
+
+cardio_keywords <- list(primary = c("heart|cardio[:alpha:]+"),
+                        secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
+
+
+topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords)
+topic_en <- c("diet","immunity","metabolism","cancer","cardiac")
+topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病")
+topic <- topic_cn
+nTopic <- length(topic)
+```
+
+
+```{r}
+
+topic_articles_all <- lapply(topic_keywords, function(keyword){
+  M %>%
+    filter(str_detect(content, regex(keyword$primary, ignore_case = T)))
+})
+
+topic_nRecords_all <- lapply(topic_articles_all, function(article){
+  article %>% group_by(PY) %>%
+    summarise(nRecord = n())
+})
+```
+
+```{r topic-nRecord-in-all-articles, fig.cap="各研究主题全部论文数量对比"}
+count <- sapply(topic_articles_all, nrow)
+df <- data.frame(topic=topic, count=count)
+df$topic <- factor(df$topic, levels = rev(topic))
+
+
+ggplot(df, aes(topic,count)) + 
+  geom_col(width = 0.8) +
+  # geom_text(aes(label=topic),position = position_stack(0.5)) +
+  labs(x="",y="") +
+  coord_flip()
+
+```
+
+```{r topic-trend-in-all-articles, fig.cap="各研究主题发表的全部论文数量变化情况"}
+plot_list <- lapply(1:nTopic, function(i){
+  df <- topic_nRecords_all[[i]]
+  ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
+    labs(x="",y="",title = topic[[i]])
+})
+
+plot_grid(plotlist = plot_list, ncol = 3)
+```
+
+
+图 \@ref(fig:overlap-of-topic-in-all-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
+
+```{r overlap-of-topic-in-all-article, fig.cap="各研究主题全部论文间的重叠度"}
+# 各研究主题间的重叠度
+library(UpSetR)
+
+topic_articles_all_SR <- lapply(topic_articles_all, function(m){
+  m$SR
+})
+
+names(topic_articles_all_SR) <- topic
+
+
+upset(fromList(topic_articles_all_SR),
+      sets=rev(names(topic_articles_all_SR)),
+      keep.order = T,
+      mb.ratio = c(0.7, 0.3),
+      order.by = "freq")
+
+```
+
+```{r}
+topic_articles_core <- lapply(topic_keywords, function(keyword){
+  MC_HC_article %>%
+    filter(str_detect(content, regex(keyword$primary, ignore_case = T)))
+})
+
+topic_nRecords_core <- lapply(topic_articles_core, function(article){
+  article %>% group_by(PY) %>%
+    summarise(nRecord = n())
+})
+```
+
+
+
+```{r topic-nRecord-in-core-articles, fig.cap="各研究主题关键论文数量对比"}
+count <- sapply(topic_articles_core, nrow)
+df <- data.frame(topic=topic, count=count)
+df$topic <- factor(df$topic, levels = rev(topic))
+
+
+ggplot(df, aes(topic,count)) + 
+  geom_col(width = 0.8) +
+  # geom_text(aes(label=topic),position = position_stack(0.5)) +
+  labs(x="",y="") +
+  coord_flip()
+
+```
+
+
+
+```{r topic-trend-in-core-articles, fig.cap="各研究主题发表的关键论文数量变化情况"}
+plot_list <- lapply(1:nTopic, function(i){
+  df <- topic_nRecords_core[[i]]
+  ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
+    labs(x="",y="",title = topic[[i]])
+})
+
+plot_grid(plotlist = plot_list, ncol = 3)
+```
+
+图 \@ref(fig:overlap-of-topic-in-core-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
+
+```{r overlap-of-topic-in-core-article, fig.cap="各研究主题核心论文间的重叠度"}
+# 各研究主题间的重叠度
+library(UpSetR)
+
+topic_articles_core_SR <- lapply(topic_articles_core, function(m){
+  m$SR
+})
+
+names(topic_articles_core_SR) <- topic
+
+
+upset(fromList(topic_articles_core_SR),
+      sets=rev(names(topic_articles_core_SR)),
+      keep.order = T,
+      mb.ratio = c(0.7, 0.3),
+      order.by = "freq")
+
+```
+
 
 
 
@@ -25,7 +176,7 @@
 
 ```{r}
 pos <- position_dodge(width = 0.9)
-M %>% filter(PY<2020) %>%
+M %>% 
   group_by(PY,group) %>%
   summarise(Records=n()) %>%
   filter(!is.na(group)) %>%
