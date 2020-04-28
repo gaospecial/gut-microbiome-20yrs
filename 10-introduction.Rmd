@@ -194,19 +194,19 @@ plot.ly(p)
 mostProdCountries <- tableTag(M, Tag = "AU_CO_NR") 
 mostProdCountries <- as_tibble(mostProdCountries) 
 colnames(mostProdCountries) <- c("Country","all")
+mostProdCountries <- mostProdCountries %>% filter(Country!="NA")
 
-scp <- tableTag(M %>% filter(str_detect(AU_CO_NR,";")), "AU_CO_NR")
+scp <- tableTag(M %>% filter(!str_detect(AU_CO_NR,";")), "AU_CO_NR")
 scp <- as_tibble(scp)
 colnames(scp) <- c("Country","SCP")
 
-mcp <- tableTag(M %>% filter(!str_detect(AU_CO_NR,";")), Tag = "AU_CO_NR")
+mcp <- tableTag(M %>% filter(str_detect(AU_CO_NR,";")), Tag = "AU_CO_NR")
 mcp <- as_tibble(mcp)
 colnames(mcp) <- c("Country","MCP")
 
 top_country <- mostProdCountries$Country %>% head(n)
 
 mostProdCountries <- mostProdCountries %>%
-  filter(Country != "NA") %>%
   left_join(scp) %>% 
   left_join(mcp)  %>% 
   mutate(Country=ifelse(is.part_of_china(Country),"CHINA",Country)) %>%
@@ -223,6 +223,7 @@ mostProdCountries <- mostProdCountries %>%
   mutate(Country = as_factor(as.character(Country)),
          China = as_factor(as.character(China)))
 
+if(!file.exists("data/mostProdCountries.RDS")) saveRDS(mostProdCountries,"data/mostProdCountries.RDS") 
 
 library(ggflags)
 p <- ggplot(mostProdCountries,
@@ -244,7 +245,9 @@ plot.ly(p) %>%
 ```
 
 
-国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有近 64% 是与其它国家合作完成的，中国与其它国家合作发表论文的比例更高，占到全部文章的 70% 以上；英、德、法、意、加等国的合作研究比例在 30% 以上。所有这些国家中，对外合作发表文章的比例为 `r paste0(round(mean(mostProdCountries$proportion)*100),"%")`。这充分说明了**国际合作在肠道菌群研究中占重要地位**。
+国际合作在“肠道菌群”研究论文中很常见（图 \@ref(fig:MCP-SCP)）。在最主要的`r n` 个国家中，美国的研究有约 35% 是与其它国家合作完成的，中国与其它国家合作发表论文的比例略低，约占全部文章的 30%；英、德、法、意、加等国的合作研究比例在 45% 以上。这充分说明了**国际合作在肠道菌群研究中占重要地位**。
+
+所有这些国家中，对外合作发表文章的比例为 `r paste0(round(mean(mostProdCountries$proportion)*100),"%")`。如果分区域来看的话，欧盟国家、英国、澳大利亚和加拿大的对外合作水平高于平均值，而美国、中国、日本、韩国的对外合作水平低于平均值。从这点上看，后面这些国家在科学研究独立性上可能更加大一些。
 
 由于国际合作研究的盛行，一半左右的文章会出现由来自于多个国家的研究人员共同完成的情况。所以，只仅仅通过加和计算国家间的贡献可能有失公允。因此，我们进一步计算了加权发文量。我们认定，当一篇论文的所有作者都来自于同一个国家（地区）时，对应国家的贡献记为 1；当一篇论文的作者来自于多个国家时（N），每个国家对应的贡献记为 1/N。
 
@@ -623,6 +626,9 @@ nArticle_Gordon <- nrow(Gordon_publications)
 
 
 ```{r top-author-localcitations, fig.cap="Top学者的本地被引频次"}
+# LCS
+LC <- readRDS("data/LC.RDS")
+
 # 对 LC 结果进行整理，去掉作者空格，标点符号之后，对作者的LCS进行合并
 LC_authors <- LC$Authors %>% 
   mutate(Author=trimws(as.character(Author)))  %>%
@@ -632,7 +638,7 @@ LC_authors <- LC$Authors %>%
   summarise(LocalCitations=sum(LocalCitations))%>% 
   arrange(desc(LocalCitations))
 
-
+rm(LC)
 
 #' # H指数的计算
 topAU_by_LCS <- LC_authors %>%
@@ -876,7 +882,7 @@ p
 # plot.ly(p)
 ```
 
-在排除了我们使用的搜索限定词之后（参见 \@ref(data-source)），可以得出最受关注的关键字可以分为几类：首先，益生菌（PROBIOTICS）是最受关注的一个词语，还包括排在后面的PREBIOTICS，以及明星益生菌乳酸杆菌（LACTOBACILLUS）和双歧杆菌（BIFIDOBACTERIUM），这是第一类；接下来是炎症（INFLAMMATION）、肥胖（OBESITY）、失调（DYSBIOSIS）、克罗恩病（CORHN'S DISEASE）和溃疡性结肠炎（ULCERATIVE COLITIS）等一些疾病相关的关键字；其次，是短链脂肪酸、饮食、抗生素、营养、代谢等与肠道菌群的微生态密切相关的共识（图 \@ref(fig:summary-keyword)）。
+在排除了我们使用的搜索限定词之后（参见附录 \@ref(data-source)），可以得出最受关注的关键字可以分为几类：首先，益生菌（PROBIOTICS）是最受关注的一个词语，还包括排在后面的PREBIOTICS，以及明星益生菌乳酸杆菌（LACTOBACILLUS）和双歧杆菌（BIFIDOBACTERIUM），这是第一类；接下来是炎症（INFLAMMATION）、肥胖（OBESITY）、失调（DYSBIOSIS）、克罗恩病（CORHN'S DISEASE）和溃疡性结肠炎（ULCERATIVE COLITIS）等一些疾病相关的关键字；其次，是短链脂肪酸、饮食、抗生素、营养、代谢等与肠道菌群的微生态密切相关的共识（图 \@ref(fig:summary-keyword)）。
 
 
 系统关键词与作者关键词的关注点有所不同（图 \@ref(fig:summary-keyword)），多样性（DIVERSITY）是最常见的关键词，文章数量有近 4000 篇；其次是疾病（DISEASE）、炎症（INFLAMMATION）、健康（HEALTH）、克罗恩病（CROHN'S DISEASE）、感染（INFECTION）、肥胖（OBESITY）/风险（RISK）和溃疡性结肠炎（ULCERATIVE COLITIS）等于疾病密切相关的关键词；再次，是表达（EXPRESSION）、鉴定（IDENTIFICATION）、小鼠（MICE）、双盲（DOUBLE BLIND）、体外（IN VITRO）和细胞（CELL）等于实验设计密切相关的字眼；最后是饮食（DIET）和代谢（METABOLISM）等其它相关字眼。
@@ -888,29 +894,63 @@ wordcloud2(df,size=0.4,fontFamily = "微软雅黑")
 ```
 
 
-二者共同关注的内容在于几种常见的肠道相关疾病以及益生元等几个点，下面的词云展示了作者关键词和系统关键词合并之后最常见的200个关键词频次（图 \@ref(fig:summary-keyword-wordcloud)）。
+二者共同关注的内容在于几种常见的肠道相关疾病以及益生元等几个点，图 \@ref(fig:summary-keyword-wordcloud) 中的词云展示了作者关键词和系统关键词合并之后最常见的200个关键词频次。
 
-```{r top200-keyword-cluster-heatmap,fig.width=10,fig.asp=0.9, fig.cap="使用次数最多的前200个关键词在二十年间的使用频次变化",eval=keep_but_not_include}
+```{r top200-keyword-heatmap,fig.width=10, fig.cap="使用次数最多的前200个关键词在二十年间的使用频次变化",eval=keep_but_not_include}
 ### 关键词的点阵图
 
 
 # keyword每年的频次（作者关键词和系统关键词）
-keyword <- M %>% select(PY,ID,DE) %>% as_tibble() %>%
-  unite(keyword,ID,DE,sep = ";") %>%
-  separate_rows(keyword,sep = ";") %>%
-  mutate(keyword=trimws(keyword)) %>%
-  filter(keyword!="NA") %>%
-  mutate(keyword=ifelse(keyword=="PROBIOTIC","PROBIOTICS",keyword)) %>%
-  mutate(keyword=ifelse(keyword=="PREBIOTIC","PREBIOTICS",keyword)) %>%
-  filter(!str_detect(keyword,search_keyword_regex))
+# keyword <- M %>% select(PY,ID,DE) %>% as_tibble() %>%
+#   unite(keyword,ID,DE,sep = ";") %>%
+#   separate_rows(keyword,sep = ";") %>%
+#   mutate(keyword=trimws(keyword)) %>%
+#   filter(keyword!="NA") %>%
+#   mutate(keyword=ifelse(keyword=="PROBIOTIC","PROBIOTICS",keyword)) %>%
+#   mutate(keyword=ifelse(keyword=="PREBIOTIC","PREBIOTICS",keyword)) %>%
+#   filter(!str_detect(keyword,search_keyword_regex)) %>% 
+#   group_by(keyword,PY) %>% 
+#   summarise(count=n())
+# saveRDS(keyword,"data/keyword_yearly_freq.RDS")
 
-top200_keyword <- table(keyword$keyword) %>% sort(decreasing = TRUE) %>% head(200)
-top200_keyword_matrix <- keyword %>% 
-  filter(keyword %in% names(top200_keyword)) %>%
-  group_by(PY,keyword) %>%
-  summarise(freq=n()) %>%
-  pivot_wider(id_cols = "keyword",names_from = "PY",values_from = "freq",values_fill = list("freq"=0))
-mat <- log10(as.matrix(top200_keyword_matrix[-1]) + 1)
+keyword <- readRDS("data/keyword_yearly_freq.RDS")
+
+top200_keyword <- keyword  %>% group_by(keyword) %>% 
+  summarise(total_count=sum(count)) %>% 
+  arrange(desc(total_count)) %>% 
+  head(200) %>%
+  mutate(group=rep(1:3,each=67,length.out=200))
+
+top200_keyword_df <- keyword %>% filter(keyword %in% top200_keyword$keyword) 
+
+top200_keyword_df_scaled <- top200_keyword_df %>% 
+  complete(PY,keyword,fill = list("count"=1)) %>%
+  left_join(top200_keyword) %>%
+  group_by(PY) %>%
+  mutate(count=count/sum(count)) %>%
+  mutate(count=log10(count))
+top200_keyword_df_scaled$keyword <- factor(top200_keyword_df_scaled$keyword,levels=rev(top200_keyword$keyword))
+
+ggplot(top200_keyword_df_scaled,aes(PY,keyword,fill=count)) + 
+  geom_tile() + 
+  facet_wrap(~group,ncol = 4,scales = "free_y") +
+  scale_fill_distiller(palette = "RdYlBu") +
+  # theme_void() +
+  theme(axis.text.y = element_text(size = 6),
+        strip.text = element_blank(),
+        axis.title = element_blank(),
+        axis.text.x = element_text(size = 6),
+        axis.ticks = element_line(size = 1),
+        axis.line = element_line(size = 0.5),
+        legend.position = "none")
+```
+
+
+```{r top200-keyword-cluster-heatmap,fig.width=10,fig.asp=0.9, fig.cap="使用次数最多的前200个关键词在二十年间的使用频次变化",eval=keep_but_not_include}
+top200_keyword_matrix <- top200_keyword_df_scaled %>%
+  select(keyword,PY,count) %>%
+  pivot_wider(id_cols = "keyword",names_from = "PY",values_from = "count",values_fill = list("count"=0))
+mat <- as.matrix(top200_keyword_matrix[-1]) 
 rownames(mat) <- top200_keyword_matrix$keyword
 mat <- scale(mat)
 k4 <- cutree(hclust(dist(mat),method = "ward.D"),k=3)
@@ -1000,3 +1040,11 @@ plot.ly(p)
 
 
 通过上述分析，我们可以发现全球肠道菌群研究持续升温，已走入科学研究舞台中央。
+
+
+
+```{r warning=FALSE}
+#clearup
+rm(columns,col_names,tag_summary,tag_summary_n,df,count_by_year,p,TC_by_year,trend_TC,U1U2_by_year,trend_U1U2,mostProdCountries,scp,mcp,top_country,listCO,nCo,fracCO,PY,country_output,list,top_country_output,listUN,nUN,fracUN,AFF_output,top_AFF,listUN_NR,nUN_NR,location,country,world,topAU_origin,author_prod,top_J9_by_nRecord,top_journal,df1,df2,keyword)
+```
+
