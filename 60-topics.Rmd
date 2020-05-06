@@ -23,13 +23,35 @@ metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
 cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
                         secondary = c("CRC","CAC","PDAC","HCC"))
 
-cardio_keywords <- list(primary = c("heart|cardio[:alpha:]+"),
+cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+"),
                         secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
 
+gut_axis_keywords <- list(primary = c("gut.{4,10}axis"))
 
-topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords)
-topic_en <- c("diet","immunity","metabolism","cancer","cardiac")
-topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病")
+
+metabolism_effect_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
+                        secondary = c("SCFA","short-chain fatty acids","butyrate","TMAO","TMA","secondary bile acids"))
+
+medicine_keywords <- list(primary = c("medicine|medication|drug|[:alpha:]+pharmaco[:alpha:]+|xenobiotic"),
+                        secondary = c(""))
+
+early_life_keywords <- list(primary = c("early.{1,2}life|infan[:alpha:]+|maternal"),
+                        secondary = c("pregnan[:alpha:]+","[:alpha:]+natal","in utero","uterus","placent[:alpha:]+","vertical transmission"))
+
+cohort_keywords <- list(primary = c("cohort"),
+                        secondary = c(""))
+
+dark_matter_keywords <- list(primary = c("dark matter|virome|mycobiome|culturomics"))
+
+
+translation_keywords <- list(primary = c(""))
+
+
+topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords,
+                       gut_axis_keywords,metabolism_effect_keywords,medicine_keywords,early_life_keywords,
+                       cohort_keywords,dark_matter_keywords)
+topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","effect","medicine","early life","cohort","dark matter")
+topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","轴","代谢生理","药物互作","生命早期","人群","暗物质")
 topic <- topic_cn
 nTopic <- length(topic)
 ```
@@ -48,11 +70,13 @@ topic_nRecords_all <- lapply(topic_articles_all, function(article){
 })
 ```
 
+图 \@ref(fig:topic-nRecord-in-all-articles) 显示了各研究主题全部论文数量对比。从数量上看，最热门的研究领域依次是“肠道菌群与免疫”，“肠道菌群与代谢”，……
+
+
 ```{r topic-nRecord-in-all-articles, fig.cap="各研究主题全部论文数量对比"}
 count <- sapply(topic_articles_all, nrow)
 df <- data.frame(topic=topic, count=count)
 df$topic <- factor(df$topic, levels = rev(topic))
-
 
 ggplot(df, aes(topic,count)) + 
   geom_col(width = 0.8) +
@@ -62,7 +86,10 @@ ggplot(df, aes(topic,count)) +
 
 ```
 
-```{r topic-trend-in-all-articles, fig.cap="各研究主题发表的全部论文数量变化情况"}
+图 \@ref(fig:topic-trend-in-all-articles) 展示了各研究主题发表的全部论文数量随时间的变化情况。
+
+
+```{r topic-trend-in-all-articles, fig.cap="各研究主题发表的全部论文数量变化情况",fig.asp=1}
 plot_list <- lapply(1:nTopic, function(i){
   df <- topic_nRecords_all[[i]]
   ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
@@ -75,7 +102,7 @@ plot_grid(plotlist = plot_list, ncol = 3)
 
 图 \@ref(fig:overlap-of-topic-in-all-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
 
-```{r overlap-of-topic-in-all-article, fig.cap="各研究主题全部论文间的重叠度"}
+```{r overlap-of-topic-in-all-article, fig.cap="各研究主题全部论文间的重叠度",fig.asp=1}
 # 各研究主题间的重叠度
 library(UpSetR)
 
@@ -95,6 +122,10 @@ upset(fromList(topic_articles_all_SR),
 ```
 
 ```{r}
+
+MC_HC_article <- readRDS("data/MC_HC_article.RDS")
+
+
 topic_articles_core <- lapply(topic_keywords, function(keyword){
   MC_HC_article %>%
     filter(str_detect(content, regex(keyword$primary, ignore_case = T)))
@@ -124,7 +155,7 @@ ggplot(df, aes(topic,count)) +
 
 
 
-```{r topic-trend-in-core-articles, fig.cap="各研究主题发表的关键论文数量变化情况"}
+```{r topic-trend-in-core-articles, fig.cap="各研究主题发表的关键论文数量变化情况",fig.asp=1}
 plot_list <- lapply(1:nTopic, function(i){
   df <- topic_nRecords_core[[i]]
   ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
@@ -136,7 +167,7 @@ plot_grid(plotlist = plot_list, ncol = 3)
 
 图 \@ref(fig:overlap-of-topic-in-core-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
 
-```{r overlap-of-topic-in-core-article, fig.cap="各研究主题核心论文间的重叠度"}
+```{r overlap-of-topic-in-core-article, fig.cap="各研究主题核心论文间的重叠度",fig.asp=1}
 # 各研究主题间的重叠度
 library(UpSetR)
 
@@ -155,6 +186,522 @@ upset(fromList(topic_articles_core_SR),
 
 ```
 
+```{r}
+i <- 1
+```
+
+## `r topic[[1]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+```{r}
+i <- i + 1
+```
+
+## `r topic[[i]]`
+
+```{r}
+df <- topic_articles_core[[i]]
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="VIP-article-in-gut-microbiome-study",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=0),
+                         list(width="35%", targets=1),
+                         list(width="5%",targets=c(2,4)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+
+
+```{r}
+MC_HC_histNet <- readRDS("data/MC_HC_histNet.RDS")
+
+core_histNet <- graph_from_adjacency_matrix(MC_HC_histNet$NetMatrix)
+
+g <- core_histNet
+
+
+topic_subgraph_histNet <- lapply(topic_articles_core_SR, function(x){
+  induced.subgraph(g,vids =V(g)[names(V(g)) %in% x])
+})
+
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, function(g){
+  V(g)$pagerank <- page.rank(g)
+  return(g)
+})
+
+graph_add_pagerank <- function(g){
+  V(g)$pagerank <- page.rank(g)["vector"]
+  return(g)
+}
+
+graph_add_degree <- function(g){
+  V(g)$degree <- degree(g)
+  return(g)
+}
+
+graph_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  size <- (value * max_size) + 1
+  V(g)$size <- size
+  return(g)
+}
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+
+graph_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  uniq_value <- sort(unique(value),decreasing = decreasing)
+  my_palette <- brewer.pal(n=7,name = palette_name)
+  
+  nColor <- 100
+  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
+  colors <- colorRampPalette(my_palette)(nColor)
+  names(colors) <- uniq_value
+  
+  V(g)$color <- colors[as.character(value)]
+  
+  return(g)
+}
+
+g <- graph_node_color(g,by="year")
+g2 <- graph_add_degree(g)
+g3 <- graph_node_size(g,by="degree")
+par(mfrow=c(1,3))
+plot(g)
+plot(g2)
+plot(g3)
+
+
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_pagerank)
+
+
+
+
+histNet_vis <- function(g){
+  data <- toVisNetworkData(g)
+  data$nodes <- data$nodes %>% 
+    left_join(MC_HC_article %>% select(SR,title_en,daily_cn),
+              by = c("id"="SR")) %>%
+    unite(title, id, title_en, daily_cn,sep = "<br />\n", remove = FALSE)
+  
+  visNetwork(nodes = data$nodes,
+             edges = data$edges) %>%
+    visIgraphLayout(physics = FALSE, layout = "layout_with_kk") %>%
+    visNodes(size = "size",color = "color") %>%
+    visEdges(color = "grey") %>%
+    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
+    visExport()
+  
+}
+
+```
 
 
 
