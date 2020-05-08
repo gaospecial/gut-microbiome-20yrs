@@ -38,7 +38,7 @@ ggVennDiagram::ggVennDiagram(list,category.names = c("WOS高被引\n","本地高
 [^daily-since-2016]: 《热心肠日报》创刊于2016年初，所以这些精华论文中，如果是2016年以后发表的话，大概率会有相应的短科普解读。通过阅读短科普，你基本可以掌握这篇文章的大略情况。
 
 
-```{r vip-articles, fig.cap="肠道菌群研究的精华论文"}
+```{r eval=run_and_save}
 ## 日报文章
 db_cache <- "E:/Spring_Work/Corporate_Bussiness/C40_Data/cache/"
 papers <- readRDS(paste0(db_cache,"papers.RDS")) %>% as_tibble()
@@ -49,10 +49,15 @@ real_paper <- papers %>%
   filter(status==3 & classify=="audit" & journal_id=="1") %>%
   select(uuid,title,share_title,summary,remark,fragment_id) %>% 
   left_join(fragments %>% rename("fragment_id"=id) %>% select(-uuid,-title,-remark)) %>%
-  mutate(DI=toupper(doi)) %>% 
-  select(DI,uuid,share_title)
+  mutate(DI=toupper(doi))
 
-rm(papers,fragments)
+saveRDS(real_paper,"data/real_paper.RDS")
+
+real_paper <- readRDS("data/real_paper.RDS")%>% 
+  select(DI,uuid,share_title) %>%
+  group_by(DI) %>%
+  filter(row_number() ==1)
+
 
 MC_HC_article <- M %>%
   filter(CORE==TRUE, HC==TRUE) %>%
@@ -65,19 +70,30 @@ MC_HC_article <- M %>%
                                                 type = "html",
                                                 uuid = DI,
                                                 title = title,
-                                                alt = ""),
+                                                alt = "原文链接"),
                            title),
          daily_cn = ifelse(is.na(uuid),
                            "",
                            mrgut_permanent_link(type = "html",
                                                 uuid = uuid,
                                                 title = share_title,
-                                                alt = "")))
+                                                alt = "《热心肠日报》解读")))
 
 J9_lvl <- MC_HC_article %>% group_by(J9) %>%
   summarise(avg_LCS=sum(LCS)) %>%
   arrange(desc(avg_LCS))
 MC_HC_article$J9 <- factor(MC_HC_article$J9,levels = J9_lvl$J9)
+
+
+saveRDS(MC_HC_article, "data/MC_HC_article.RDS")
+
+rm(papers,fragments,real_paper)
+
+```
+
+
+```{r vip-articles, fig.cap="肠道菌群研究的精华论文"}
+MC_HC_article <- readRDS("data/MC_HC_article.RDS")
 
 DT::datatable(MC_HC_article %>% select(title_en,daily_cn,PY,J9,LCS), 
               colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
