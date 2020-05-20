@@ -14,6 +14,7 @@ geometry: [a4paper, tmargin=2.5cm, bmargin=2.5cm, lmargin=3.5cm, rmargin=2.5cm]
 site: bookdown::bookdown_site
 description: "从20年肠道菌群研究大数据看肠道菌群研究的未来"
 github-repo: "gaospecial/gut-microbiome-20yrs"
+css: "css/style.css"
 #cover-image: images/cover.jpg
 ---
 
@@ -25,13 +26,16 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
+                      # out.width = "95%",
+                      fig.align = "center",
                       eval=T,       # 不执行代码
                       include=TRUE, # 是否显示执行代码的结果
                       echo = FALSE, # 是否显示代码
                       message = FALSE, # 是否显示 message
                       warning = FALSE,  # 是否显示警告
                       error = FALSE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
-                      cache=TRUE  # 加速预览
+                      cache=T,  # 加速预览
+                      fig.path = "plots/"
                       ) 
 
 # disable Sys.setlocale output
@@ -43,10 +47,17 @@ Sys.setlocale(category = "LC_ALL",locale = "Chinese")
 options(expressions = 5e5)
 
 # 填上你需要用到的包，如 c('ggplot2', 'dplyr')
-packages <- c("tidyverse","wordcloud2","mrgut","lubridate","RColorBrewer","export","gganimate","ggVennDiagram","ggraph","ccgraph")
+cran_packages <- c("tidyverse","lubridate","RColorBrewer","export","gganimate","ggraph")
 
-lapply(packages, function(pkg) {
+github_packages <- c("gaospecial/wordcloud2","gaospecial/mrgut","gaospecial/ggVennDiagram","gaospecial/ccgraph")
+
+success <- lapply(cran_packages, function(pkg) {
   if (system.file(package = pkg) == '') install.packages(pkg)
+})
+
+success <- lapply(github_packages, function(pkg) {
+  name <- gsub(".*\\/","",pkg)
+  if (system.file(package = name) == '') devtools::install_github(pkg)
 })
 ```
 
@@ -54,26 +65,39 @@ lapply(packages, function(pkg) {
 
 ```{r load_pacakges}
 # load frequentely used packages
+# tidyverse
+library(tidyverse)
 library(dplyr)
 library(tidyr)
 library(stringr)
-library(ggplot2)
-library(forcats)
-library(lubridate)
-library(mrgut)
-library(RColorBrewer)
+# library(ggplot2)
+# library(forcats)
+# library(lubridate)
+library(magrittr)
+
+# knitr
 library(knitr)
+
+
+# user defined functions
+library(mrgut)
+
+# data analysis
+library(bibliometrix)
+library(tidytext)
+library(igraph)
+library(wordcloud2)
+
+
+# data visualization
+library(RColorBrewer)
 library(export)
 library(cowplot)
-library(knitr)
-library(bibliometrix)
-library(ggraph)
 library(plotly)
 library(treemap)
 library(gganimate)
-library(wordcloud2)
+library(ggraph)
 library(visNetwork)
-library(magrittr)
 ```
 
 ```{r colors}
@@ -109,19 +133,25 @@ theme_set(theme_light() + theme_labs)
 
 ```{r}
 # 读取全部论文数据
-# M <- readRDS("data/M.RDS") %>% filter(PY < 2020)
+M <- readRDS("data/M1.RDS") %>% filter(PY < 2020)
 
-# LCS
-LC <- readRDS("data/LC.RDS")
+# 使用关键字、标题和摘要组成内容
+M %<>% unite(content, ID,DE,TI,AB, sep=" ", remove = FALSE)
+
+# 无影响因子期刊分组
+M$group <- forcats::fct_explicit_na(M$group, na_level = "NA")
+M$group <- relevel(M$group,"NA")  # 画图时会出现在最上面
 
 # 核心文献 M core
-LC$M <- LC$M %>% group_by(PY) %>% 
+M <- M %>% group_by(PY) %>% 
   mutate(CORE=ifelse(percent_rank(LCS)>=0.95,TRUE,FALSE)) %>% 
   ungroup()
-MC <- LC$M %>% filter(CORE==TRUE)
+MC <- M %>% filter(CORE==TRUE)
 
-# 全部文献
-M <- as.data.frame(LC$M)
+# 转为 data.frame
+M <- as.data.frame(M)
+rownames(M) <- M$SR
+
 
 # 高引论文
 highly_cited <- M %>% filter(HC==TRUE)
@@ -151,6 +181,9 @@ query <- "TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR 
 
 # 检索时使用的关键词
 search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% unlist() %>% unique() 
+
+# search key word regex
+search_keyword_regex <- regex(pattern = paste0(search_keywords,collapse ="|"),ignore_case = T)
 ```
 
 
@@ -158,15 +191,16 @@ search_keywords <- gsub("[A-Z=()]+","", query) %>% strsplit(split = "\\s+") %>% 
 ## 分词时的干扰词
 additional_stopwords <- "yet may one two use thus like work part either show but never non need among also however study" %>%
   strsplit(" ") %>% unlist()
+
 ```
 
 
 ```{r}
 # 函数
 
-# 使用鼠标相应事件
-plot.ly <- function(g,...){
-  ggplotly(g, tooltip = c("text"),...) %>% 
+# 使用鼠标响应事件
+plot.ly <- function(g,tooltip=c("text"),...){
+  ggplotly(g, tooltip = tooltip,...) %>% 
     config(displaylogo = FALSE,
            modeBarButtonsToRemove = c(
              'sendDataToCloud',
@@ -179,6 +213,16 @@ plot.ly <- function(g,...){
            ))
 }
 ```
+
+
+```{r}
+# eval types
+only_debug <- FALSE             # 测试代码，提供额外信息
+keep_but_not_include <- FALSE   # 有用的图片，暂时没有收录
+under_construction <- FALSE     # 计划中的分析
+run_and_save <- FALSE           # 耗时较长的运算过程，运行后保存，使用保存的结果而不用每次都运算
+```
+
 
 
 ```{r}
