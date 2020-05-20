@@ -6,12 +6,14 @@ bookdown::gitbook:
       before: |
         <li><a href="./">肠道菌群二十年·大数据</a></li>
       after: |
-        <li><a href="https://bookdown.org" target="blank">本书由 bookdown 强力驱动</a></li>
+        <li><a href="https://mr-gut.cn" target="blank">热心肠研究院出品（©2020）</a></li>
     download: [pdf, epub]
     edit: "https://github.com/gaospecial/gut-microbiome-20yrs/edit/master/%s"
     sharing:
       github: yes
       facebook: no
+  includes:
+    after_body: disqus.html
 bookdown::pdf_book:
   includes:
     in_header: latex/preamble.tex
