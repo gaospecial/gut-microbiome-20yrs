@@ -1,7 +1,7 @@
 # 研究热点 {#research-topic}
 
 
-## 研究热点的变迁
+
 
 
 ```{r}
@@ -26,100 +26,190 @@ cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|
 cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+"),
                         secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
 
-gut_axis_keywords <- list(primary = c("gut.{4,10}axis"))
+gut_axis_keywords <- list(primary = c("gut.{4,15}axis"),
+                          secondary = NULL)
 
 
 metabolism_effect_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
                         secondary = c("SCFA","short-chain fatty acids","butyrate","TMAO","TMA","secondary bile acids"))
 
 medicine_keywords <- list(primary = c("medicine|medication|drug|[:alpha:]+pharmaco[:alpha:]+|xenobiotic"),
-                        secondary = c(""))
+                        secondary = NULL)
 
 early_life_keywords <- list(primary = c("early.{1,2}life|infan[:alpha:]+|maternal"),
                         secondary = c("pregnan[:alpha:]+","[:alpha:]+natal","in utero","uterus","placent[:alpha:]+","vertical transmission"))
 
 cohort_keywords <- list(primary = c("cohort"),
-                        secondary = c(""))
+                        secondary = NULL)
 
-dark_matter_keywords <- list(primary = c("dark matter|virome|mycobiome|culturomics"))
+dark_matter_keywords <- list(primary = c("dark matter|virome|mycobiome|culturomics"),
+                             secondary = NULL)
 
 
-translation_keywords <- list(primary = c(""))
+translation_keywords_precision <- list(primary = c("precision|personal"))
+translation_keywords_biomarker <- list(primary = c("diagnos|prognos|biomarker"))
+translation_keywords_engineer <- list(primary = c("engineer"))
+translation_keywords_phage_therapy <- list(primary = c("phage.{1,30}therapy"))
+translation_keywords_vaccine <- list(primary = c("\\bvaccin"))
+translation_keywords_fmt <- list(primary = c("FMT|fecal.{10,30}transplant"))
+translation_keywords_probiotics <- list(primary = c("probiotic|prebiotic|dietary fib[er]{2}"))
 
 
 topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords,
                        gut_axis_keywords,metabolism_effect_keywords,medicine_keywords,early_life_keywords,
-                       cohort_keywords,dark_matter_keywords)
-topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","effect","medicine","early life","cohort","dark matter")
-topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","轴","代谢生理","药物互作","生命早期","人群","暗物质")
+                       cohort_keywords,dark_matter_keywords,translation_keywords_precision,translation_keywords_biomarker,
+                       translation_keywords_engineer,translation_keywords_phage_therapy,translation_keywords_vaccine,
+                       translation_keywords_fmt,translation_keywords_probiotics)
+topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","effect","medicine","early life","cohort","dark matter",
+              "precision","biomarker","engineer","phage therapy","vaccine","FMT","probiotics")
+topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","轴","代谢生理","药物互作","生命早期","人群","暗物质",
+              "精准医疗","生物标记物","工程菌","噬菌体疗法","疫苗","粪菌移植","益生菌益生元")
 topic <- topic_cn
 nTopic <- length(topic)
 ```
 
+我们一共关注了`r nTopic` 个不同的研究主题，分别是 `r paste0(topic_cn, collapse="、")` 等。
 
 ```{r}
+# 生成一个话题文献的 datatable
+produce_topic_article_datatable <- function(df, caption, filename){
+  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS,DT), 
+              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS","类型"),
+          escape = FALSE,
+          rownames = TRUE,
+          filter = "top",
+          width = "95%",
+          caption = caption,
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 10,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename=filename,
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="40%",targets=1),
+                         list(width="35%", targets=2),
+                         list(width="5%",targets=c(3,5)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+}
 
-topic_articles_all <- lapply(topic_keywords, function(keyword){
-  M %>%
-    filter(str_detect(content, regex(keyword$primary, ignore_case = T)))
-})
 
-topic_nRecords_all <- lapply(topic_articles_all, function(article){
-  article %>% group_by(PY) %>%
-    summarise(nRecord = n())
-})
-```
-
-图 \@ref(fig:topic-nRecord-in-all-articles) 显示了各研究主题全部论文数量对比。从数量上看，最热门的研究领域依次是“肠道菌群与免疫”，“肠道菌群与代谢”，……
-
-
-```{r topic-nRecord-in-all-articles, fig.cap="各研究主题全部论文数量对比"}
-count <- sapply(topic_articles_all, nrow)
-df <- data.frame(topic=topic, count=count)
-df$topic <- factor(df$topic, levels = rev(topic))
-
-ggplot(df, aes(topic,count)) + 
-  geom_col(width = 0.8) +
-  # geom_text(aes(label=topic),position = position_stack(0.5)) +
-  labs(x="",y="") +
-  coord_flip()
-
-```
-
-图 \@ref(fig:topic-trend-in-all-articles) 展示了各研究主题发表的全部论文数量随时间的变化情况。
-
-
-```{r topic-trend-in-all-articles, fig.cap="各研究主题发表的全部论文数量变化情况",fig.asp=1}
-plot_list <- lapply(1:nTopic, function(i){
-  df <- topic_nRecords_all[[i]]
-  ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
-    labs(x="",y="",title = topic[[i]])
-})
-
-plot_grid(plotlist = plot_list, ncol = 3)
 ```
 
 
-图 \@ref(fig:overlap-of-topic-in-all-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
 
-```{r overlap-of-topic-in-all-article, fig.cap="各研究主题全部论文间的重叠度",fig.asp=1}
-# 各研究主题间的重叠度
-library(UpSetR)
+```{r}
+## 网络相关的函数
 
-topic_articles_all_SR <- lapply(topic_articles_all, function(m){
-  m$SR
-})
-
-names(topic_articles_all_SR) <- topic
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
 
-upset(fromList(topic_articles_all_SR),
-      sets=rev(names(topic_articles_all_SR)),
-      keep.order = T,
-      mb.ratio = c(0.7, 0.3),
-      order.by = "freq")
+graph_add_node_pagerank <- function(g){
+  V(g)$pagerank <- page.rank(g)[["vector"]]
+  return(g)
+}
+
+graph_add_node_degree <- function(g){
+  V(g)$degree <- degree(g)
+  return(g)
+}
+
+graph_add_node_attr <- function(g, data, id = "id", cols = colnames(data)){
+  # 依据 id 的对应关系将 data 中的属性加入到graph中，
+  # id 是 data 中 node id 的列名, cols 是 data 中用到的列名
+  # ToDO: 跳过已有的属性还是覆盖？
+  g.id <- names(V(g))
+  data <- as.data.frame(data)
+  rownames(data) <- data[,id]
+  cols <- cols[!cols %in% id]
+  for (i in 1:length(cols)){
+    vertex_attr(g, name =  cols[[i]]) <- data[g.id, cols[[i]]]
+  }
+  return(g)
+}
+
+graph_set_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  size <- (value * max_size) + 1
+  V(g)$size <- size
+  return(g)
+}
+
+
+
+graph_set_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
+  ## 为 graph 设置节点颜色
+  ## 默认按年份着色，或者其它 node 属性着色
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  uniq_value <- sort(unique(value),decreasing = decreasing)
+  my_palette <- brewer.pal(n=7,name = palette_name)
+  
+  nColor <- 100
+  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
+  colors <- colorRampPalette(my_palette)(nColor)
+  names(colors) <- uniq_value
+  
+  V(g)$color <- colors[as.character(value)]
+  
+  return(g)
+}
+
+
+
+
+graph_subgraph <- function(g, by = "degree", slice = "PY", topN = 10, ratio = 0.1){
+  if( !by %in% vertex_attr_names(g)) stop(by, " is not a graph attribute.\n")
+  if( !slice %in% vertex_attr_names(g)) stop(slice, " is not a graph attribute.\n")
+  data <- visNetwork::toVisNetworkData(g)
+  nodes <- data$nodes %>% group_by(PY) %>%
+    arrange(desc(degree)) %>%
+    filter(row_number() <= topN)
+  induced.subgraph(g, vids = nodes$id)
+}
+
+
+
+vis_histNet <- function(g, 
+                        node.title = "title", 
+                        node.size = "size", 
+                        node.color = "color", 
+                        edge.color = "color", 
+                        layout = "layout_with_fr"){
+  data <- toVisNetworkData(g)
+  
+  visNetwork(nodes = data$nodes,
+             edges = data$edges) %>%
+    visIgraphLayout(physics = FALSE, layout = layout) %>%
+    visNodes(size = node.size, color = node.color, title=node.title) %>%
+    visEdges(color = edge.color) %>%
+    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
+    visExport()
+  
+}
 
 ```
+
+
+
+
+## 主题对应的核心论文数据
+
 
 ```{r}
 
@@ -128,7 +218,8 @@ MC_HC_article <- readRDS("data/MC_HC_article.RDS")
 
 topic_articles_core <- lapply(topic_keywords, function(keyword){
   MC_HC_article %>%
-    filter(str_detect(content, regex(keyword$primary, ignore_case = T)))
+    filter(str_detect(content, regex(paste0(c(keyword$primary,keyword$secondary),collapse = "|"), ignore_case = T))) %>%
+    mutate(DT=factor(DT))
 })
 
 topic_nRecords_core <- lapply(topic_articles_core, function(article){
@@ -156,13 +247,13 @@ ggplot(df, aes(topic,count)) +
 
 
 ```{r topic-trend-in-core-articles, fig.cap="各研究主题发表的关键论文数量变化情况",fig.asp=1}
-plot_list <- lapply(1:nTopic, function(i){
+topic_trend_core_plot_list <- lapply(1:nTopic, function(i){
   df <- topic_nRecords_core[[i]]
   ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
-    labs(x="",y="",title = topic[[i]])
+    labs(x="",y="",title = "核心论文")
 })
 
-plot_grid(plotlist = plot_list, ncol = 3)
+# plot_grid(plotlist = plot_list, ncol = 3)
 ```
 
 图 \@ref(fig:overlap-of-topic-in-core-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
@@ -180,528 +271,1646 @@ names(topic_articles_core_SR) <- topic
 
 upset(fromList(topic_articles_core_SR),
       sets=rev(names(topic_articles_core_SR)),
-      keep.order = T,
+      keep.order = FALSE,
       mb.ratio = c(0.7, 0.3),
       order.by = "freq")
 
 ```
 
-```{r}
-i <- 1
-```
-
-## `r topic[[1]]`
 
 ```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
+## 主题对应的几个网络
 
-
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-```{r}
-i <- i + 1
-```
-
-## `r topic[[i]]`
-
-```{r}
-df <- topic_articles_core[[i]]
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS"),
-          escape = FALSE,
-          rownames = FALSE,
-          filter = "top",
-          width = "95%",
-          caption = "",
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 20,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename="VIP-article-in-gut-microbiome-study",
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=0),
-                         list(width="35%", targets=1),
-                         list(width="5%",targets=c(2,4)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-```
-
-
-
-```{r}
+## 完整的历史引用网络
 MC_HC_histNet <- readRDS("data/MC_HC_histNet.RDS")
+# 1224 和 1225 名称重复（SCHIRMER M, 2018, NAT MICROBIOL）
+core_histNet <- graph_from_adjacency_matrix(MC_HC_histNet$NetMatrix[-1225,-1225])
 
-core_histNet <- graph_from_adjacency_matrix(MC_HC_histNet$NetMatrix)
-
+## 各个主题的历史引用子网络
 g <- core_histNet
-
-
 topic_subgraph_histNet <- lapply(topic_articles_core_SR, function(x){
   induced.subgraph(g,vids =V(g)[names(V(g)) %in% x])
 })
 
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, function(g){
-  V(g)$pagerank <- page.rank(g)
-  return(g)
-})
-
-graph_add_pagerank <- function(g){
-  V(g)$pagerank <- page.rank(g)["vector"]
-  return(g)
-}
-
-graph_add_degree <- function(g){
-  V(g)$degree <- degree(g)
-  return(g)
-}
-
-graph_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  size <- (value * max_size) + 1
-  V(g)$size <- size
-  return(g)
-}
-
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-
-graph_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  uniq_value <- sort(unique(value),decreasing = decreasing)
-  my_palette <- brewer.pal(n=7,name = palette_name)
-  
-  nColor <- 100
-  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
-  colors <- colorRampPalette(my_palette)(nColor)
-  names(colors) <- uniq_value
-  
-  V(g)$color <- colors[as.character(value)]
-  
-  return(g)
-}
-
-g <- graph_node_color(g,by="year")
-g2 <- graph_add_degree(g)
-g3 <- graph_node_size(g,by="degree")
-par(mfrow=c(1,3))
-plot(g)
-plot(g2)
-plot(g3)
-
-
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_pagerank)
 
 
 
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_pagerank)
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_degree)
 
-histNet_vis <- function(g){
-  data <- toVisNetworkData(g)
-  data$nodes <- data$nodes %>% 
-    left_join(MC_HC_article %>% select(SR,title_en,daily_cn),
-              by = c("id"="SR")) %>%
-    unite(title, id, title_en, daily_cn,sep = "<br />\n", remove = FALSE)
-  
-  visNetwork(nodes = data$nodes,
-             edges = data$edges) %>%
-    visIgraphLayout(physics = FALSE, layout = "layout_with_kk") %>%
-    visNodes(size = "size",color = "color") %>%
-    visEdges(color = "grey") %>%
-    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
-    visExport()
-  
-}
+
+MC_HC_article.node_attr <- MC_HC_article %>% 
+  select(SR,PY,LCS,title_en,daily_cn) %>%
+  mutate(id = SR) %>%
+  unite(title, SR, title_en, daily_cn, sep = "<br />\n")
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_attr, 
+                                 data= MC_HC_article.node_attr, 
+                                 cols=c("id","PY","LCS","title"))
+
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_subgraph)
+
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_set_node_size, by="LCS", max_size = 20)
+topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_set_node_color, by="PY")  # year 参数还没有导入为网络的属性
+
+
 
 ```
+
+
+```{r}
+
+
+
+authorProdOverTime <- function (M, k = 10, graph = TRUE) 
+{
+    M$TC = as.numeric(M$TC)
+    M$PY = as.numeric(M$PY)
+     tableTag <- function (M, Tag = "CR", sep = ";") 
+        {
+            if (Tag %in% c("AB", "TI")) {
+                M = termExtraction(M, Field = Tag, stemming = F, verbose = FALSE)
+                i = dim(M)[2]
+            }
+            else {
+                i <- which(names(M) == Tag)
+            }
+            if (Tag == "C1") {
+                M$C1 = gsub("\\[.+?]", "", M$C1)
+            }
+            Tab <- unlist(strsplit(as.character(M[, i]), sep))
+            # Tab <- trimws(trimES(gsub("\\.|\\,", " ", Tab)))
+            Tab <- Tab[Tab != ""]
+            Tab <- sort(table(Tab), decreasing = TRUE)
+            return(Tab)
+        }
+    AU = names(tableTag(M, "AU"))
+    k = min(k, length(AU))
+    AU = AU[1:k]
+    df = data.frame(Author = "NA", year = NA, TI = "NA", 
+        SO = "NA", DOI = "NA", TC = NA, TCpY = NA, 
+        stringsAsFactors = FALSE)
+    Y = as.numeric(substr(Sys.time(), 1, 4))
+    if (!("DI" %in% names(M))) {
+        M$DI = "NA"
+    }
+    for (i in 1:length(AU)) {
+        ind = which(regexpr(AU[i], M$AU) > -1)
+        TCpY = M$TC[ind]/(Y - M$PY[ind] + 1)
+        dfAU = data.frame(Author = rep(AU[i], length(ind)), year = M$PY[ind], 
+            TI = M$TI[ind], SO = M$SO[ind], DOI = M$DI[ind], 
+            TC = M$TC[ind], TCpY = TCpY, stringsAsFactors = TRUE)
+        df = rbind(df, dfAU)
+    }
+    df = df[-1, ]
+    df2 <- dplyr::group_by(df, .data$Author, .data$year) %>% 
+        dplyr::summarise(freq = length(.data$year), TC = sum(.data$TC), 
+            TCpY = sum(.data$TCpY))
+    df2 = as.data.frame(df2)
+    df2$Author = factor(df2$Author, levels = AU[1:k])
+    g <- ggplot(df2, aes(x = .data$Author, y = .data$year, text = paste("Author: ", 
+        df2$Author, "\nYear: ", df2$year, "\nN. of Articles: ", 
+        df2$freq, "\nTotal Citations per Year: ", round(TCpY, 
+            2)))) + geom_point(aes(alpha = df2$TCpY, size = df2$freq), 
+        color = "dodgerblue4") + scale_size(range = c(2, 
+        6)) + scale_alpha(range = c(0.3, 1)) + scale_y_continuous(breaks = seq(min(df2$year), 
+        max(df2$year), by = 2)) + guides(size = guide_legend(order = 1, 
+        "N.Articles"), alpha = guide_legend(order = 2, 
+        "TC per Year")) + theme(legend.position = "right", 
+        text = element_text(color = "#444444"), panel.background = element_rect(fill = "gray97"), 
+        panel.grid.minor = element_line(color = "#FFFFFF"), 
+        panel.grid.major = element_line(color = "#FFFFFF"), 
+        plot.title = element_text(size = 24), axis.title = element_text(size = 14, 
+            color = "#555555"), axis.title.y = element_text(vjust = 1, 
+            angle = 0, face = "bold"), axis.title.x = element_text(hjust = 0.95, 
+            face = "bold"), axis.text.x = element_text(face = "bold"), 
+        axis.text.y = element_text(face = "bold")) + labs(title = "Top-Authors' Production over the Time", 
+        x = "Author", y = "Year") + geom_line(aes(x = df2$Author, 
+        y = df2$year, group = df2$Author), size = 1, color = "firebrick", 
+        alpha = 0.3) + scale_x_discrete(limits = rev(levels(df2$Author))) + 
+        coord_flip()
+    df$DOI = as.character(df$DOI)
+    res <- list(dfAU = df2, dfPapersAU = df, graph = g)
+    if (isTRUE(graph)) {
+        plot(g)
+    }
+    return(res)
+}
+```
+
+
+```{r}
+biblio_df <- function(df){
+  df <- data.frame(df)
+  dup <- which(table(df$SR)>1)
+  if (length(dup)>0){
+    df <- df %>% distinct(SR, .keep_all = TRUE)
+  }
+  rownames(df) <- df$SR
+  return(df)
+}
+```
+
+
+```{r}
+
+```
+
+
+## 肠道菌群与饮食
+
+### 核心文章列表
+
+```{r diet-article-datatable, fig.cap=" "}
+i <- 1
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r diet-article-trend, fig.cap="饮食相关的核心文献数目"}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+histPlot <- function (histResults, n = 20, size = 5, labelsize = 5, verbose = TRUE) 
+{
+  colorlist <- c(brewer.pal(9, "Set1")[-6], brewer.pal(8, 
+    "Set2")[-7], brewer.pal(12, "Paired")[-11], brewer.pal(12, 
+    "Set3")[-c(2, 8, 12)])
+  if (isTRUE(size)) {
+    size <- 5
+  }
+  LCS <- colSums(histResults$NetMatrix)
+  NET <- histResults$NetMatrix
+  s = sort(LCS, decreasing = TRUE)[min(n, length(LCS))]
+  ind = which(LCS >= s)
+  NET = NET[ind, ind]
+  LCS = LCS[ind]
+  bsk.network <- graph_from_adjacency_matrix(NET, mode = c("directed"), 
+    weighted = NULL)
+  R <- strsplit(names(V(bsk.network)), ",")
+  RR <- lapply(R, function(l) {
+    l = l[1:2]
+    l = paste(l[1], l[2], sep = ",")
+  })
+  V(bsk.network)$id <- unlist(RR)
+  deg <- LCS
+  V(bsk.network)$size <- size
+  Years <- as.numeric(unlist(str_extract_all(unlist(RR), "[[:digit:]]{4}$")))
+  V(bsk.network)$years <- Years
+  bsk.network <- simplify(bsk.network, remove.multiple = T, 
+    remove.loops = T)
+  E(bsk.network)$color <- "slategray1"
+  bsk.network <- bibliometrix:::delete.isolates(bsk.network)
+  dg <- decompose.graph(bsk.network)
+  layout_m <- create_layout(bsk.network, layout = "nicely")
+  layout_m$cluster <- 0
+  rr <- 0
+  for (k in 1:length(dg)) {
+    bsk <- dg[[k]]
+    a <- ifelse(layout_m$name %in% V(bsk)$name, k, 0)
+    layout_m$cluster <- layout_m$cluster + a
+    Min <- min(layout_m$y[layout_m$cluster == k]) - 1
+    layout_m$y[layout_m$cluster == k] <- layout_m$y[layout_m$cluster == 
+      k] + (rr - Min)
+    rr <- max(layout_m$y[layout_m$cluster == k])
+  }
+  bsk <- bsk.network
+  wp <- membership(cluster_infomap(bsk, modularity = FALSE))
+  layout_m$x <- layout_m$years
+  g <- ggraph(layout_m) + geom_edge_arc(width = 1, strength = 0.05, 
+    check_overlap = T, edge_alpha = 0.5, color = "grey", 
+    arrow = grid::arrow(angle = 10, unit(0.15, "inches"))) + 
+    geom_node_text(aes(label = V(bsk)$id), size = labelsize, 
+      repel = TRUE, color = colorlist[wp], alpha = 0.8) + 
+    geom_node_point(size = V(bsk)$size, color = "royalblue4", 
+      alpha = 0.15) + scale_color_brewer() + scale_x_continuous(labels = as.character(seq(min(Years), 
+    max(Years))), breaks = seq(min(Years), max(Years))) + 
+    theme_minimal() + theme(legend.position = "none", panel.background = element_rect(fill = "gray97", 
+    color = "grey97"), axis.line.y = element_blank(), axis.text.y = element_blank(), 
+    axis.ticks.y = element_blank(), axis.title.y = element_blank(), 
+    axis.title.x = element_blank(), axis.line.x = element_line(size = 3, 
+      colour = "grey80"), panel.grid.minor.y = element_blank(), 
+    panel.grid.major.y = element_blank(), panel.grid.minor.x = element_blank(), 
+    axis.text.x = element_text(face = "bold")) + labs(title = "Historical Direct Citation Network")
+  plot(g)
+  if (isTRUE(verbose)) {
+    cat("\n Legend\n\n")
+    label <- data.frame(Label = names(V(bsk.network)), stringsAsFactors = FALSE)
+    Data <- histResults$histData
+    Data <- left_join(label, Data, by = c(Label = "Paper"))
+    print(Data[, -2])
+  }
+  return(bsk.network)
+}
+```
+
+
+```{r diet-article-histnet, fig.cap="饮食相关文献的核心引证网络"}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+hisgraph <- histPlot(hist_result,verbose = F,n=20,size = 8,labelsize = 3)
+```
+
+从图 \@ref(fig:diet-article-histnet) 中可以看到，最早的一篇研究可以追溯到 2004 年[@backhedGutMicrobiotaEnvironmental2004]。
+这篇发表在 PNAS 上的研究论文使用无菌小鼠做了饲喂实验，结果发现正常小鼠体内的肠道菌群能够促进无菌小鼠对糖类的吸收，并促进脂肪的累积。
+而如果没有肠道菌群的作用，无菌小鼠中的脂肪累积就会显著下降。不仅如此，该研究还鉴定出小鼠中的 Fiaf 基因在微生物参与的脂肪累积中发挥重要作用，从而说明了肠道菌群是一个影响饮食能量吸收和储存的重要因素。
+
+同样是  Bäckhed F，同样是在 PNAS 上面，2007 年他们又发表了一篇研究论文，阐明了无菌小鼠之所以不会肥胖的分子机制[@backhedMechanismsUnderlyingResistance2007]。
+这项研究针对前一项研究中一个有意思的现象展开，那就是无菌小鼠在面对高脂、高糖的西式饮食时，较有菌小鼠更加不容易出现脂肪累积。
+原因是什么呢？一种途径可能在于肠道细胞中通常被抑制的 Fiaf 基因的上调，另一种途径在于骨骼肌和肝脏中磷酸化的AMPK水平的上升。
+由于菌群是 Fiaf 基因表达的一个抑制因素，所以当菌群不存在时，Fiaf 基因就会上调，导致下游脂肪酸代谢基因的失调，不利于脂肪累积。
+而AMPK下游相关的脂肪酸代谢基因同样也是如此。所以，两种相互独立的信号通路参与了饮食因素在小鼠肥胖中的作用，而根源都与肠道菌群息息相关。
+
+同年发表的另一篇文章，将肠道菌群之所以能够促进肥胖的关键诱发因素给鉴定了出来，那就是细菌分泌的内毒素，具体而言是细菌的脂多糖（LPS）[@caniMetabolicEndotoxemiaInitiates2007]。
+CANI PD 等的研究发现，细菌脂多糖能够进入人体血液并作用于 CD14 细胞，从而引起代谢性的炎症，最终导致全身性的胰岛素抵抗，提高小鼠肥胖和糖尿病风险。
+而不管是降低 LPS 浓度还是突变 CD14，都能够抑制小鼠糖尿病和肥胖症的发作。
+
+
+在另一篇论文中，研究人员分析了饮食饮食在婴儿肠道菌群发育中可能的作用[@palmerDevelopmentHumanInfant2007]。
+这项研究一共纳入了 14 个健康的婴儿，包括一对同卵双胞胎。因为早期研究方法的局限性，作者用了非常多的方法来跟踪婴儿肠道菌群随时间的变化过程，
+其中包括基因芯片、qPCR、16S rRNA基因克隆和测序等。最终分析了 548 个样本，包括婴儿的粪便、母亲的阴道拭子和粪便、父亲和兄弟姐妹的粪便，以及母乳等等。
+并初步分析了疾病、药物、饮食变化和旅行等关键事件对菌群的影响。
+
+沿着这条线走下去，是 TURNBAUGH PJ 在2008/2009年发表的三篇重要研究。在 2008 年发表的 Cell Host and Microbe 杂志的研究中报道了肥胖与小鼠远端肠道菌群改变相关[@turnbaughDietInducedObesityLinked2008]，主要表现在两个方面：一是发现西式饮食能够促进厚壁菌门柔膜菌纲的激增，而限制饮食控制肥胖后这种现象消失；二是发现将这个胖鼠的菌群移植到瘦的无菌小鼠中后，会大大促进瘦鼠脂肪的堆积。
+在 2009 年发表在 Science Translational Medicine 杂志上的研究，则通过将人的肠道菌群移植到无菌小鼠中，研究“人鼠合一”的肠道菌群如何被饮食调控[@turnbaughEffectDietHuman2009]。
+结果发现，首先人的肠道菌群是可以在小鼠内定殖的，且定殖后的菌群特征与人类的相似。其次，当从低脂、富含膳食纤维的饮食转向高脂高糖的西式饮食后，
+可在一天内改变肠道菌群的结构，以及菌群的代谢、基因表达等。本研究同时也发现，与定殖的历史相比，饮食是改变菌群更重要的因素。
+
+TURNBAUGH PJ 2009年的另一个研究，选取成年女性同卵及异卵双胞胎（同一对双胞胎胖瘦一致），分析其与其母亲的粪便菌群，研究宿主基因型、环境暴露及宿主肥胖如何影响肠道菌群[@turnbaughCoreGutMicrobiome2009]。一共分析了154个个体，结果显示家庭成员之间既共享部分肠道菌群，也存在群落组成的差异，差异程度在同卵双胞胎与异卵双胞胎中相似。同时发现，在基因水平而菌群谱系水平，所有个体拥有一个核心菌群。
+
+
+
+
+SOKOL H 2008年发表在 PNAS 上的研究，主要是鉴定了克罗恩病患者肠道内一种抗炎共生细菌 *Faecalibacterium Prausnitzii*[@sokolFaecalibacteriumPrausnitziiAntiinflammatory2008]。
+*F. Prausnitzii*是厚壁菌门的一员，在CD复发患者中的比例显著降低。而该菌存在时，其分泌的代谢产物能够抑制肠道细胞的炎症反应。
+这一研究虽然并不直接与饮食相关，确实饮食干预治疗 CD 的重要基础。
+
+### 领域内专家  
+
+
+```{r diet-article-top-author, fig.cap="饮食相关研究的顶尖学者"}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r diet-article-author-collaboration-network, fig.cap="饮食相关研究的主要作者合作网络"}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r diet-article-university-collaboration-network, fig.cap="饮食相关研究机构合作网络"}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r diet-article-conceptual-structure-map, fig.cap="饮食相关研究共词分析"}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r diet-article-thematicmap, fig.cap="饮食相关研究的研究主题地图"}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+
+## 肠道菌群与免疫
+
+### 核心文章列表
+
+```{r immune-article-datatable, fig.cap=""}
+i <- 2
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r immune-article-trend, fig.cap="肠道菌群与免疫相关文献增长趋势"}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r immune-article-histnet, fig.cap="肠道菌群与免疫核心论文引用历史脉络"}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+hisgraph <- safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r immune-article-top-author, fig.cap="肠道菌群与免疫领域内顶尖专家"}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r immune-article-author-collaboration-network, fig.cap="免疫相关文献的作者合作网络"}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r immune-article-university-collaboration-network, fig.cap="免疫相关研究机构的合作网络"}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r immune-article-conceptual-structure, fig.cap="免疫相关关键词的关联分析"}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r immune-article-thematicmap, fig.cap="免疫相关研究主题地图"}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与代谢
+
+### 核心文章列表
+
+```{r metabolism-article-datatable, fig.cap=""}
+i <- 3
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r metabolism-article-trend, fig.cap="肠道菌群与代谢相关发文量"}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r metabolism-article-histnet, fig.cap="肠道菌群与代谢研究的历史脉络"}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与癌症
+
+### 核心文章列表
+
+```{r}
+i <- 4
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与心血管疾病
+
+### 核心文章列表
+
+```{r}
+i <- 5
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与肠外器官互作
+
+### 核心文章列表
+
+```{r}
+i <- 6
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与代谢生理
+
+### 核心文章列表
+
+```{r}
+i <- 7
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与药物相互作用
+
+### 核心文章列表
+
+```{r}
+i <- 8
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 生命早期的肠道菌群
+
+### 核心文章列表
+
+```{r}
+i <- 9
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群中的大型队列研究
+
+### 核心文章列表
+
+```{r}
+i <- 10
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群中的暗物质
+
+### 核心文章列表
+
+```{r}
+i <- 11
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群与精准医疗
+
+### 核心文章列表
+
+```{r}
+i <- 12
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 肠道菌群的生物标记物
+
+### 核心文章列表
+
+```{r}
+i <- 13
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 对肠道菌群进行工程改造
+
+### 核心文章列表
+
+```{r}
+i <- 14
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 噬菌体疗法
+
+### 核心文章列表
+
+```{r}
+i <- 15
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+# if(!is.null(Map)) Map$map
+```
+
+## 疫苗
+
+### 核心文章列表
+
+```{r}
+i <- 16
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+if (!is.null(Map)) Map$map
+```
+
+## 粪菌移植
+
+### 核心文章列表
+
+```{r}
+i <- 17
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
+## 益生菌和益生元
+
+### 核心文章列表
+
+```{r}
+i <- 18
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+### 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+### 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+### 作者合作网络
+
+```{r}
+## Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+### 机构合作网络
+
+
+```{r}
+## 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+### 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+### 研究主题地图
+
+```{r}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
+
 
 
 
