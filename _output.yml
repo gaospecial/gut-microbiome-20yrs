@@ -7,7 +7,7 @@ bookdown::gitbook:
         <li><a href="./">肠道菌群二十年·大数据</a></li>
       after: |
         <li><a href="https://mr-gut.cn" target="blank">热心肠研究院出品（©2020）</a></li>
-    download: [pdf, epub]
+    download: [pdf]
     edit: "https://github.com/gaospecial/gut-microbiome-20yrs/edit/master/%s"
     sharing:
       github: yes
@@ -29,5 +29,5 @@ bookdown::pdf_book:
   toc_unnumbered: no
   toc_appendix: yes
   quote_footer: ["\\begin{flushright}", "\\end{flushright}"]
-bookdown::epub_book:
-  stylesheet: css/style.css
+# bookdown::epub_book:
+#   stylesheet: css/style.css
