@@ -33,7 +33,7 @@ ggVennDiagram::ggVennDiagram(list,category.names = c("WOS高被引\n","本地高
 
 ```
 
-既是 SCI 高被引论文，又是本地高被引论文的大约 1500 篇论文，应当是肠道菌群研究论文中的精华，为此我们整理了论文的清单，列在图 \@ref(fig:vip-articles) 中。该表格可以查找、排序、过滤和点击。为了方便阅读，我们还将一些论文附上了《热心肠日报》的短科普链接（如果有的话[^daily-since-2016]）。与此同时，表格可以导出为 Excel 文档供本地查阅。
+ SCI 高被引论文以及本地高被引论文中额外的 1200 多篇论文，应当是肠道菌群研究论文中的精华，为此我们整理了论文的清单，列在图 \@ref(fig:vip-articles) 中。该表格可以查找、排序、过滤和点击。为了方便阅读，我们还将一些论文附上了《热心肠日报》的短科普链接（如果有的话[^daily-since-2016]）。与此同时，表格可以导出为 Excel 文档供本地查阅。
 
 [^daily-since-2016]: 《热心肠日报》创刊于2016年初，所以这些精华论文中，如果是2016年以后发表的话，大概率会有相应的短科普解读。通过阅读短科普，你基本可以掌握这篇文章的大略情况。
 
@@ -60,13 +60,13 @@ real_paper <- readRDS("data/real_paper.RDS")%>%
 
 
 MC_HC_article <- M %>%
-  filter(CORE==TRUE, HC==TRUE) %>%
+  filter(CORE==TRUE | HC==TRUE) %>%
   as_tibble() %>%
   mutate(title=str_to_title(TI),
          source=paste0("<a href=\"https://doi.org/",DI,"\">原文</a>")) %>%
   left_join(real_paper) %>%
   mutate(title_en = ifelse(str_detect(DI,"^10"),
-                           mrgut_permanent_link(base_url = "https://doi.org",
+                           mrgut_permanent_link(base_url = "https://doi.org/",
                                                 type = "html",
                                                 uuid = DI,
                                                 title = title,
@@ -188,6 +188,10 @@ include_graphics("citespace/co-occurance-example.png")
 
 
 ## 核心论文的分类
+
+核心论文的分类我们采用的是关键词检索方式进行。这种方法虽然比较原始，但是却是最直观、最容易理解的一种途径。在检索的过程中，我们拟定了合适的正则表达式，以确保主题核心词被完整的纳入进来。举例来说，针对于“饮食”主题，我们设定的关键词包括“diet”，“diet*”，以及“food|nutrition|supplement|fasting|calorie restriction|fibre|fiber|carbohydrate|meat|fish|egg|milk|dairy|fruit|vegetable|additives|sweetener”等其它一些相关的关键词。
+
+
 
 ```{r}
 library(textreuse)
