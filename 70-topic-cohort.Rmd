@@ -1,0 +1,76 @@
+# 肠道菌群中的大型队列研究
+
+## 核心文章列表
+
+```{r}
+i <- "cohort"
+topic_header <- topic[[i]]
+topic_caption <- paste0(topic_header,"研究核心论文")
+
+# 文章列表
+df <- topic_articles_core[[i]]
+df <- biblio_df(df)
+produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+```
+
+
+```{r}
+topic_trend_core_plot_list[[i]]
+```
+
+
+## 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+## 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+## 作者合作网络
+
+```{r}
+# Author collaboration
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+```
+
+
+## 机构合作网络
+
+
+```{r}
+# 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE)
+```
+
+## 共词分析
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+## 研究主题地图
+
+```{r}
+# Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```

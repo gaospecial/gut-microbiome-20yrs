@@ -10,8 +10,8 @@
 
 ```{r}
 db_cache <- "E:/Spring_Work/Corporate_Bussiness/C40_Data/cache/"
-papers <- read_rds(paste0(db_cache,"papers.RDS")) %>% as_tibble() %>%  mutate_all(iconv,from="utf-8",sub=" ")
-fragments <- read_rds(paste0(db_cache,"fragments.RDS")) %>% as_tibble() %>%  mutate_all(iconv,from="utf-8",sub=" ")
+papers <- readRDS(paste0(db_cache,"papers.RDS")) %>% as_tibble() %>%  mutate_all(iconv,from="utf-8",sub=" ")
+fragments <- readRDS(paste0(db_cache,"fragments.RDS")) %>% as_tibble() %>%  mutate_all(iconv,from="utf-8",sub=" ")
 
 real_paper <- papers %>% 
   filter(status==3 & classify=="audit" & journal_id=="1") %>%
@@ -140,6 +140,10 @@ keywords <- "TMAO|trimethylamine N-oxide|cardiovascular|CVD|atherosclerosis|coro
 
 M2 <- M %>% filter(str_detect(AB,toupper(keywords))) %>%
   filter(PY>2009)
+
+
+M2 <- data.frame(M2)
+rownames(M2) <- M2$SR
 ```
 
 
@@ -401,6 +405,8 @@ stats_aov <- compare_means(n~stage, data, method = "aov",group.by = "keyword")
 
 stats_aov <- stats_aov %>% filter(p.adj<1e-2) %>% arrange(p.adj)
 ```
+
+
 按照我们的方法论，在 `r length(unique(data$keyword))` 中发现 `r nrow(stats_aov)` 个显著变化的关键词。
 
 ```{r}
