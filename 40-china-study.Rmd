@@ -1,29 +1,425 @@
 # 中国的肠道菌群研究 {#china-study}
 
 
+```{r}
+## 网络相关的函数
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+
+graph_add_node_pagerank <- function(g){
+  V(g)$pagerank <- page.rank(g)[["vector"]]
+  return(g)
+}
+
+graph_add_node_degree <- function(g){
+  V(g)$degree <- degree(g)
+  return(g)
+}
+
+graph_add_node_attr <- function(g, data, id = "id", cols = colnames(data)){
+  # 依据 id 的对应关系将 data 中的属性加入到graph中，
+  # id 是 data 中 node id 的列名, cols 是 data 中用到的列名
+  # ToDO: 跳过已有的属性还是覆盖？
+  g.id <- names(V(g))
+  data <- as.data.frame(data)
+  rownames(data) <- data[,id]
+  cols <- cols[!cols %in% id]
+  for (i in 1:length(cols)){
+    vertex_attr(g, name =  cols[[i]]) <- data[g.id, cols[[i]]]
+  }
+  return(g)
+}
+
+graph_set_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  size <- (value * max_size) + 1
+  V(g)$size <- size
+  return(g)
+}
+
+
+
+graph_set_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
+  ## 为 graph 设置节点颜色
+  ## 默认按年份着色，或者其它 node 属性着色
+  value <- vertex_attr(g, name = by)
+  if (isTRUE(scale01)){
+    value <- range01(value)
+  }
+  uniq_value <- sort(unique(value),decreasing = decreasing)
+  my_palette <- brewer.pal(n=7,name = palette_name)
+  
+  nColor <- 100
+  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
+  colors <- colorRampPalette(my_palette)(nColor)
+  names(colors) <- uniq_value
+  
+  V(g)$color <- colors[as.character(value)]
+  
+  return(g)
+}
+
+
+
+
+graph_subgraph <- function(g, by = "degree", slice = "PY", topN = 10, ratio = 0.1){
+  if( !by %in% vertex_attr_names(g)) stop(by, " is not a graph attribute.\n")
+  if( !slice %in% vertex_attr_names(g)) stop(slice, " is not a graph attribute.\n")
+  data <- visNetwork::toVisNetworkData(g)
+  nodes <- data$nodes %>% group_by(PY) %>%
+    arrange(desc(degree)) %>%
+    filter(row_number() <= topN)
+  induced.subgraph(g, vids = nodes$id)
+}
+
+
+
+vis_histNet <- function(g, 
+                        node.title = "title", 
+                        node.size = "size", 
+                        node.color = "color", 
+                        edge.color = "color", 
+                        layout = "layout_with_fr"){
+  data <- toVisNetworkData(g)
+  
+  visNetwork(nodes = data$nodes,
+             edges = data$edges) %>%
+    visIgraphLayout(physics = FALSE, layout = layout) %>%
+    visNodes(size = node.size, color = node.color, title=node.title) %>%
+    visEdges(color = edge.color) %>%
+    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
+    visExport()
+  
+}
+
+```
+
+
 
 ## 大陆与港澳台的比较
 
 
 ```{r}
 # 根据通讯作者地址获取中国的研究 M$RP 
-China_study <- M %>% filter(is.part_of_china(RP))
+China_study <- M %>% filter(is.part_of_china(C1))
+China_study$AU1_CO <- China_study$AU_CO_NR
+China_study$AU_CO <- China_study$AU_CO_NR
+China_study$Au_UN <- China_study$AU_UN_NR
 
 # 澳门的研究
-Macao_study <- China_study %>% filter(str_detect(RP,regex("\\bMACAO\\b",ignore_case = T)))
+Macao_study <- China_study %>% filter(str_detect(C1,regex("\\bMACAO\\b",ignore_case = T)))
 
 # 香港的研究
 # 使用这种匹配模式，则香港与内地在香港以外的其它地区合办的分校会被视为香港的研究。
 # 包括香港中文大学深圳分校，北师大-香港浸会大学等。
-HK_study <- China_study %>% filter(str_detect(RP,regex("\\bHONG KONG\\b",ignore_case = T)))
+HK_study <- China_study %>% filter(str_detect(C1,regex("\\bHONG KONG\\b",ignore_case = T)))
 
 # 台湾的研究
-Taiwan_study <- China_study %>% filter(str_detect(RP,regex("\\bTAIWAN\\b",ignore_case = T)))
+Taiwan_study <- China_study %>% filter(str_detect(C1,regex("\\bTAIWAN\\b",ignore_case = T)))
 
 
 # 大陆的研究
-Mainland_study <- China_study %>% filter(!str_detect(RP,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
+Mainland_study <- China_study %>% filter(!str_detect(C1,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
 ```
+
+## 中国研究概况
+
+二十年间，中国发表论文的数量和比例双双增加。
+
+二十年前，中国基本没有相关的研究论文；
+十年前，即2010年，中国发表相关研究 82 篇，占当年全世界总发文量的 5%；
+刚刚过去的2019年，中国发表相关研究论文超过 2500 篇，占当年全世界总发文量的 25% 以上。
+
+
+
+```{r}
+## 论文年发表量
+world_yearly_output <- M %>% group_by(PY) %>%
+  summarise(world_yearly_output = n())
+p <- China_study %>% group_by(PY) %>%
+  summarise(yearly_output = n()) %>%
+  left_join(world_yearly_output) %>%
+  mutate(proportion = yearly_output/world_yearly_output) %>%
+  mutate(text=paste0(yearly_output,"(",round(proportion*100,1),"%)")) %>%
+  ggplot(aes(PY,yearly_output,text=text,fill=proportion)) +
+  scale_fill_gradient2(low = brewer.pal(n=3, name="YlGnBu")[[1]],mid = brewer.pal(n=3, name="YlGnBu")[[2]],high=brewer.pal(n=3, name="YlGnBu")[[3]]) +
+  geom_col() +
+  labs(x="",y="",title = "中国每年发表论文的数量") +
+  theme(legend.position = "none")
+# p
+plot.ly(p) 
+```
+
+与大陆相比，港台地区的肠道菌群研究开始的可能还要更早一些，在2005年以前，港台地区的发文量可以占到全国的四分之一以上。
+进入2010年以后，由于大陆相关研究的强势崛起，港台地区的论文比例稳步下降。到了2019年，大陆已经成为绝对的中流砥柱。
+
+
+```{r}
+# 两岸四地发文量统计
+part <- rep(c("大陆","台湾","香港","澳门"), times=sapply(list(Mainland_study, Taiwan_study, HK_study, Macao_study), nrow))
+data <- rbind(Mainland_study, Taiwan_study, HK_study, Macao_study)
+data$part <- factor(part,levels = c("大陆","台湾","香港","澳门"))
+df <- data %>% 
+  group_by(part, PY) %>%
+  summarise(nRecord=n()) %>%
+  ungroup() %>%
+  complete(part,PY,fill = list(nRecord = 0)) %>%
+  group_by(PY) %>%
+  mutate(proportion=nRecord/sum(nRecord)) %>% 
+  arrange(PY)
+ggplot(df, aes(PY,proportion,fill=part,color=part)) +
+  geom_area() +
+  geom_text(aes(label=part), position = position_stack(0.5),size=3,color="white", data=filter(df, PY==2010)) +
+  scale_y_continuous(labels = function(x){paste0(x*100,"%")}) +
+  labs(x="",y="",title = "两岸四地研究论文占的比例变化")
+
+```
+
+
+
+
+```{r}
+# res <- biblioAnalysis(China_study)
+# summary(res,k=30)
+# plot(res,k=30)
+```
+
+
+## 主要的研究机构
+
+以论文发表量计算，20年间国内发表论文最多的研究机构分别是：中国科学院（中国科学院大学）、浙江大学、上海交通大学、中国农业大学和中国农业科学院等。
+
+在前 30 名中，台湾的国立台湾大学、中国医药大学（台湾），以及香港的香港大学、香港中文大学等高校榜上有名，它们各自是相应地区的主要的肠道菌群相关研究机构。
+
+
+
+```{r fig.asp=1}
+# 主要研究机构
+China_affiliations <- table(unlist(strsplit(China_study$AU_UN_NR,";"))) %>% sort(decreasing = TRUE) %>% 
+  enframe(name = "aff",value = "nRecord")
+# write.csv(China_affiliations,file = "China_affiliations.csv")
+
+China_affiliation_translation <- openxlsx::read.xlsx("data/China_affiliations.xlsx")
+
+China_affiliations <- China_affiliations %>%
+  left_join(China_affiliation_translation, by = c("aff"="WoS_Name"))
+
+p <- China_affiliations  %>%
+  head(30) %>%
+  arrange(nRecord) %>%
+  mutate(aff = as_factor(as.character(Chinese_Name))) %>%
+  mutate(text = paste0(aff, "(", nRecord, "篇)")) %>%
+  ggplot(aes(aff,nRecord,text=text)) +
+  geom_col() +
+  coord_flip() +
+  labs(x="",y="",title = "主要科研机构（以论文发表量计）")
+plot.ly(p)
+```
+
+在下方的研究机构合作网络中，大概可以看到 5 个主要的研究群体。
+
+首先是以中科院为中心的主力研究团体，中科院作为一个核心，将各大高校和研究所有机的联系了起来；
+
+其次是台湾地区的学术团体，除了前面提到的两所大学，还有国立阳明大学（NATL YANG MING UNIV）、台北医科大学（TAIPEI MED UNIV）、国立中兴大学（NATL CHUNG HSING UNIV）等，而宁波大学则是与之联系最紧密的大陆高校。
+
+再次是以江南大学为核心的几所高校，包括北京工商大学（BTBU，BEIJING TECHNOL AND BUSINESS UNIV）、南京医科大学、南京大学等。
+
+接下来是由北京中医药大学和中国中医学研究院组成的中医药方阵，以及第三军医大学和重庆医科大学组成的团体。
+
+```{r}
+aff_col_net_mat <- biblioNetwork(China_study, analysis = "collaboration",network = "universities")
+idx <- rownames(aff_col_net_mat) %in% head(China_affiliations$aff,100)
+aff_col_net_mat_s <- aff_col_net_mat[idx,idx]
+aff_col_net <- graph.adjacency(aff_col_net_mat_s,weighted = TRUE, mode = "undirected")
+
+```
+
+
+```{r china-aff-col-net, fig.cap="中国各大研究机构之间的合作关系"}
+g <- aff_col_net
+vertex.attributes(g)$size <- degree(g)
+g <- delete.edges(g,E(g)[edge.attributes(g)$weight<10])
+g <- simplify(g)
+g <- delete.isolates(g)
+
+
+# 聚类结果
+member <- membership(cluster_louvain(g)) %>%
+  enframe(name = "id", value = "cluster")
+color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
+names(color) <- unique(member$cluster)
+member$color <- color[member$cluster]
+
+visData <- toVisNetworkData(g)
+visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>%
+  left_join(China_affiliations,by=c("id"="aff")) %>%
+  left_join(member)
+visData$edges$value <- visData$edges$weight
+# visNetwork(visData$nodes, visData$edges,physics=F) %>%
+#  visLayout(randomSeed = 20200721) %>%
+#  visOptions(manipulation = TRUE)
+
+
+
+```
+
+
+
+
+## 作者合作网络
+
+
+通过作者合作网络，可以更加清楚的看到国内各个研究团体，发现团队的带头人。
+
+
+```{r}
+edge_weight_cutoff <- 5
+n_top_author <- 200
+```
+
+
+为了取得良好的可视化效果，我们对作者合作网络进行了简化，只保留了 `r n_top_author` 个发文量最高的作者，同时删掉了合作发表论文数量小于 `r edge_weight_cutoff` 次的联系。这样，可以得到下面这幅图（图 \@ref(fig:top-china-aut-col-net)）。
+
+
+
+
+```{r}
+aut_col_net_mat <- biblioNetwork(China_study, analysis = "collaboration", network = "authors", sep = ";")
+
+authors <- unlist(strsplit(China_study$AU, split = ";")) %>%
+  table() %>%
+  sort(decreasing = T) %>%
+  enframe(name = "author",value = "nRecord") %>%
+  mutate_at("author",trimws)
+idx <- rownames(aut_col_net_mat) %in% head(authors$author,n_top_author)
+aut_col_net_mat_s <- aut_col_net_mat[idx,idx]
+aut_col_net <- graph.adjacency(aut_col_net_mat_s,weighted = TRUE, mode = "undirected")
+
+```
+
+
+
+```{r top-china-aut-col-net, fig.cap="中国顶尖学者之间的合作网络"}
+g <- aut_col_net
+vertex.attributes(g)$size <- degree(g)
+g <- delete.edges(g,E(g)[edge.attributes(g)$weight < edge_weight_cutoff])
+g <- simplify(g)
+g <- delete.isolates(g)
+
+# 聚类结果
+member <- membership(cluster_louvain(g)) %>%
+  enframe(name = "id", value = "cluster")
+color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
+names(color) <- unique(member$cluster)
+member$color <- color[member$cluster]
+
+visData <- toVisNetworkData(g)
+visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>% left_join(member)
+visData$edges$value <- visData$edges$weight
+visNetwork(visData$nodes, visData$edges,physics=F) %>%
+  visLayout(randomSeed = 20200721) %>%
+  visOptions(manipulation = TRUE, 
+            highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE))
+```
+如果不出意外的话，你将可以看到这里面最大的一个研究群体位于这幅图的中间。他又可以继续分成几个小团体。其中浅红色的部分，核心应当是李兰娟院士（LI, LANJUAN）；绿色的部分，核心应当是赵立平教授（ZHAO, LIPING）；深红色的部分，核心应当是贾伟教授（JIA, WEI）；橙色的部分，核心应当是ZHU, WEIYUN。
+
+与前面的一个群体不同，第二大的群体（上面橙色的部分）如果你放大来看，会发现这是一个联系非常紧密的团体，主要是华大基因及其合作者。其中包括了华大基因的汪俊（WANG, JUN），汪建（WANG, JIAN）等人。
+
+在图片左下角的灰蓝色部分，我们可以找到陈卫院士（CHEN, WEI）的团队，这个铁四角包括赵建新（ZHAO, JIANXIN）、张灏（ZHANG, HAO）和王刚（WANG, GANG）等三位教授。
+
+自此向右上方拖动，一个黄色的子网络是张和平教授（ZHANG, HEPING）的团队。右侧紧挨着的绿色子网络，是印遇龙院士（YIN, YULONG）的团队。
+
+缩放网络，将焦点聚集在左上方的蓝色区域放大，可以观察到来自中国香港的研究群体。这一群体由于君教授（YU, JUN）、黄秀娟教授（NG，SIEW C）等人组成。
+
+这幅网络中一共有 `r length(unique(member$cluster))` 个子网络，用不同的颜色标示。读者不妨找找，看有没有你认识的老师在这里面。
+
+可以说，图中的这些人撑起了过去二十年中国肠道菌群研究的不同领域的天幕，让我们向他们致敬！
+
+
+## 研究内容
+
+```{r}
+China_study %>% filter(HC == TRUE | CORE == TRUE) -> China_study_core 
+China_study_core <- biblio_df(China_study_core)
+```
+
+
+
+### 关键词趋势
+
+
+
+```{r}
+net_mat <- biblioNetwork(China_study, analysis = "co-occurrences", network = "keywords", sep = ";")
+
+keywords <- unlist(strsplit(China_study$ID, split = ";")) %>%
+  table() %>%
+  sort(decreasing = T) %>%
+  enframe(name = "keyword",value = "nRecord") %>%
+  mutate_at("keyword",trimws)
+idx <- rownames(net_mat) %in% head(keywords$keyword,n_top_author)
+net_mat_s <- net_mat[idx,idx]
+net <- graph.adjacency(net_mat_s,weighted = TRUE, mode = "undirected")
+
+```
+
+
+
+```{r }
+g <- net
+vertex.attributes(g)$size <- degree(g)
+g <- delete.edges(g,E(g)[edge.attributes(g)$weight < edge_weight_cutoff])
+g <- simplify(g)
+g <- delete.isolates(g)
+
+# 聚类结果
+member <- membership(cluster_louvain(g)) %>%
+  enframe(name = "id", value = "cluster")
+color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
+names(color) <- unique(member$cluster)
+member$color <- color[member$cluster]
+
+visData <- toVisNetworkData(g)
+visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>% left_join(member)
+visData$edges$value <- visData$edges$weight
+visNetwork(visData$nodes, visData$edges,physics=F) %>%
+  visLayout(randomSeed = 20200721) %>%
+  visOptions(manipulation = TRUE, 
+            highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE))
+```
+
+
+#### 系统关键词
+
+```{r fig.width=12}
+KeywordGrowth(China_study_core,top=30) %>%
+  pivot_longer(cols = -Year) %>%
+  ggplot(aes(Year, value, fill=name, color=name)) +
+  geom_area() + 
+  facet_wrap(~name,ncol = 6,scales = "free_y") +
+  theme(strip.text = element_text(size = 6,face="bold"),
+        legend.position="none")
+```
+
+#### 作者关键词
+
+```{r fig.width=12}
+KeywordGrowth(China_study_core,top=30, Tag="DE") %>%
+  pivot_longer(cols = -Year) %>%
+  ggplot(aes(Year, value, fill=name, color=name)) +
+  geom_area() + 
+  facet_wrap(~name,ncol = 6,scales = "free_y")+
+  theme(strip.text = element_text(size = 6,face="bold"),
+        legend.position="none")
+```
+
+
+
+## 其它
 
 ```{r}
 list <- list(Macao_study, HK_study, Taiwan_study, Mainland_study)
@@ -35,7 +431,6 @@ list  <- lapply(seq_along(list), function(i){
 # 合并 List，得到中国分区的研究
 China_study_essential <- do.call("rbind",list)
 ```
-
 
 
 
