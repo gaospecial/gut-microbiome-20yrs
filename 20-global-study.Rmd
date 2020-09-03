@@ -82,76 +82,22 @@ Reds <- colorRampPalette(pal_Reds)(nrow(data$nodes))
 data$nodes <- data$nodes %>% arrange(size) %>%
   mutate(color=Reds)
 
-visNetwork(nodes=data$nodes, edges = data$edges) %>%
+visNetwork(nodes=data$nodes, edges = data$edges %>% filter(weight>100)) %>%
   visIgraphLayout(physics = TRUE) %>%
   visNodes(size = "size",color = "color",shadow = TRUE) %>%
   visEdges(width = "width",color = "#B3B3B3") %>%
   visOptions(
-    selectedBy = "id",
     highlightNearest = TRUE
-  ) %>% 
-  visInteraction(navigationButtons = TRUE)
+  ) 
 
 ```
 
 
-为了更直观的观察全球的合作网络，我们采用网络分析的方法进一步阐述。点的大小代表*特征向量中心性*，线的宽度表示国家间合作关系的多少（图 \@ref(fig:country-collaboration-network)）。这个网络是一个基本上完全连接的网络，即所有的 `r length(top_country)` 个国家与其它所有国家间都有合作关系的存在。*特征向量中心性*大的节点对相连的节点影响更大，因此可以直观的看到各个国家在整个合作网络中的重要性。
+为了更直观的观察全球的合作网络，我们采用网络分析的方法进一步阐述。点的大小代表*特征向量中心性*，线的宽度表示国家间合作关系的多少（图 \@ref(fig:country-collaboration-network)）。这个网络是一个基本上完全连接的网络，即所有的 `r length(top_country)` 个国家与其它所有国家间都有合作关系的存在，为了简化这一网络，我们去掉了连接度小于100的边，得到上图。可以很明显的看出，与中国联系最紧密的国家依次是美国、英国、加拿大和澳大利亚。*特征向量中心性*大的节点对相连的节点影响更大，因此可以直观的看到各个国家在整个合作网络中的重要性。
 
 
 
-## 美国是肠道菌群研究的领跑者
-
-### 美国的菌群研究开展的最早，体量最大，领域最广泛
-
-### 各大高校、研究所和社会力量共同助力肠道菌群研究
-
-### 肠道转化应用异军突起，从临床到产业革命
-
-
-
-## 世界各地的研究机构
-
-```{r}
-get_longest <- function(x){
-  nc <- nchar(x)
-  if (all(is.na(nc))) return(NA)
-  i <- which(nc==max(nc))
-  if (length(i)>1) i <- i[1]
-  return(x[[i]])
-}
-```
-
-
-
-```{r}
-# 研究机构排名
-affiliations <- tableTag(M,Tag = "AU_UN_NR")
-
-# 机构地址，选最长的那个地址
-C2 <- gsub(pattern = "\\[.*?\\]",replacement = "", M$C1)
-C2List <- trim(unlist(strsplit(C2,";",fixed = TRUE)))
-data <- data.frame(aff=gsub(",.*","",C2List),
-                   address=gsub("^[^,]*?,","",C2List))
-
-aff_addr <- data %>% 
-  as_tibble() %>% 
-  filter(!is.na(aff),!is.na(address)) %>%
-  mutate(str_replace_all(aff,"&","AND")) %>% 
-  group_by(aff) %>% 
-  summarise(addr=get_longest(address))
-
-# 
-df <- as_tibble(affiliations) %>%
-  filter(Tab!="NA") %>%
-  head(1000) %>%
-  left_join(aff_addr,by=c("Tab"="aff")) %>%
-  mutate(id=row_number())
-openxlsx::write.xlsx(df,file = "data-raw/affiliation/Affilliations.xlsx")
-```
-
-
-
-先谈谈国际合作，再介绍美中两国和其它国家的研究进展。
+毫无疑问，美国是肠道菌群研究的领跑者。这不仅体现在美国的菌群研究开展的最早，体量最大，领域最广泛，而且体现在各大高校、研究所和社会力量的广泛参与上。除此之外，我们还可以发现当前肠道转化最积极的地方，也是美国。
 
 
 
