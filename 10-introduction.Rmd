@@ -13,7 +13,7 @@
 
 通过对这些项目的汇总，我们首先可以有一个**大体印象**。
 
-```{r M-summary,fig.asp=1,fig.width=6,fig.cap=paste(nrow(M), "篇文献的大数据")}
+```{r M-summary,fig.asp=1,fig.width=6,fig.cap=paste(nrow(M), "篇文献的大数据"),out.width="70%"}
 columns <- c("AU_CO_NR","AU_UN_NR","AF","J9","DE","ID","WC","SC")
 col_names <- c("国家/地区","研究机构","作者","期刊","作者关键词","系统关键词","研究类别","研究方向")
 
@@ -305,6 +305,37 @@ p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,gr
 plot.ly(p)
 ```
 
+```{r eval=FALSE}
+
+top_country_output$color <- sapply(top_country_output$chinese_abbr, function(x) {
+  if(x=="美") return("blue")
+  if(x=="中") return("red")
+  return("grey")
+})
+
+top_country_output$textcolor <- sapply(top_country_output$chinese_abbr, function(x) {
+  if(x=="美") return("grey")
+  if(x=="中") return("grey")
+  return("white")
+})
+
+top_country_output$alpha <- sapply(top_country_output$chinese_abbr, function(x) {
+  if(x=="美") return(1/3)
+  if(x=="中") return(1/3)
+  return(1/5)
+})
+p <- ggplot(top_country_output, aes(PY,rank,text=paste0(PY,",",China),color=I(color),group=CO)) +
+  geom_point(size=6) +  geom_line(aes(alpha=I(alpha)),size=5) +
+  geom_text(aes(label=chinese_abbr,color=I(textcolor)), hjust=0.5, vjust=0.5,size=3,check_overlap = T) +
+  labs(x="",y="",title = "各国加权发文量排行榜") +
+  xlim(c(2000,2020)) +
+  theme(legend.position = "none")
+
+export::graph2ppt(p)
+
+```
+
+
 
 `r if (knitr:::is_html_output()) '如果您正在查看的是在线版，则可以通过下面的动画了解主要国家发文量的排行变化情况。'`
 
@@ -553,7 +584,7 @@ leaflet() %>%
 ```
 
 
-## 来看看本领域内最负盛名的科学家
+## 来看看本领域内最负盛名的科学家 {#top-scientist}
 
 
 前面提到，仅以作者全名论[^author-fullname]，在肠道菌群研究领域内就有 `r tag_summary_n[[3]]` 个研究人员。我们不妨来看看有哪些人发表论文的数量最多？哪些人发表的论文引用次数最多？
@@ -638,7 +669,6 @@ LC_authors <- LC$Authors %>%
   summarise(LocalCitations=sum(LocalCitations))%>% 
   arrange(desc(LocalCitations))
 
-rm(LC)
 
 #' # H指数的计算
 topAU_by_LCS <- LC_authors %>%
@@ -690,6 +720,9 @@ author_prod <- author_prod %>% mutate(Author=trimws(as.character(author)))  %>%
   filter(Author %in% topAU_by_LCS$Author)
 
 author_prod$Author <- factor(author_prod$Author,levels = rev(topAU_by_LCS$Author))
+
+rm(LC)
+
 
 
 p <- ggplot(author_prod, aes(PY,Author,size=record,color=LCS)) +
