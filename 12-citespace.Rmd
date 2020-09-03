@@ -14,12 +14,6 @@
 
 - 指标。每个聚类是否具有足够的相似性（silhouette值是否足够大，太小则无明确主题可言），整个聚类是否有足够节点（太少则很可能全都出自同一篇文献的参考文献，因而缺乏普遍意义）。
 
-使用 CiteSpace 进行网络分析的速度很快，但是需要特别注意的是 CiteSpace 默认只会选择一部分的文献进行分析（图 \@ref(fig:citespace-selection-criteria)）。
-
-
-```{r citespace-selection-criteria,fig.cap="CiteSpace基于多种条件选择文献的子集进行分析"}
-include_graphics("citespace/citespace-selection-criteria.png")
-```
 
 
 
@@ -28,27 +22,27 @@ include_graphics("citespace/citespace-selection-criteria.png")
 
 ### 文献的引用网络
 
-高被引论文的共被引网络有两个结果。
 
-首先看图 \@ref(fig:citespace-highlycited-reference-network) 展示的高被引论文的共被引网络（部分）。这部分论文是高被引论文中的核心文献（每年引用次数排在前50%）。如前所述，颜色表示论文发表的年份，红色文字表示簇的关键词（关键词分成两个部分，以斜杠分隔，分别由不同的算法和来源）。
 
-主要的共被引网络簇包括：
+CiteSpace 分析高被引文献后，我们可以得到一个庞大的网络(图 \@ref(fig:citespace-highlycited-reference-network-complete)）。这个网络的结构有更多的“细枝末叶”，结合时间的变迁，可以看到肠道菌群研究由远及近（反应在图中是由外围向中心的趋势）的变迁。
 
-- IBD
-- 人体菌群
-- 宿主代谢
-- 肠脑轴
-- 人体肠道菌群
+通过语义分析，软件给出了几十个关键词，用来指代不同的细分研究领域。
 
-等等。
+其中，最前面的 10 个分别是：
 
-不同簇的颜色存在显著的差异，说明各研究主题在时间上是有分隔效应的。
+1. cancer therapy
+2. multiple effect
+3. gut-brain axis
+4. *Clostridium difficile* infection
+5. hepatic encephalopathy
+6. old intuition
+7. mosquito midgut microbiota
+8. maternal microbial transmission
+9. shellfish culture
+10. inflammatory disorder
 
-```{r citespace-highlycited-reference-network, fig.cap="高被引论文的共被引网络（部分）"}
-include_graphics("citespace/citespace-highlycited-reference-network.png")
-```
 
-在纳入更多的高被引文献后，我们可以得到一个更庞大的网络(图 \@ref(fig:citespace-highlycited-reference-network-complete)）。这个网络的结构有更多的“细枝末叶”，结合时间的变迁，可以看到肠道菌群研究由远及近（反应在图中是由外围向中心的趋势）的变迁。
+机器学习给出的结果固然与我们自己的感知不同，很多时候甚至是不大准确的。但是，这样的一个结果还是指出了肠道菌群研究中一些相对比较独立的研究领域。
 
 ```{r citespace-highlycited-reference-network-complete, fig.cap="高被引论文的共被引网络（完整）"}
 include_graphics("citespace/citespace-highlycited-reference-network-complete.png")
@@ -57,14 +51,9 @@ include_graphics("citespace/citespace-highlycited-reference-network-complete.png
 
 ### 作者的合作网络
 
-我们同样同两个层面分析了高被引论文的作者合作网络（图 \@ref(fig:citespace-highlycited-author-network)， \@ref(fig:citespace-highlycited-author-network-complete)）。
+我们接下来又分析了高被引论文的作者合作网络（图 \@ref(fig:citespace-highlycited-author-network-complete)）。
 
 
-
-
-```{r citespace-highlycited-author-network, fig.cap="高被引论文的作者合作网络（部分）"}
-include_graphics("citespace/citespace-highlycited-author-network.png")
-```
 
 ```{r citespace-highlycited-author-network-complete, fig.cap="高被引论文的作者合作网络（完整）"}
 include_graphics("citespace/citespace-highlycited-author-network-complete.png")
@@ -72,6 +61,18 @@ include_graphics("citespace/citespace-highlycited-author-network-complete.png")
 
 
 ### 关键词的共现网络
+
+
+关键词的共现网络，联系程度非常紧密，从中得到了 8 个研究主题，分别是：
+
+1. #0 IBD
+2. #1 diet
+3. #2 metabolic syndrome（代谢综合征）
+4. #3 school age
+5. #4 gut-brain axis
+6. #5 gut microbiota
+7. #6 aquaculture/gastrointestinal microbiota
+8. #7 colorectal cancer（大肠癌）
 
 
 ```{r citespace-highlycited-keyword-network, fig.cap="高被引论文的关键词共现网络"}
