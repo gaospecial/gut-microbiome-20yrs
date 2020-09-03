@@ -187,15 +187,55 @@ include_graphics("citespace/co-occurance-example.png")
 ```
 
 
-## 核心论文的分类
+### 文献网络的简化
 
-核心论文的分类我们采用的是关键词检索方式进行。这种方法虽然比较原始，但是却是最直观、最容易理解的一种途径。在检索的过程中，我们拟定了合适的正则表达式，以确保主题核心词被完整的纳入进来。举例来说，针对于“饮食”主题，我们设定的关键词包括“diet”，“diet*”，以及“food|nutrition|supplement|fasting|calorie restriction|fibre|fiber|carbohydrate|meat|fish|egg|milk|dairy|fruit|vegetable|additives|sweetener”等其它一些相关的关键词。
-
+文献网络是一个联系度非常高的网络，在对其进行分析和可视化的时候，如果不对网络进行简化，那么只能得到一个盘根错节、处处链接的网络。
+这样，无论是对网络进行聚类分析，还是对网络进行可视化，效果都相当糟糕。所以，需要对网络进行简化，去掉联系度不紧密的关系，只保留最关键的节点和关系。
 
 
 ```{r}
-library(textreuse)
+reference_coupling_networks <- readRDS("data/reference_coupling_networks.RDS")
+reference_coupling_networks[[20]]$graph -> g
+
 ```
+
+以文献耦合网络为例，网络中任意两篇文献间联系的紧密度是文献数目。`E(g)$weight` 就是图 `g` 边的 weight，将其做 `log10()` 转变后，基本符合一个正态分布。
+
+```{r}
+par(mfrow=c(1,2))
+hist(E(g)$weight)
+hist(log10(E(g)$weight))
+
+```
+
+```{r}
+quantile(log10(E(g)$weight),probs = 1:10/10) -> lims
+gs <- lapply(1:length(lims),function(i) delete.edges(g, which(log10(E(g)$weight) < lims[[i]])) %>% igraph::simplify())
+```
+
+鉴于此，我们会将一些权重（Weight）较低的边删掉，在此基础上进一步可视化，以期得到一个较为简化的网络。
+
+```{r fig.width=12,fig.asp=1}
+par(mfrow=c(2,2))
+success <- lapply(gs[c(3,6,8,9)],function(x){
+    x <- delete.vertices(x,which(degree(x)<1))
+    c <- cluster_louvain(x)
+    plot(c,x,layout=layout.kamada.kawai,vertex.label=NA,edge.curved=TRUE,main="")
+  })
+```
+
+
+最终简化得到的网络，可视化结果如下所示：
+
+```{r fig.width=12,fig.asp=1}
+visIgraph(gs[[9]]) %>% visIgraphLayout(physics = TRUE, layout = "layout.kamada.kawai") 
+```
+
+
+
+## 核心论文的分类
+
+核心论文的分类我们采用的是关键词检索方式进行。这种方法虽然比较原始，但是却是最直观、最容易理解的一种途径。在检索的过程中，我们拟定了合适的正则表达式，以确保主题核心词被完整的纳入进来。举例来说，针对于“饮食”主题，我们设定的关键词包括“diet”，“diet*”，以及“food|nutrition|supplement|fasting|calorie restriction|fibre|fiber|carbohydrate|meat|fish|egg|milk|dairy|fruit|vegetable|additives|sweetener”等其它一些相关的关键词。
 
 
 
