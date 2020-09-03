@@ -1,146 +1,37 @@
 # 中国的肠道菌群研究 {#china-study}
 
 
-```{r}
-## 网络相关的函数
-
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-
-graph_add_node_pagerank <- function(g){
-  V(g)$pagerank <- page.rank(g)[["vector"]]
-  return(g)
-}
-
-graph_add_node_degree <- function(g){
-  V(g)$degree <- degree(g)
-  return(g)
-}
-
-graph_add_node_attr <- function(g, data, id = "id", cols = colnames(data)){
-  # 依据 id 的对应关系将 data 中的属性加入到graph中，
-  # id 是 data 中 node id 的列名, cols 是 data 中用到的列名
-  # ToDO: 跳过已有的属性还是覆盖？
-  g.id <- names(V(g))
-  data <- as.data.frame(data)
-  rownames(data) <- data[,id]
-  cols <- cols[!cols %in% id]
-  for (i in 1:length(cols)){
-    vertex_attr(g, name =  cols[[i]]) <- data[g.id, cols[[i]]]
-  }
-  return(g)
-}
-
-graph_set_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  size <- (value * max_size) + 1
-  V(g)$size <- size
-  return(g)
-}
-
-
-
-graph_set_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
-  ## 为 graph 设置节点颜色
-  ## 默认按年份着色，或者其它 node 属性着色
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  uniq_value <- sort(unique(value),decreasing = decreasing)
-  my_palette <- brewer.pal(n=7,name = palette_name)
-  
-  nColor <- 100
-  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
-  colors <- colorRampPalette(my_palette)(nColor)
-  names(colors) <- uniq_value
-  
-  V(g)$color <- colors[as.character(value)]
-  
-  return(g)
-}
-
-
-
-
-graph_subgraph <- function(g, by = "degree", slice = "PY", topN = 10, ratio = 0.1){
-  if( !by %in% vertex_attr_names(g)) stop(by, " is not a graph attribute.\n")
-  if( !slice %in% vertex_attr_names(g)) stop(slice, " is not a graph attribute.\n")
-  data <- visNetwork::toVisNetworkData(g)
-  nodes <- data$nodes %>% group_by(PY) %>%
-    arrange(desc(degree)) %>%
-    filter(row_number() <= topN)
-  induced.subgraph(g, vids = nodes$id)
-}
-
-
-
-vis_histNet <- function(g, 
-                        node.title = "title", 
-                        node.size = "size", 
-                        node.color = "color", 
-                        edge.color = "color", 
-                        layout = "layout_with_fr"){
-  data <- toVisNetworkData(g)
-  
-  visNetwork(nodes = data$nodes,
-             edges = data$edges) %>%
-    visIgraphLayout(physics = FALSE, layout = layout) %>%
-    visNodes(size = node.size, color = node.color, title=node.title) %>%
-    visEdges(color = edge.color) %>%
-    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
-    visExport()
-  
-}
-
-```
-
-
-
-## 大陆与港澳台的比较
-
 
 ```{r}
+# 中国的肠道菌群研究论文
 # 根据通讯作者地址获取中国的研究 M$RP 
 China_study <- M %>% filter(is.part_of_china(C1))
 China_study$AU1_CO <- China_study$AU_CO_NR
 China_study$AU_CO <- China_study$AU_CO_NR
 China_study$Au_UN <- China_study$AU_UN_NR
 
-# 澳门的研究
-Macao_study <- China_study %>% filter(str_detect(C1,regex("\\bMACAO\\b",ignore_case = T)))
 
-# 香港的研究
-# 使用这种匹配模式，则香港与内地在香港以外的其它地区合办的分校会被视为香港的研究。
-# 包括香港中文大学深圳分校，北师大-香港浸会大学等。
-HK_study <- China_study %>% filter(str_detect(C1,regex("\\bHONG KONG\\b",ignore_case = T)))
-
-# 台湾的研究
-Taiwan_study <- China_study %>% filter(str_detect(C1,regex("\\bTAIWAN\\b",ignore_case = T)))
-
-
-# 大陆的研究
-Mainland_study <- China_study %>% filter(!str_detect(C1,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
+# 中国的核心研究论文
+China_study_core <- China_study %>% 
+  filter(HC == TRUE | CORE == TRUE) %>% 
+  biblio_df()
 ```
+
+
 
 ## 中国研究概况
 
-二十年间，中国发表论文的数量和比例双双增加。
+二十年间，中国发表论文的数量和比例双双增加（图 \@ref(fig:china-publication-number)）。
 
-二十年前，中国基本没有相关的研究论文；
-十年前，即2010年，中国发表相关研究 82 篇，占当年全世界总发文量的 5%；
-刚刚过去的2019年，中国发表相关研究论文超过 2500 篇，占当年全世界总发文量的 25% 以上。
+二十年前，我国基本没有相关的研究论文；十年前，即2010年，我国发表相关研究 82 篇，占当年全世界总发文量的 5%；刚刚过去的2019年，我国发表相关研究论文超过 2500 篇，占当年全世界总发文量的 25% 以上。自2013年以来，我国的论文发表量已经排到了世界第二的位置，仅次于美国。
 
+从2009年开始，有我国科学家参与的高被引论文开始出现，高被引论文数量随之不断上升。最近三年（2017-1019），SCI高被引论文的数量都超过了35篇，成为能够贡献较多突出研究成果的国家之一。
 
-
-```{r}
+```{r china-publication-number, fig.cap="肠道菌群研究领域我国每年发表的SCI论文及其中的高被引论文的数量"}
 ## 论文年发表量
 world_yearly_output <- M %>% group_by(PY) %>%
   summarise(world_yearly_output = n())
-p <- China_study %>% group_by(PY) %>%
+p_all_article <- China_study %>% group_by(PY) %>%
   summarise(yearly_output = n()) %>%
   left_join(world_yearly_output) %>%
   mutate(proportion = yearly_output/world_yearly_output) %>%
@@ -149,44 +40,96 @@ p <- China_study %>% group_by(PY) %>%
   scale_fill_gradient2(low = brewer.pal(n=3, name="YlGnBu")[[1]],mid = brewer.pal(n=3, name="YlGnBu")[[2]],high=brewer.pal(n=3, name="YlGnBu")[[3]]) +
   geom_col() +
   labs(x="",y="",title = "中国每年发表论文的数量") +
+  theme_light() +
   theme(legend.position = "none")
-# p
-plot.ly(p) 
-```
-
-与大陆相比，港台地区的肠道菌群研究开始的可能还要更早一些，在2005年以前，港台地区的发文量可以占到全国的四分之一以上。
-进入2010年以后，由于大陆相关研究的强势崛起，港台地区的论文比例稳步下降。到了2019年，大陆已经成为绝对的中流砥柱。
 
 
-```{r}
-# 两岸四地发文量统计
-part <- rep(c("大陆","台湾","香港","澳门"), times=sapply(list(Mainland_study, Taiwan_study, HK_study, Macao_study), nrow))
-data <- rbind(Mainland_study, Taiwan_study, HK_study, Macao_study)
-data$part <- factor(part,levels = c("大陆","台湾","香港","澳门"))
-df <- data %>% 
-  group_by(part, PY) %>%
-  summarise(nRecord=n()) %>%
-  ungroup() %>%
-  complete(part,PY,fill = list(nRecord = 0)) %>%
+p_highlycited <- China_study %>% filter(HC==TRUE) %>%
   group_by(PY) %>%
-  mutate(proportion=nRecord/sum(nRecord)) %>% 
-  arrange(PY)
-ggplot(df, aes(PY,proportion,fill=part,color=part)) +
-  geom_area() +
-  geom_text(aes(label=part), position = position_stack(0.5),size=3,color="white", data=filter(df, PY==2010)) +
-  scale_y_continuous(labels = function(x){paste0(x*100,"%")}) +
-  labs(x="",y="",title = "两岸四地研究论文占的比例变化")
+  summarise(yearly_output = n()) %>%
+  left_join(world_yearly_output) %>%
+  mutate(proportion = yearly_output/world_yearly_output) %>%
+  mutate(text=paste0(yearly_output,"(",round(proportion*100,1),"%)")) %>%
+  ggplot(aes(PY,yearly_output,text=text,fill=proportion)) +
+  scale_fill_gradient2(low = brewer.pal(n=3, name="YlGnBu")[[1]],mid = brewer.pal(n=3, name="YlGnBu")[[2]],high=brewer.pal(n=3, name="YlGnBu")[[3]]) +
+  geom_col() +
+  labs(x="",y="",title = "中国每年发表高被引论文的数量") +
+  theme_light() +
+  theme(legend.position = "none")
+
+p_all_article %>% aplot::insert_bottom(p_highlycited)
+```
+
+### 研究的主要脉络
+
+我们使用历史引证网络分析的方法来厘清我国肠道菌群的研究脉络（图 \@ref(fig:china-histnet)）。历史引证网络中共包含了19篇关键文献，其主要信息列示在表 \@ref(fig:china-histnet-artilces) 中。接下来，我们将逐一回顾一下这些文献。
+
+```{r china-histnet, fig.cap="我国肠道菌群研究的核心历史引证网络。水平线指示文章发表的年份，点之间的灰色线条指示引用关系，每个点代表着一篇文章（以名字和年份区分）。"}
+china_histnet <- histNetwork(China_study,min.citations = 10,verbose = F)
+histnet <- histPlot(china_histnet,verbose = FALSE)
+```
+
+2008年发表在《美国科学院院刊（PNAS）》上的文章是一个重要的基点。该研究由上海交通大学赵立平教授、浙江大学第一附属人民医院李兰娟院士、中国国家人类基因组中心赵国屏院士和中国科学院武汉物理与数学研究所唐惠儒研究员实验室联合开展，并与伦敦帝国理工学院的JK Nicholson教授合作，第一作者是Li Min。研究的主要成果是发现了共生的肠道微生物调节人体的代谢表型。研究采用了代谢组学和宏基因组学相结合的方式，解析了7个中国人的粪便及尿液样本，并建立了菌群-宿主代谢连接的模型。研究在物种水平上发现了中国与美国人肠道菌群结构存在差异，并鉴定出最大影响宿主代谢和健康微生物组的关键功能成员的特征，如柔嫩梭菌群与尿液中8个代谢物有关，是菌群中功能性很强的成员，会影响许多宿主途径等。从代谢和宏基因组学的角度解释了人类与肠道菌群可以共同进化，并最终形成了密切的共生关系。
+
+第二个关键研究是2010年发表在《Nature》杂志上的一篇论文，是中欧合作的人肠道宏基因组（MetaHIT）计划的最为关键成果之一。研究的主要负责人是中方华大基因的王俊和法方国立农学研究所的SD Ehrlich教授，研究的第一作者是华大基因的覃俊杰和李瑞强。该研究的主要成果是在人类肠道中鉴定出330万个微生物基因。人肠道菌群样本取自124个欧洲人的粪便标本。这些超过人类基因150倍的基因集包含了绝大多数人类的主要肠道微生物基因，并且大部分基因在人群中共有。细菌基因的比例超过99%，这群人中共有约1100种的细菌，其中160个优势物种为人群所共有。
+
+第三项关键研究2010年发表在《ISME J》杂志上，由赵立平教授和中科院上海生命研究所的Yan Chen领衔。该研究以小鼠建立实验动物模型，并借此揭示了肠道菌群、宿主基因和与饮食之间的相互作用在代谢综合征发展中的作用。
+
+第四项关键研究2011年发表在《肝病学（Hepatology）》杂志上，由李兰娟院士和中科院北京微生物所的朱宝利研究员团队合作完成。该研究基于36名肝硬化患者和24名健康对照，得出了肝硬化相关的疾病菌群特征，并鉴定了与肝硬化相关的149个可操作性分类单元。
+
+第五项关键研究2011年发表在《Nature》杂志上，也是MetaHIT的研究成果，主要是在人体中发现了三种肠型。华大基因参与了这一论文的发表。
+
+第六项关键研究2012年发表在《Nature》杂志上，主要作者是华大基因的王俊、覃俊杰等人。本研究采用了微生物全基因组关联分析的方法（mGWAS）揭示了345个中国人的肠道菌群中存在的二型糖尿病标记物，并最终确定了23个肠道微生物标记物可以用于二型糖尿病的分类。
+
+第七项关键研究2012年发表在《PLoS ONE》杂志上，主要作者是中科院武汉水生所的Guitang Wang。该项研究主要揭示了草鱼肠道菌群的典型特征，并推测影响草鱼肠道菌群的演化的三大因素分别是水体、底泥和饲料等。
+
+第八项关键研究2012年发表在《ISME J》杂志上，仍然是由赵立平教授领衔。该项研究揭示了大肠癌患者中的疾病菌群特征，发现了11个与大肠癌高度相关的物种类群。
+
+第九项关键研究是2013年发表在《Nature Reviews Microbiology》上面的一篇综述，由赵立平教授执笔，该研究探讨了如何揭示肠道菌群在肥胖中的作用，指出可以通过微生物组关联分析、宿主响应和无菌动物等手段来完成这一任务。
+
+第十项关键研究2013年发表在《Nature》杂志上，揭示了与人体代谢性疾病相关的菌群特征[11]。华大基因参与了这一论文的发表。
+
+第11项关键研究2013年发表在《ISME J》杂志上，通讯作者赵立平。在本研究中，在中国的肥胖人群中分离出一株产内毒素机会致病菌，可以促进无菌小鼠产生肥胖，从而建立了肠道菌群与肥胖之间的因果关系。
+
+第12项关键研究2014年发表在《Nature》杂志上，通讯作者是李兰娟、郑树森（Shusen Zheng）和S. Dusko Ehrlich（伦敦国王学院）。该研究在第四项研究的基础上，进一步采用宏基因组技术和更大的人群分析了肝硬化相关的疾病菌群特征，得到了15个生物标记，可以用来准确的预测肝硬化。
+
+第13项关键研究2014年发表在《Nature biotechnology》杂志上，主要作者是华大基因的团队。该研究公布了有史以来最大的肠道菌群参考基因组序列，包括近一千万个高质量的基因。
+
+
+```{r china-histnet-articles,fig.cap="我国肠道菌群研究的核心历史引证网络中列出的19篇研究论文的详细信息"}
+
+nodes <- names(V(histnet))
+node_doi <- str_extract(nodes, "10\\.[0-9]+\\/[^\\/]+")
+China_study %>% filter(DI %in% node_doi) %>%
+  mutate(SR=mrgut_doi_link(uuid=DI,type="html",title=SR)) %>%
+  select(SR,TI,J9,PY) %>%
+  arrange(PY) %>%
+  mutate_at(c("TI","J9"), str_to_title) %>%
+  DT::datatable(colnames = c("引文","标题","期刊","发表年份"),
+                rownames = FALSE,
+                escape = FALSE,
+                extensions = c("Buttons"),
+                options = list(pageLength=5,
+                               dom = "Bfrtip", pageLength = 20, buttons = list("pageLength", 
+    list(extend = "copy"), list(extend = "excel", filename = df, 
+      header = TRUE))))
 
 ```
 
+第14项关键研究2015年发表在《Nature》杂志上，研究了二甲双胍这一二型糖尿病常用药对人肠道菌群的影响。华大基因参与了该项研究。
 
+第15项关键研究2015年发表在《Nature Medicine》杂志上，主要研究了类风湿性关节炎患者口腔及肠道菌群受到扰乱且在治疗后部分恢复。主要参与单位是北京协和医学院和华大基因。
 
+第16项关键研究2015年发表在《Nature Communications》杂志上，研究由台湾长庚大学的赖信志教授领衔，发现灵芝（水提取物）能通过调节肠道菌群的组成来降低小鼠肥胖。
 
-```{r}
-# res <- biblioAnalysis(China_study)
-# summary(res,k=30)
-# plot(res,k=30)
-```
+第17项关键研究2015年发表在《Nature Communications》杂志上，研究由华大基因王俊领衔，揭示了结直肠腺瘤癌变过程中的肠道菌群特征。
+
+第18项关键研究2015年发表在《ISME J》杂志上，由上海交通大学Jian Shen领衔。研究发现使用益生菌可以缓解高脂膳食小鼠具有的代谢综合征的症状。
+
+第19项关键研究2018年发表在《Science》杂志上，由赵立平教授领衔。该研究成果利用膳食纤维改善了二型糖尿病的症状。
+
+由我国的研究人员主导及参与的这19项关键研究，时间跨度从2008年到2018年，较完整的展示了我国肠道菌群研究的历史演替。即从认识肠道菌群的结构，到揭示菌群在肥胖、肝硬化等疾病中的作用，再到利用益生菌、益生元等干预措施来缓解和治疗一些肠道菌群相关的疾病。步步为营，稳扎稳打，奠定了我国肠道菌群研究的重要基石。
+
 
 
 ## 主要的研究机构
@@ -197,7 +140,7 @@ ggplot(df, aes(PY,proportion,fill=part,color=part)) +
 
 
 
-```{r fig.asp=1}
+```{r china-top-university, fig.asp=1,fig.cap="参与我国肠道菌群研究的主要科研院所（展示发文量最多的30家）"}
 # 主要研究机构
 China_affiliations <- table(unlist(strsplit(China_study$AU_UN_NR,";"))) %>% sort(decreasing = TRUE) %>% 
   enframe(name = "aff",value = "nRecord")
@@ -217,10 +160,16 @@ p <- China_affiliations  %>%
   geom_col() +
   coord_flip() +
   labs(x="",y="",title = "主要科研机构（以论文发表量计）")
-plot.ly(p)
+# plot.ly(p)
+p
 ```
 
-在下方的研究机构合作网络中，大概可以看到 5 个主要的研究群体。
+```{r}
+# library(bubbles)
+```
+
+
+在下方的研究机构合作网络中，大概可以看到 3 个主要的研究群体。
 
 首先是以中科院为中心的主力研究团体，中科院作为一个核心，将各大高校和研究所有机的联系了起来；
 
@@ -230,102 +179,30 @@ plot.ly(p)
 
 接下来是由北京中医药大学和中国中医学研究院组成的中医药方阵，以及第三军医大学和重庆医科大学组成的团体。
 
-```{r}
-aff_col_net_mat <- biblioNetwork(China_study, analysis = "collaboration",network = "universities")
-idx <- rownames(aff_col_net_mat) %in% head(China_affiliations$aff,100)
-aff_col_net_mat_s <- aff_col_net_mat[idx,idx]
-aff_col_net <- graph.adjacency(aff_col_net_mat_s,weighted = TRUE, mode = "undirected")
-
-```
-
 
 ```{r china-aff-col-net, fig.cap="中国各大研究机构之间的合作关系"}
-g <- aff_col_net
-vertex.attributes(g)$size <- degree(g)
-g <- delete.edges(g,E(g)[edge.attributes(g)$weight<10])
-g <- simplify(g)
-g <- delete.isolates(g)
-
-
-# 聚类结果
-member <- membership(cluster_louvain(g)) %>%
-  enframe(name = "id", value = "cluster")
-color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
-names(color) <- unique(member$cluster)
-member$color <- color[member$cluster]
-
-visData <- toVisNetworkData(g)
-visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>%
-  left_join(China_affiliations,by=c("id"="aff")) %>%
-  left_join(member)
-visData$edges$value <- visData$edges$weight
-# visNetwork(visData$nodes, visData$edges,physics=F) %>%
-#  visLayout(randomSeed = 20200721) %>%
-#  visOptions(manipulation = TRUE)
-
-
+university_network(China_study,edge_weight_cutoff = 10,nNode = 60) 
 
 ```
 
 
-
-
-## 作者合作网络
 
 
 通过作者合作网络，可以更加清楚的看到国内各个研究团体，发现团队的带头人。
 
 
-```{r}
-edge_weight_cutoff <- 5
-n_top_author <- 200
-```
+为了取得良好的可视化效果，我们对作者合作网络进行了简化，只保留了 200 个发文量最高的作者，同时删掉了合作发表论文数量小于 5 次的联系。这样，可以得到下面这幅图（图 \@ref(fig:top-china-aut-col-net)）。
 
-
-为了取得良好的可视化效果，我们对作者合作网络进行了简化，只保留了 `r n_top_author` 个发文量最高的作者，同时删掉了合作发表论文数量小于 `r edge_weight_cutoff` 次的联系。这样，可以得到下面这幅图（图 \@ref(fig:top-china-aut-col-net)）。
-
-
-
-
-```{r}
-aut_col_net_mat <- biblioNetwork(China_study, analysis = "collaboration", network = "authors", sep = ";")
-
-authors <- unlist(strsplit(China_study$AU, split = ";")) %>%
-  table() %>%
-  sort(decreasing = T) %>%
-  enframe(name = "author",value = "nRecord") %>%
-  mutate_at("author",trimws)
-idx <- rownames(aut_col_net_mat) %in% head(authors$author,n_top_author)
-aut_col_net_mat_s <- aut_col_net_mat[idx,idx]
-aut_col_net <- graph.adjacency(aut_col_net_mat_s,weighted = TRUE, mode = "undirected")
-
+```{r top-china-aut-col-net, fig.cap="过去二十年间中国发表论文最多的200名作者之间和合作关系"}
+author_network(China_study, nNode = 200, edge_weight_cutoff = 5)
 ```
 
 
 
-```{r top-china-aut-col-net, fig.cap="中国顶尖学者之间的合作网络"}
-g <- aut_col_net
-vertex.attributes(g)$size <- degree(g)
-g <- delete.edges(g,E(g)[edge.attributes(g)$weight < edge_weight_cutoff])
-g <- simplify(g)
-g <- delete.isolates(g)
 
-# 聚类结果
-member <- membership(cluster_louvain(g)) %>%
-  enframe(name = "id", value = "cluster")
-color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
-names(color) <- unique(member$cluster)
-member$color <- color[member$cluster]
 
-visData <- toVisNetworkData(g)
-visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>% left_join(member)
-visData$edges$value <- visData$edges$weight
-visNetwork(visData$nodes, visData$edges,physics=F) %>%
-  visLayout(randomSeed = 20200721) %>%
-  visOptions(manipulation = TRUE, 
-            highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE))
-```
-如果不出意外的话，你将可以看到这里面最大的一个研究群体位于这幅图的中间。他又可以继续分成几个小团体。其中浅红色的部分，核心应当是李兰娟院士（LI, LANJUAN）；绿色的部分，核心应当是赵立平教授（ZHAO, LIPING）；深红色的部分，核心应当是贾伟教授（JIA, WEI）；橙色的部分，核心应当是ZHU, WEIYUN。
+
+如果不出意外的话，你将可以看到这里面最大的一个研究群体位于这幅图的中间。他又可以继续分成几个小团体。其中右边浅红色的部分，核心应当是李兰娟院士（LI, LANJUAN）；绿色的部分，核心应当是赵立平教授（ZHAO, LIPING）；深红色的部分，核心应当是贾伟教授（JIA, WEI）；橙色的部分，核心应当是ZHU, WEIYUN。
 
 与前面的一个群体不同，第二大的群体（上面橙色的部分）如果你放大来看，会发现这是一个联系非常紧密的团体，主要是华大基因及其合作者。其中包括了华大基因的汪俊（WANG, JUN），汪建（WANG, JIAN）等人。
 
@@ -335,68 +212,186 @@ visNetwork(visData$nodes, visData$edges,physics=F) %>%
 
 缩放网络，将焦点聚集在左上方的蓝色区域放大，可以观察到来自中国香港的研究群体。这一群体由于君教授（YU, JUN）、黄秀娟教授（NG，SIEW C）等人组成。
 
-这幅网络中一共有 `r length(unique(member$cluster))` 个子网络，用不同的颜色标示。读者不妨找找，看有没有你认识的老师在这里面。
+这幅网络中一共有数十个子网络，用不同的颜色标示。读者不妨找找，看有没有你认识的老师在这里面。
 
 可以说，图中的这些人撑起了过去二十年中国肠道菌群研究的不同领域的天幕，让我们向他们致敬！
 
 
-## 研究内容
+不同的研究群体可能有不同的高光时刻。为了证明这一假设，我们将2010-2019年的研究划分成3个阶段，分别观察合作网络的具体情况，比较网络中存在的差异。
+
+可以发现，在第一个五年（2010-2014），是华大基因系集体出道的时刻，汪建等人组成了最大的一个合作团体（图 \@ref(fig:top-china-aut-col-net-2010-2014) 中间绿色部分）；其次，是李兰娟、周志刚、赵立平、贾伟、魏泓、李宁、钱大伟、陈卫等老师为核心的研究团队。这一批研究人员是较早开展肠道菌群相关研究的科学家。
+
+
+```{r top-china-aut-col-net-2010-2014, fig.cap="2010-2014年间中国发表论文最多的100名作者之间和合作关系"}
+author_network(China_study,from=2010,to=2014, nNode = 100, edge_weight_cutoff = 5)
+```
+
+
+接下来，在2015-2017这三年间，首先是汪建、赵立平、陈卫、李宁、魏泓、李兰娟等老师继续发光发热，同时也出现了印遇龙、张发明等新的有较多产出的研究力量（图\@ref(fig:top-china-aut-col-net-2015-2017)）。
+
+```{r top-china-aut-col-net-2015-2017, fig.cap="2015-2017年间中国发表论文最多的100名作者之间和合作关系"}
+author_network(China_study,from=2015,to=2017, nNode = 100, edge_weight_cutoff = 5)
+```
+
+在第三个阶段，即2017-2019年间，合作群体有了更加明显的改变。首先可以明显看到团体小型化的趋势比较明显，这可能意味着肠道菌群研究已经分化出较多差异比较明显的不同研究方向；其次，华大基因的研究群体，以及李兰娟、赵立平等人的团队开始变小；与此同时，王邦茂、朱永官、王军军、曹建新、周宏伟等新的研究群体开始成形。
+
+```{r top-china-aut-col-net-2018-2019, fig.cap="2018-2019年间中国发表论文最多的100名作者之间和合作关系"}
+author_network(China_study,from=2018,to=2019, nNode = 100, edge_weight_cutoff = 4)
+```
+
+
+
+## 研究领域
+
+肠道菌群的研究我们规划了八大领域，分别是饮食、免疫、代谢、癌症、心血管疾病、肠X轴、药物互作和中医药。可以发现前四大领域研究的发端较早，而后四大领域研究的发端则稍微晚一些。特别是“肠X轴”的研究，在2013年以后才逐渐壮大起来。
 
 ```{r}
-China_study %>% filter(HC == TRUE | CORE == TRUE) -> China_study_core 
-China_study_core <- biblio_df(China_study_core)
+
+diet_keywords <- list(primary=c("\\bdiet[:alpha:]+"), 
+                      secondary = c("food","nutrition","supplement","fasting","calorie restriction",
+                                    "fibre|fiber","carbohydrate","meat","fish","egg","milk","dairy",
+                                    "fruit","vegetable","additives","sweetener"))
+
+immunity_keywords <- list(primary=c("immun[:alpha:]+"),
+                          secondary = c("inflamm[:alpha:]+","barrier","defense","T cell","B cell",
+                                        "lymphocyte","macrophage","cytokine","dendritic","neutrophil",
+                                        "interleukin","antibody"))
+
+metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
+                            secondary = c("obesity","diabet[:alpha:]+","insulin","lipid","\\bfat[:alpha:]+",
+                                          "adipose","NAFLD","NASH","nonalcoholic steatohepatitis","SCFA"))
+
+cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
+                        secondary = c("CRC","CAC","PDAC","HCC"))
+
+cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+"),
+                        secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
+
+gut_axis_keywords <- list(primary = c("gut.{4,15}axis"),
+                          secondary = NULL)
+
+
+metabolism_effect_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
+                        secondary = c("SCFA","short-chain fatty acids","butyrate","TMAO","TMA","secondary bile acids"))
+
+medicine_keywords <- list(primary = c("medicine|medication|drug|[:alpha:]+pharmaco[:alpha:]+|xenobiotic"),
+                        secondary = NULL)
+
+early_life_keywords <- list(primary = c("early.{1,2}life|infan[:alpha:]+|maternal"),
+                        secondary = c("pregnan[:alpha:]+","[:alpha:]+natal","in utero","uterus","placent[:alpha:]+","vertical transmission"))
+
+cohort_keywords <- list(primary = c("cohort"),
+                        secondary = NULL)
+
+dark_matter_keywords <- list(primary = c("dark matter|virome|mycobiome|culturomics"),
+                             secondary = NULL)
+
+
+chinese_medicine_keywords <- list(primary = c("chinese herbal medicine|traditional Chinese medicine"))
+
+topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords,
+                       gut_axis_keywords,medicine_keywords,chinese_medicine_keywords)
+topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","medicine","Chinese medicine")
+topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","肠X轴","药物互作","中医药")
+topic <- topic_cn
+names(topic) <- topic_en
+nTopic <- length(topic)
 ```
-
-
-
-### 关键词趋势
-
-
 
 ```{r}
-net_mat <- biblioNetwork(China_study, analysis = "co-occurrences", network = "keywords", sep = ";")
 
-keywords <- unlist(strsplit(China_study$ID, split = ";")) %>%
-  table() %>%
-  sort(decreasing = T) %>%
-  enframe(name = "keyword",value = "nRecord") %>%
-  mutate_at("keyword",trimws)
-idx <- rownames(net_mat) %in% head(keywords$keyword,n_top_author)
-net_mat_s <- net_mat[idx,idx]
-net <- graph.adjacency(net_mat_s,weighted = TRUE, mode = "undirected")
 
+topic_articles_core <- lapply(topic_keywords, function(keyword){
+  China_study %>%
+    filter(str_detect(content, 
+                      regex(paste0(c(keyword$primary,keyword$secondary),collapse = "|"), 
+                            ignore_case = T))) %>%
+    mutate(DT=factor(DT))
+})
+
+names(topic_articles_core) <- topic_en
+
+topic_nRecords_core <- lapply(topic_articles_core, function(article){
+  article %>% group_by(PY) %>%
+    dplyr::summarise(nRecord = n())
+})
 ```
 
 
 
-```{r }
-g <- net
-vertex.attributes(g)$size <- degree(g)
-g <- delete.edges(g,E(g)[edge.attributes(g)$weight < edge_weight_cutoff])
-g <- simplify(g)
-g <- delete.isolates(g)
+```{r topic-nRecord-in-china-study, fig.cap="中国各研究主题关键论文数量对比",fig.width=4.5}
+yearly_output <- lapply(1:nTopic, function(i){
+  topic_articles_core[[i]] %>%
+    group_by(PY) %>%
+    dplyr::summarise(count=n()) %>%
+    mutate(topic=topic[[i]])
+})
+df <- do.call(rbind, yearly_output)
+df$topic <- factor(df$topic, levels = rev(topic))
 
-# 聚类结果
-member <- membership(cluster_louvain(g)) %>%
-  enframe(name = "id", value = "cluster")
-color <-  colorRampPalette(brewer.pal(8,"Paired"))(length(unique(member$cluster)))
-names(color) <- unique(member$cluster)
-member$color <- color[member$cluster]
 
-visData <- toVisNetworkData(g)
-visData$nodes <- visData$nodes %>% left_join(degree(g) %>% enframe(name = "id")) %>% left_join(member)
-visData$edges$value <- visData$edges$weight
-visNetwork(visData$nodes, visData$edges,physics=F) %>%
-  visLayout(randomSeed = 20200721) %>%
-  visOptions(manipulation = TRUE, 
-            highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE))
+ggplot(df, aes(PY,topic,size=count)) + 
+  geom_point(alpha=1/3) +
+  # geom_text(aes(label=topic),position = position_stack(0.5)) +
+  labs(x="",y="") +
+  scale_size(range = c(1,10))
+
+```
+
+值得一提的是，这些研究领域之间相互之间是存在较多关联的。例如：代谢与饮食相关性最强，共享了777篇研究，代谢、免疫和饮食三者的重叠度也很高，共享了695篇研究论文。代谢、免疫、饮食这三个因素与癌症、心血管疾病两个肠道菌群相关的疾病之间的关联都十分紧密，体现了这些因素在疾病致病过程中的重要作用。与之相比，肠X轴和中医药研究作为较为独立、有中国特色的研究领域，再加上总体研究数目较少，所以它们与其它研究主题重叠度表现的并不高。除此之外，我们也可以看到免疫、代谢、饮食、癌症等四个领域下特有的研究数量也比较高，分别包括了712篇、605篇、477篇和187篇研究论文。
+
+
+```{r china-topic-upsetR, fig.width=6,fig.cap="八大研究领域之间的重叠度。该图分为几个部分，左侧柱状图展示各研究领域的全部文章数目，右侧展示主题间文献的重叠度。其中右上方条形图展示相应研究领域重叠的文献数目。"}
+# 各研究主题间的重叠度
+library(UpSetR)
+
+topic_articles_core_SR <- lapply(topic_articles_core, function(m){
+  m$SR
+})
+
+names(topic_articles_core_SR) <- topic
+
+
+upset(fromList(topic_articles_core_SR), nintersects = 20,
+      sets=rev(names(topic_articles_core_SR)),
+      keep.order = FALSE,
+      mb.ratio = c(0.5, 0.5),
+      order.by = "freq")
+```
+
+## 发展趋势
+
+为了揭示我国肠道菌群研究的发展趋势，我们将近十年最热的关键词做一个梳理。因为早期研究论文数量比较少，所以我们将这十年分成了5年，3年和2年的三个阶段，并进一步结合文章关键字的共现网络来进行阐述。
+
+
+第一个阶段（图 \@ref(fig:keyword-net-2010-2014)），自2010年到2014年，关键字的共现网络一共只有9个关键词，其中最突出的是饮食诱导的肥胖（Diet-induced obesity）、炎症（inflammation）和胰岛素抗性（insulin resistance）。这直观的反映了我们对肠道菌群的认知是始于对肥胖机制的新认识。这一新认识或许可以由肥胖（Obesity）和多样性（Diversity）之间的关系来指代——这是另外两个与肥胖相关的核心关键词。除此之外，还可以发现16S rRNA与人粪便有了重要的联系，直观来看，这意味着16S rRNA基因测序技术的进步在肠道菌群研究中起到了关键的推动作用。但可能会被忽视的一点是，选择粪便样本作为研究对象在这其中也功不可没。这五年间的另两个关键词是溃疡性结肠炎和克罗恩病，它们与肠道菌群失衡的关系逐步被揭示。
+
+```{r keyword-net-2010-2014, fig.cap=" 2010年-2014年间的研究热点。图中的点表示研究论文的关键词，线表示关键词的共现关系（即两个关键词同时出现在一篇文献中）。点的大小指示对应关键词出现次数的多少，线的粗细指示关键词共现关系的强弱。为简化图形，共现次数少于3次的在图中不可见。同时，孤立的关键词也被删除。"}
+keyword_network(China_study_core,from = 2010,to=2014,edge_weight_cutoff = 3)
 ```
 
 
-#### 系统关键词
+第二个阶段（图 \@ref(fig:keyword-net-2015-2017)），自2015年到2017年，三年间的关键字共现网络比第一个阶段已经明显更加丰富。肥胖、炎症、饮食、多样性等关键字蝉联入榜。除此之外，健康、疾病、代谢和小鼠等相关研究也成为主要的研究主题。特别值得关注的是小鼠-炎症之间具有特别强的共现关系，这体现了小鼠作为模式动物在相关研究中已经处于不可或缺的地位。此外，多样性-代谢之间也具有特别强的共现关系，说明在多样性之上，研究人员开始关注菌群的代谢产物——而代谢产物被后来证明是重要的菌群效应分子。图中也可以发现，胆碱（Phosphatidylcholine）是这一阶段重点关注的代谢物。这一时期，肠道菌群与肿瘤之间的关系被进一步理解，在图中这体现在具核梭杆菌（Fusobacterium nucleatum）与肿瘤之间的较强的共现关系上。除此之外，蔗糖和减脂手术（Bariatric surgery）之间的关系也在这一阶段的研究中处于比较突出的地位。
 
-```{r fig.width=12}
-KeywordGrowth(China_study_core,top=30) %>%
+```{r keyword-net-2015-2017, fig.cap="2015-2017年间主要的研究方向（WoS关键词）"}
+keyword_network(China_study_core,from = 2015,to=2017,edge_weight_cutoff = 3)
+
+```
+第三个阶段，2018年到2019年，这两年间的研究主题呈现出异彩纷呈的情形。首先，我们可以发现炎症的关键地位得到加强，甚至已经处于核心节点的位置上，所有其它的研究主题都直接或者间接的与其相连。而炎症之外，在肥胖、胰岛素抗性、代谢、健康等传统主题的基础上，大量增加了毒性（toxicity）、激活（activation）、暴露（exposure）、调节（modulation）等与环境因子相关的研究主题，特别是阿特拉津（atrazine）和多酚类（polyphenols）这两种典型环境污染物的出现，标志着环境微生物学与肠道菌群的结合成为主流。还可以看到，（短）链脂肪酸（chain fatty acids）作为一个关键的菌群代谢产物，在这一时期成为主要研究主题。一些机制相关的主题词也开始出现，如基因表达，蛋白偶联受体等，标志着肠道菌群的作用机制逐渐明确。特别值得一提的是，大脑出现在这一阶段的关键词中，这反映了肠脑轴相关研究在此期间取得的进步。
+
+```{r keyword-net-2018-2019, fig.cap="2018-2019年间主要的研究方向（WoS关键词）"}
+keyword_network(China_study_core,from = 2018,to=2019,edge_weight_cutoff = 3) 
+
+```
+
+
+### 增长最为迅速的关键字有哪些？
+
+
+从图 \@ref(fig:china-study-keyword-growth) 可以看到，Activation、细菌、（短）链脂肪酸，饮食、疾病、多样性、表达、健康、感染、炎症等关键词是近十年增长最快的关键词。
+
+```{r china-study-keyword-growth, fig.width=12,fig.cap="2010-2019年增长最快的30个研究关键词"}
+KeywordGrowth(China_study %>% filter(PY >=2010, PY<=2019),top=30) %>%
   pivot_longer(cols = -Year) %>%
   ggplot(aes(Year, value, fill=name, color=name)) +
   geom_area() + 
@@ -405,232 +400,102 @@ KeywordGrowth(China_study_core,top=30) %>%
         legend.position="none")
 ```
 
-#### 作者关键词
 
-```{r fig.width=12}
-KeywordGrowth(China_study_core,top=30, Tag="DE") %>%
-  pivot_longer(cols = -Year) %>%
-  ggplot(aes(Year, value, fill=name, color=name)) +
-  geom_area() + 
-  facet_wrap(~name,ncol = 6,scales = "free_y")+
-  theme(strip.text = element_text(size = 6,face="bold"),
-        legend.position="none")
-```
+## 港澳台地区的肠道菌群研究
 
 
+与大陆相比，港台地区的肠道菌群研究开始的可能还要更早一些，在2005年以前，研究数量普遍较少，而港台地区的发文量可以占到全国的四分之一以上。
+进入2010年以后，由于大陆相关研究的强势崛起，港台地区的论文比例稳步下降。到了2019年，大陆已经成为绝对的中流砥柱。
 
-## 其它
-
-```{r}
-list <- list(Macao_study, HK_study, Taiwan_study, Mainland_study)
-region <- c("Macao","Hong Kong","Taiwan","Mainland")
-list  <- lapply(seq_along(list), function(i){
-  list[[i]] %>% select(PY,SO,TC,ID,UT) %>% mutate(region=region[[i]])
-})
-
-# 合并 List，得到中国分区的研究
-China_study_essential <- do.call("rbind",list)
-```
+通过图 \@ref(fig:mainland-hongkong-macao-taiwan) 也可以发现，总体上大陆和港台地区的相关研究是同一时期起步的，而澳门可能稍显迟疑。
 
 
+```{r mainland-hongkong-macao-taiwan, fig.cap="中国大陆和港澳台地区的研究概况",fig.asp=1.2}
 
-```{r fig.cap="两岸四地发文量统计"}
-China_study_essential %>% 
-  mutate(region=factor(region,levels = c("Mainland","Taiwan","Hong Kong","Macao"))) %>%
-  group_by(region,PY) %>% 
-  summarise(Records = n()) %>%
-  # 只保留2020年前的研究
-  filter(PY<2020) %>% 
-  ggplot(aes(PY,Records,color=region,fill=region)) +
+# 澳门的研究
+Macao_study <- China_study %>% filter(str_detect(C1,regex("\\bMACAO\\b",ignore_case = T)))
+
+# 香港的研究
+# 使用这种匹配模式，则香港与内地在香港以外的其它地区合办的分校会被视为香港的研究。
+# 包括香港中文大学深圳分校，北师大-香港浸会大学等。
+HK_study <- China_study %>% filter(str_detect(C1,regex("\\bHONG KONG\\b",ignore_case = T)))
+
+# 台湾的研究
+Taiwan_study <- China_study %>% filter(str_detect(C1,regex("\\bTAIWAN\\b",ignore_case = T)))
+
+
+# 大陆的研究
+Mainland_study <- China_study %>% filter(!str_detect(C1,regex("\\b(MACAO|HONG KONG|TAIWAN)\\b",ignore_case = T))) 
+
+
+# 两岸四地发文量统计
+part <- rep(c("大陆","台湾","香港","澳门"), times=sapply(list(Mainland_study, Taiwan_study, HK_study, Macao_study), nrow))
+data <- rbind(Mainland_study, Taiwan_study, HK_study, Macao_study)
+data$part <- factor(part,levels = c("大陆","台湾","香港","澳门"))
+df <- data %>% 
+  group_by(part, PY) %>%
+  summarise(nRecord=n()) %>%
+  ungroup() %>%
+  complete(part,PY,fill = list(nRecord = 0)) %>%
+  group_by(PY) %>%
+  mutate(proportion=nRecord/sum(nRecord)) %>% 
+  arrange(PY)
+
+
+p1 <- ggplot(df %>% filter(nRecord>0), aes(PY,nRecord,fill=part,color=part)) +
   geom_point(size=2) +
   geom_line(size=1) +
-  geom_text(aes(y=Records*1.1,label=Records),hjust=1,vjust=-0.2,show.legend = F) +
+  geom_text(aes(y=nRecord*1.1,label=nRecord),hjust=1,vjust=-0.2,show.legend = F) +
   xlim(2000,2020) +
-  scale_y_log10() +
-  theme(legend.position = c(0.3,0.7),
+  scale_y_log10() +  theme_light() +
+  theme(legend.position = c(0.25,0.7),
         legend.title = element_blank(),
-        legend.text = element_text(face = "bold",size=16))
+        legend.text = element_text(face = "bold",size=16)) +
+  labs(x="",y="",title = "两岸四地研究论文发文量")
 
-# 导出图片到 PPT 文件
-```
-
-
-
-```{r fig.cap="两岸四地发文量统计"}
-China_study_essential %>% 
-  mutate(region=factor(region,levels = c("Mainland","Taiwan","Hong Kong","Macao"))) %>%
-  group_by(region,PY) %>% 
-  summarise(Records = n()) %>% ungroup() %>%
-  complete(region,PY,fill = list(Records=0)) %>%
-  # 只保留2020年前的研究
-  filter(PY<2020) %>% 
-  # 计算比例
-  group_by(PY) %>% mutate(proportion=Records/sum(Records,na.rm = T)) %>%
-  ggplot(aes(PY,proportion,color=region,fill=region)) +
+p2 <- ggplot(df, aes(PY,proportion,fill=part,color=part)) +
   geom_area() +
-  xlim(2000,2020) + 
-  scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")}) +
-  theme(legend.position = c(0.4,0.7),
-        legend.title = element_blank(),
-        legend.text = element_text(face = "bold",size=16))
+  geom_text(aes(label=part), position = position_stack(0.5),size=3,color="white", data=filter(df, PY==2010)) +
+  scale_y_continuous(labels = function(x){paste0(x*100,"%")}) +
+  labs(x="",y="",title = "两岸四地研究论文占的比例变化") +
+  theme_light() +
+  theme(legend.position = "none")
 
-# 导出图片到 PPT 文件
-
-
+plot_grid(p1,p2,ncol = 1)
 ```
 
-## 关键词的词云
+那么，究竟港澳台地区有哪些研究机构参与其中？又与大陆哪些科研院所有比较多的交流合作呢？请看下面的分析结果。
 
-使用 WOS 指定的关键词作为依托，分析研究热点的变化。
+
+首先看台湾省主要的研究机构，包括岛内的多所大学（特别是医学院校）、中研院和荣军医院等，岛外的合作单位可见美国罗格斯州立大学，而与大陆的研究机构之间的合作较少。
 
 ```{r}
-years <- 2000:2019
-list <- lapply(seq_along(years),function(i){
-  year <- years[[i]]
-  M %>% filter(PY==year) %>% pull(ID) %>% str_split(pattern = "; ") %>% unlist() %>% as_tibble() %>% rename("ID"=value) %>% mutate(PY=year)
-})
-# M$ID 字段是关键词，以 ; 分隔
-
-IDs <- do.call("rbind",list) %>%
-  group_by(PY,ID) %>%
-  summarise(Freq=n()) %>% 
-  group_by(PY) %>%
-  mutate(proportion=Freq/sum(Freq)) %>%
-  # 有部分文章的 ID 为 NA（没有 ID）
-  filter(!is.na(ID)) %>%
-  ungroup() %>%
-  complete(PY,ID,fill = list(Freq=0,proportion=0))
+university_network(Taiwan_study)
 ```
 
-
-
-```{r eval=F}
-# 关键词每年的词云
-library(wordcloud2)
-lapply(years, function(y){
-  wordcloud2(IDs %>% ungroup() %>% filter(PY==2019,Freq>3,!is.na(ID)) %>% select(ID,Freq) %>% arrange(desc(Freq)), size = 0.5, minSize = 5)
-
-})
-```
-
-
-## 关键词的变化
-
-以五年为一个周期，看看关键词频率有没有显著变化。
-
-关键词频率变化显著的，说明对应的关键词研究热度变化较大。如此分析，或许可以看到从无到有的研究热点的发展。
+主要的研究立足点与中国总体结构还是比较类似的，像炎症、疾病、健康、饮食、肥胖等关键词都有出现且均占主要地位。
 
 ```{r}
-library(ggpubr)
-
-# 将20年分为四个阶段
-data <- IDs %>% mutate(stage=cut(PY,breaks = seq(from=2000,to=2020,by=5),
-                         labels = c("First","Second","Third","Fourth"),
-                         right = F)) %>%
-  select(ID,Freq,proportion,stage) 
-
-# 去掉出现频次太少的关键词
-data <- data %>% filter(ID %in% (data %>% group_by(ID) %>% summarise(Freq=sum(Freq)) %>% filter(Freq > 100) %>% pull(ID)))
-
-# 利用统计方法计算差异，得出变化显著的关键词
-unique_ID <- unique(data$ID)
-
-# 测试数据
-stats <- compare_means(Freq~stage, data %>% filter(ID %in% sample(unique_ID,6)), method = "kruskal.test",group.by = "ID")
-# 完整数据
-stats_kruskal <- compare_means(Freq~stage, data, method = "kruskal.test",group.by = "ID")
-
-stats_aov <- compare_means(proportion~stage, data, method = "aov",group.by = "ID")
-
-stats_aov <- stats_aov %>% filter(p.adj<1e-3) %>% arrange(p.adj)
+keyword_network(Taiwan_study,2000,2019,field = "ID",nNode = 30)
 ```
 
-接下来再看一下关键词的比例是否有显著变化。
-
-如果关键词的比例发生显著变化，说明对应关键词的研究波动比较明显。
-
-
-```{r fig.width=10}
-data %>% filter(ID %in% stats_aov$ID) %>%
-  ggplot(aes(stage,proportion)) + geom_boxplot() + geom_jitter() +
-  facet_wrap(~ID,scales = "free_y",ncol = ) +    
-  scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")}) +
-  theme(strip.text = element_text(face = "bold"),
-        axis.text.x = element_text(angle = 60,hjust = 1,vjust = 1))
-```
-
-根据统计分析结果，分出“显著上升”和“显著下降”的。
+与台湾相比，香港的研究机构与域外机构间的合作则十分常见。在下方的研究机构合作网络中，内地、欧洲的多所科研院所均名列其中。从中也可以发现，香港大学是香港肠道菌群研究的生力军。
 
 ```{r}
-sig_IDs <- stats_aov$ID
-
-# 变化
-change <- data %>% filter(ID %in% sig_IDs,stage %in% c("First","Fourth")) %>% 
-  group_by(ID,stage) %>%
-  summarise(prop=mean(proportion)) %>%
-  pivot_wider(id_cols = ID, names_from = stage, values_from = prop) %>%
-  mutate(change = Fourth-First)
-
-# 去掉几个无意义的关键词
-non_sense_ID <- regex("MICROBIOTA|MICROBIOME|flora",ignore_case = T)
-change <- change %>% filter(!str_detect(ID,non_sense_ID))
-
-# 增加的 ID
-up_IDs <- change %>% filter(change>0) %>% pull(ID)
-
-# 降低的 ID
-dn_IDs <- change %>% filter(change<0) %>% pull(ID)
+university_network(HK_study, edge_weight_cutoff = 4)
 ```
-
-
-### 显著上升的关键词
+从香港肠道菌群研究的关键词共现网络中，可发现他们对溃疡性结肠炎、克罗恩病这两种疾病的研究较多。
 
 ```{r}
-idx <- list(1:10,11:20,21:30,31:38)
-plots <- lapply(seq_along(idx), function(i){
-  x <- idx[[i]]
-  ID_up <- IDs %>% filter(ID %in% up_IDs[x])
-
-  ggplot(ID_up,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
-    geom_text(aes(label=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=1.1, fontface="bold", size=3) + 
-    xlim(2000,2020) + labs(x="",y="") +
-    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
-})
-
-# geom_text(aes(x=I(2005),label=ID,color=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=0, fontface="bold", size=3)
+keyword_network(HK_study,2000,2019,field = "ID",nNode = 30)
 ```
+
+澳门的肠道菌群研究体量最小，其研究领域也最少，在此不再详述。
+
 
 ```{r}
-# 两幅图一起（一共四副图）
-
-# 保存前两幅图
-plot_grid(plotlist = plots[1:2], ncol = 2,align = "hv")
-
-
-# 保存后两幅图
-plot_grid(plotlist = plots[3:4], ncol = 2,align = "hv")
-
-
-
+university_network(Macao_study,edge_weight_cutoff = 3)
 ```
-
-
-
-### 显著下降的关键词
-
 ```{r}
-# 针对几个显著下降的关键词绘制趋势
-ID_dn <- IDs %>% filter(ID %in% dn_IDs) 
-dn_plot <- ggplot(ID_dn, aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
-  geom_text(aes(label=ID),data = filter(ID_dn, PY==2000),position = position_stack(vjust = 0.5),hjust=-0.1, fontface="bold", size=4) + 
-    xlim(2000,2020) + labs(x="",y="") +
-    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
+keyword_network(Macao_study,2000,2019,field = "ID",nNode = 30,edge_weight_cutoff = 2)
 ```
-
-
-```{r }
-# 保存图片
-dn_plot
-
-```
-
