@@ -1,9 +1,9 @@
-# 肠道菌群与心血管疾病
+# 肠道菌群与疾病 {#disease}
 
 ## 核心文章列表
 
 ```{r}
-i <- "cardiac"
+i <- "disease"
 topic_header <- topic[[i]]
 topic_caption <- paste0(topic_header,"研究核心论文")
 

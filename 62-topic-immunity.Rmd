@@ -1,4 +1,4 @@
-## 肠道菌群与免疫
+## 肠道菌群与免疫 {#immunity}
 
 ### 核心文章列表
 
@@ -13,10 +13,6 @@ df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
 
-
-```{r immune-article-trend, fig.cap="肠道菌群与免疫相关文献增长趋势"}
-topic_trend_core_plot_list[["immunity"]]
-```
 
 
 ### 核心(研究）论文引用历史脉络
@@ -41,8 +37,8 @@ topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 
 ```{r immune-article-author-collaboration-network, fig.cap="免疫相关文献的作者合作网络"}
 ## Author collaboration
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
-net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+author_network(df,nNode = 30)
+
 ```
 
 
@@ -51,13 +47,17 @@ net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title
 
 ```{r immune-article-university-collaboration-network, fig.cap="免疫相关研究机构的合作网络"}
 ## 机构合作网络（显示前 15 家）
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
-net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
-                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
-                curved = TRUE,halo = TRUE)
+university_network(df, nNode = 30, edge_weight_cutoff = 3)
+
 ```
 
 ### 共词分析
+
+
+```{r}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+```
+
 
 ```{r immune-article-conceptual-structure, fig.cap="免疫相关关键词的关联分析"}
 # 共词分析

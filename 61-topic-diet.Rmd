@@ -1,6 +1,8 @@
-# 肠道菌群与饮食
+# 肠道菌群与饮食 {#diet}
 
 ## 核心文章列表
+
+
 
 ```{r diet-article-datatable, fig.cap=" "}
 i <- 1
@@ -13,11 +15,9 @@ df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
 
-
-```{r diet-article-trend, fig.cap="饮食相关的核心文献数目"}
-topic_trend_core_plot_list[[i]]
-```
-
+首先奉上“饮食”相关研究的关键论文清单，如果有《热心肠日报》解读的话，也一并附上（图 \@ref(fig:diet-article-datatable)）。
+这里包括了 `r nrow(df)` 篇论文，包括 `r nrow(filter(df,DT=="REVIEW"))` 篇高水平综述，其中有中文短科普的就有 `r nrow(filter(df,daily_cn != ""))` 篇。 
+如果你是一个初学者，可按此图索骥，快速把握肠道菌群与饮食相关的研究内容。
 
 ## 肠道菌群与饮食研究的历史脉络
 
@@ -96,6 +96,8 @@ histPlot <- function (histResults, n = 20, size = 5, labelsize = 5, verbose = TR
 }
 ```
 
+
+接下来，我们通过观察这些文章的**历史引证网络**，来理清相关研究的脉络（图 \@ref(fig:diet-article-histnet)）。
 
 ```{r diet-article-histnet, fig.cap="饮食相关文献的核心引证网络"}
 safe_histNetwork <- purrr::possibly(histNetwork, NULL)
@@ -204,12 +206,25 @@ topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 ```
 
 
-## 作者合作网络
+从作者合作网络中（图 \@ref(fig:diet-article-author-collaboration-network)），可以发现 Rob Knight 和 Jeffrey I. Gordon 是来自于同一个研究群体，这一群体还有 3 个重要人物，分别是 Bernard Henrissat，Dan Knights 和 Federico E. Rey。
 
-```{r diet-article-author-collaboration-network, fig.cap="饮食相关研究的主要作者合作网络"}
+除此之外，我们还可以发现 5 个其他的研究群体。
+
+- Hazen, Stanley L., Wang, Zeneng, Tang, W. H. Wilson, Wu, Yuping 和 Lusis, Aldons J.
+
+- Cryan, John F., Dinan, Timothy G. 等人
+
+- Cani, Partrice D., Delzenne, Nathalie M. 等人
+
+- Flint, Harry J., Duncan, Sylvia H. 等人
+
+- Ventura, Marco 等人
+
+
+
+```{r diet-article-author-collaboration-network, fig.cap="饮食相关研究的主要作者合作网络。显示发文量最多的 30 位研究者之间的合作关系。"}
 ## Author collaboration
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
-net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+author_network(df,nNode = 30)
 ```
 
 
@@ -218,13 +233,17 @@ net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title
 
 ```{r diet-article-university-collaboration-network, fig.cap="饮食相关研究机构合作网络"}
 ## 机构合作网络（显示前 15 家）
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
-net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
-                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
-                curved = TRUE,halo = TRUE)
+university_network(df, nNode = 30, edge_weight_cutoff = 3)
 ```
 
 ## 共词分析
+
+```{r}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+```
+
+
+
 
 ```{r diet-article-conceptual-structure-map, fig.cap="饮食相关研究共词分析"}
 # 共词分析

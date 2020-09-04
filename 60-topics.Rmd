@@ -1,6 +1,18 @@
 # 研究热点 {#research-topic}
 
+我们都知道，对于肠道菌群研究而言，饮食、免疫、代谢、疾病等是四大最重要的研究主题。在这一部分，我们将在这四大研究主题之间逐步展开。
 
+```{r}
+keywords_from <- function(..., name = "primary"){
+  keyword_list <- list(...)
+  result <- lapply(keyword_list, function(x){
+    x[[name]]
+  })
+  paste0(unlist(result), collapse = "|")
+}
+
+
+```
 
 
 
@@ -20,11 +32,52 @@ metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
                             secondary = c("obesity","diabet[:alpha:]+","insulin","lipid","\\bfat[:alpha:]+",
                                           "adipose","NAFLD","NASH","nonalcoholic steatohepatitis","SCFA"))
 
+# 癌症
 cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
                         secondary = c("CRC","CAC","PDAC","HCC"))
-
+# 心血管疾病
 cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+"),
                         secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
+# 炎症性肠病
+ibd_keywords <- list(primary = c("IBD|inflammatory bowl disease|ulcerative colitis|crohn.{1,5}disease|\\bUC\\b"),
+                     secondary = NULL)
+# 肠易激综合征
+ibs_keywords <- list(primary = c("\\bIBS\\b|irritable bowel syndrome"),
+                     secondary = NULL)
+# 阿尔兹海默症
+alzheimer_keywords <- list(primary = "Alzheimer.{1,5}disease",
+                           secondary = NULL)
+# 自闭症
+autism_keywords <- list(primary = "autism",
+                        secondary = NULL)
+# 肝病
+hepatology_keywords <- list(primary = c("NAFLD|non.?alcoholic fatty liver disease"),
+                            secondary = NULL)
+# 过敏
+allergy_keywords <- list(primary = "\\ballerg.*\\b",
+                         secondary = NULL)
+# 肥胖
+obesity_keywords <- list(primary = "obesity",
+                         secondary = NULL)
+# 糖尿病
+diabetes_keywords <- list(primary = "diabetes",
+                          secondary = NULL)
+# 哮喘
+asthma_keywords <- list(primary = "asthma",
+                          secondary = NULL)
+# 腹泻
+diarrhea_keywords <- list(primary = "diarrhea",
+                          secondary = NULL)
+# 便秘
+constipation_keywords <- list(primary = "\\bconstip.*\\b",  
+                          secondary = NULL)
+## 全部疾病
+disease_keywords <- list(primary = c(keywords_from(cancer_keywords,cardio_keywords,ibd_keywords,ibs_keywords,
+                                                   alzheimer_keywords,autism_keywords,hepatology_keywords,
+                                                   allergy_keywords,obesity_keywords,diabetes_keywords,asthma_keywords,
+                                                   diarrhea_keywords,constipation_keywords),
+                                     "disease"),
+                         secondary = NULL)
 
 gut_axis_keywords <- list(primary = c("gut.{4,15}axis"),
                           secondary = NULL)
@@ -56,156 +109,18 @@ translation_keywords_probiotics <- list(primary = c("probiotic|prebiotic|dietary
 
 chinese_medicine_keywords <- list(primary = c("chinese herbal medicine|traditional Chinese medicine"))
 
-topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, cancer_keywords, cardio_keywords,
-                       gut_axis_keywords,metabolism_effect_keywords,medicine_keywords,early_life_keywords,
-                       cohort_keywords,dark_matter_keywords,translation_keywords_precision,translation_keywords_biomarker,
-                       translation_keywords_engineer,translation_keywords_phage_therapy,translation_keywords_vaccine,
-                       translation_keywords_fmt,translation_keywords_probiotics,chinese_medicine_keywords)
-topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","effect","medicine","early life","cohort","dark matter",
-              "precision","biomarker","engineer","phage therapy","vaccine","FMT","probiotics","Chinese medicine")
-topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","轴","代谢生理","药物互作","生命早期","人群","暗物质",
-              "精准医疗","生物标记物","工程菌","噬菌体疗法","疫苗","粪菌移植","益生菌益生元","中医药")
+topic_keywords <- list(diet_keywords, immunity_keywords, metabolism_keywords, disease_keywords)
+topic_en <- c("diet","immunity","metabolism","disease")
+# topic_en <- c("diet","immunity","metabolism","cancer","cardiac","axis","medicine","early life","cohort","dark matter",
+#               "precision","biomarker","engineer","phage therapy","vaccine","FMT","probiotics","Chinese medicine")
+topic_cn <- c("饮食","免疫","代谢","疾病")
+# topic_cn <- c("饮食","免疫","代谢","癌症","心血管疾病","轴","药物互作","生命早期","人群","暗物质",
+#               "精准医疗","生物标记物","工程菌","噬菌体疗法","疫苗","粪菌移植","益生菌益生元","中医药")
 topic <- topic_cn
 names(topic) <- topic_en
 nTopic <- length(topic)
 ```
 
-我们一共关注了`r nTopic` 个不同的研究主题，分别是 `r paste0(topic_cn, collapse="、")` 等。
-
-```{r}
-# 生成一个话题文献的 datatable
-produce_topic_article_datatable <- function(df, caption, filename){
-  DT::datatable(df %>% select(title_en,daily_cn,PY,J9,LCS,DT), 
-              colnames = c("文章标题","热心肠日报（如果有）","年份","来源期刊","LCS","类型"),
-          escape = FALSE,
-          rownames = TRUE,
-          filter = "top",
-          width = "95%",
-          caption = caption,
-          extensions = c("Buttons"),
-          options=list(dom = 'Bfrtip',
-                       pageLength = 10,
-                       buttons=list(
-                         'pageLength',
-                         list(extend='copy'),
-                         list(extend="excel",
-                              filename=filename,
-                              header=TRUE,
-                              title="")
-                         ),
-                       columnDefs=list(
-                         list(width="40%",targets=1),
-                         list(width="35%", targets=2),
-                         list(width="5%",targets=c(3,5)),
-                         list(width="200px",targets="_all")
-                       ),
-                       lengthMenu=list(c(10,20,50,100,200,-1),
-                                       c("10","20","50","100","200","All")),
-                       autoWidth=TRUE)) %>%
-  DT::formatStyle(fontSize="9pt",columns = 0:4)
-}
-
-
-```
-
-
-
-```{r}
-## 网络相关的函数
-
-range01 <- function(x){(x-min(x))/(max(x)-min(x))}
-
-
-graph_add_node_pagerank <- function(g){
-  V(g)$pagerank <- page.rank(g)[["vector"]]
-  return(g)
-}
-
-graph_add_node_degree <- function(g){
-  V(g)$degree <- degree(g)
-  return(g)
-}
-
-graph_add_node_attr <- function(g, data, id = "id", cols = colnames(data)){
-  # 依据 id 的对应关系将 data 中的属性加入到graph中，
-  # id 是 data 中 node id 的列名, cols 是 data 中用到的列名
-  # ToDO: 跳过已有的属性还是覆盖？
-  g.id <- names(V(g))
-  data <- as.data.frame(data)
-  rownames(data) <- data[,id]
-  cols <- cols[!cols %in% id]
-  for (i in 1:length(cols)){
-    vertex_attr(g, name =  cols[[i]]) <- data[g.id, cols[[i]]]
-  }
-  return(g)
-}
-
-graph_set_node_size <- function(g, by = "degree", scale01 = TRUE, max_size = 10){
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  size <- (value * max_size) + 1
-  V(g)$size <- size
-  return(g)
-}
-
-
-
-graph_set_node_color <- function(g, by = "year", decreasing = FALSE, scale01 = FALSE, palette_name = "YlOrRd"){
-  ## 为 graph 设置节点颜色
-  ## 默认按年份着色，或者其它 node 属性着色
-  value <- vertex_attr(g, name = by)
-  if (isTRUE(scale01)){
-    value <- range01(value)
-  }
-  uniq_value <- sort(unique(value),decreasing = decreasing)
-  my_palette <- brewer.pal(n=7,name = palette_name)
-  
-  nColor <- 100
-  if (length(uniq_value) < 100 ) nColor <- length(uniq_value)
-  colors <- colorRampPalette(my_palette)(nColor)
-  names(colors) <- uniq_value
-  
-  V(g)$color <- colors[as.character(value)]
-  
-  return(g)
-}
-
-
-
-
-graph_subgraph <- function(g, by = "degree", slice = "PY", topN = 10, ratio = 0.1){
-  if( !by %in% vertex_attr_names(g)) stop(by, " is not a graph attribute.\n")
-  if( !slice %in% vertex_attr_names(g)) stop(slice, " is not a graph attribute.\n")
-  data <- visNetwork::toVisNetworkData(g)
-  nodes <- data$nodes %>% group_by(PY) %>%
-    arrange(desc(degree)) %>%
-    filter(row_number() <= topN)
-  induced.subgraph(g, vids = nodes$id)
-}
-
-
-
-vis_histNet <- function(g, 
-                        node.title = "title", 
-                        node.size = "size", 
-                        node.color = "color", 
-                        edge.color = "color", 
-                        layout = "layout_with_fr"){
-  data <- toVisNetworkData(g)
-  
-  visNetwork(nodes = data$nodes,
-             edges = data$edges) %>%
-    visIgraphLayout(physics = FALSE, layout = layout) %>%
-    visNodes(size = node.size, color = node.color, title=node.title) %>%
-    visEdges(color = edge.color) %>%
-    visOptions(highlightNearest = list(enabled=TRUE,hover=FALSE)) %>%
-    visExport()
-  
-}
-
-```
 
 
 
@@ -213,8 +128,10 @@ vis_histNet <- function(g,
 ## 主题对应的核心论文数据
 
 
-```{r}
+我们首先统计下各个研究主题相关的论文数量。
 
+
+```{r}
 MC_HC_article <- readRDS("data/MC_HC_article.RDS")
 
 
@@ -231,6 +148,8 @@ topic_nRecords_core <- lapply(topic_articles_core, function(article){
     summarise(nRecord = n())
 })
 ```
+
+在接下来的分析中，我们将基于 `r nrow(MC_HC_article)` 篇**关键论文**进行。显而易见，每个研究主题都具有庞大的发文量（图 \@ref:(fig:topic-nRecord-in-core-articles)）。
 
 
 ```{r eval=FALSE}
@@ -267,26 +186,25 @@ ggplot(df, aes(topic,count)) +
   coord_flip()
 
 ```
-
+与此同时，也可以看到这四大研究主题都是历史比较悠久的研究领域（图 \@ref(fig:topic-trend-in-core-articles)），自 2000 年以来不断有关键的研究论文发表。
 
 
 ```{r topic-trend-in-core-articles, fig.cap="各研究主题发表的关键论文数量变化情况",fig.asp=1}
 topic_trend_core_plot_list <- lapply(1:nTopic, function(i){
   df <- topic_nRecords_core[[i]]
   ggplot(df, aes(PY,nRecord)) + geom_col(width = 0.8) +
-    labs(x="",y="",title = "核心论文")
+    labs(x="",y="",title = topic_cn[[i]])
 })
 
 names(topic_trend_core_plot_list) <- topic_en
 
-# plot_grid(plotlist = plot_list, ncol = 3)
+plot_grid(plotlist = topic_trend_core_plot_list, ncol = 1)
 ```
 
-图 \@ref(fig:overlap-of-topic-in-core-article) 展示各研究主题核心论文间的重叠度，免疫和代谢主题的文献重叠度最高……
+四大研究主题间的重叠度也相当可观（图 \@ref(fig:overlap-of-topic-in-core-article)）。 其中，免疫和疾病的文献重叠度最高，免疫、代谢和疾病的重叠度次之，而四大研究主题共有的研究论文就有 511 篇，占到全部**关键论文**的近六分之一之多……
 
-```{r overlap-of-topic-in-core-article, fig.cap="各研究主题核心论文间的重叠度",fig.asp=1}
+```{r overlap-of-topic-in-core-article, fig.cap="各研究主题核心论文间的重叠度"}
 # 各研究主题间的重叠度
-library(UpSetR)
 
 topic_articles_core_SR <- lapply(topic_articles_core, function(m){
   m$SR
@@ -295,380 +213,13 @@ topic_articles_core_SR <- lapply(topic_articles_core, function(m){
 names(topic_articles_core_SR) <- topic
 
 
-upset(fromList(topic_articles_core_SR),
-      sets=rev(names(topic_articles_core_SR)),
-      keep.order = FALSE,
-      mb.ratio = c(0.6, 0.4),
-      order.by = "freq")
-
-```
-
-
-```{r}
-## 主题对应的几个网络
-
-## 完整的历史引用网络
-MC_HC_histNet <- readRDS("data/MC_HC_histNet.RDS")
-# 1224 和 1225 名称重复（SCHIRMER M, 2018, NAT MICROBIOL）
-core_histNet <- graph_from_adjacency_matrix(MC_HC_histNet$NetMatrix[-1225,-1225])
-
-## 各个主题的历史引用子网络
-g <- core_histNet
-topic_subgraph_histNet <- lapply(topic_articles_core_SR, function(x){
-  induced.subgraph(g,vids =V(g)[names(V(g)) %in% x])
-})
-
-
-
-
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_pagerank)
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_degree)
-
-
-MC_HC_article.node_attr <- MC_HC_article %>% 
-  select(SR,PY,LCS,title_en,daily_cn) %>%
-  mutate(id = SR) %>%
-  unite(title, SR, title_en, daily_cn, sep = "<br />\n")
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_add_node_attr, 
-                                 data= MC_HC_article.node_attr, 
-                                 cols=c("id","PY","LCS","title"))
-
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_subgraph)
-
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_set_node_size, by="LCS", max_size = 20)
-topic_subgraph_histNet <- lapply(topic_subgraph_histNet, graph_set_node_color, by="PY")  # year 参数还没有导入为网络的属性
-
-
-
-```
-
-
-```{r}
-
-
-
-authorProdOverTime <- function (M, k = 10, graph = TRUE) 
-{
-    M$TC = as.numeric(M$TC)
-    M$PY = as.numeric(M$PY)
-     tableTag <- function (M, Tag = "CR", sep = ";") 
-        {
-            if (Tag %in% c("AB", "TI")) {
-                M = termExtraction(M, Field = Tag, stemming = F, verbose = FALSE)
-                i = dim(M)[2]
-            }
-            else {
-                i <- which(names(M) == Tag)
-            }
-            if (Tag == "C1") {
-                M$C1 = gsub("\\[.+?]", "", M$C1)
-            }
-            Tab <- unlist(strsplit(as.character(M[, i]), sep))
-            # Tab <- trimws(trimES(gsub("\\.|\\,", " ", Tab)))
-            Tab <- Tab[Tab != ""]
-            Tab <- sort(table(Tab), decreasing = TRUE)
-            return(Tab)
-        }
-    AU = names(tableTag(M, "AU"))
-    k = min(k, length(AU))
-    AU = AU[1:k]
-    df = data.frame(Author = "NA", year = NA, TI = "NA", 
-        SO = "NA", DOI = "NA", TC = NA, TCpY = NA, 
-        stringsAsFactors = FALSE)
-    Y = as.numeric(substr(Sys.time(), 1, 4))
-    if (!("DI" %in% names(M))) {
-        M$DI = "NA"
-    }
-    for (i in 1:length(AU)) {
-        ind = which(regexpr(AU[i], M$AU) > -1)
-        TCpY = M$TC[ind]/(Y - M$PY[ind] + 1)
-        dfAU = data.frame(Author = rep(AU[i], length(ind)), year = M$PY[ind], 
-            TI = M$TI[ind], SO = M$SO[ind], DOI = M$DI[ind], 
-            TC = M$TC[ind], TCpY = TCpY, stringsAsFactors = TRUE)
-        df = rbind(df, dfAU)
-    }
-    df = df[-1, ]
-    df2 <- dplyr::group_by(df, .data$Author, .data$year) %>% 
-        dplyr::summarise(freq = length(.data$year), TC = sum(.data$TC), 
-            TCpY = sum(.data$TCpY))
-    df2 = as.data.frame(df2)
-    df2$Author = factor(df2$Author, levels = AU[1:k])
-    g <- ggplot(df2, aes(x = .data$Author, y = .data$year, text = paste("Author: ", 
-        df2$Author, "\nYear: ", df2$year, "\nN. of Articles: ", 
-        df2$freq, "\nTotal Citations per Year: ", round(TCpY, 
-            2)))) + geom_point(aes(alpha = df2$TCpY, size = df2$freq), 
-        color = "dodgerblue4") + scale_size(range = c(2, 
-        6)) + scale_alpha(range = c(0.3, 1)) + scale_y_continuous(breaks = seq(min(df2$year), 
-        max(df2$year), by = 2)) + guides(size = guide_legend(order = 1, 
-        "N.Articles"), alpha = guide_legend(order = 2, 
-        "TC per Year")) + theme(legend.position = "right", 
-        text = element_text(color = "#444444"), panel.background = element_rect(fill = "gray97"), 
-        panel.grid.minor = element_line(color = "#FFFFFF"), 
-        panel.grid.major = element_line(color = "#FFFFFF"), 
-        plot.title = element_text(size = 24), axis.title = element_text(size = 14, 
-            color = "#555555"), axis.title.y = element_text(vjust = 1, 
-            angle = 0, face = "bold"), axis.title.x = element_text(hjust = 0.95, 
-            face = "bold"), axis.text.x = element_text(face = "bold"), 
-        axis.text.y = element_text(face = "bold")) + labs(title = "Top-Authors' Production over the Time", 
-        x = "Author", y = "Year") + geom_line(aes(x = df2$Author, 
-        y = df2$year, group = df2$Author), size = 1, color = "firebrick", 
-        alpha = 0.3) + scale_x_discrete(limits = rev(levels(df2$Author))) + 
-        coord_flip()
-    df$DOI = as.character(df$DOI)
-    res <- list(dfAU = df2, dfPapersAU = df, graph = g)
-    if (isTRUE(graph)) {
-        plot(g)
-    }
-    return(res)
-}
-```
-
-
-```{r}
-biblio_df <- function(df){
-  df <- data.frame(df)
-  dup <- which(table(df$SR)>1)
-  if (length(dup)>0){
-    df <- df %>% distinct(SR, .keep_all = TRUE)
-  }
-  rownames(df) <- df$SR
-  return(df)
-}
-```
-
-
-```{r}
-
-```
-
-
-
-
-
-
-
-## 近五年研究热点的变迁
-
-使用 WOS 指定的关键词作为依托，分析研究热点的变化。
-
-
-
-
-
-有些期刊已经没有影响因子，对应的文章有  篇。具体如下(只显示前20行）：
-
-
-
-### 每年的发文量
-
-近五年一共发表了 `r nrow(M)` 篇文献。
-
-```{r}
-pos <- position_dodge(width = 0.9)
-M %>% 
-  group_by(PY,group) %>%
-  summarise(Records=n()) %>%
-  filter(!is.na(group)) %>%
-  ggplot(aes(PY,Records,fill=group)) +
-  geom_col(position = pos) +
-  geom_text(aes(y=Records+5,label=Records),
-            hjust=0.5,vjust=-0.1,
-            angle=0, size=2.5,
-            show.legend = F,position = pos) +
-  scale_fill_manual(values = pal(6),name="Impact Factor") +
-  labs(x="Year of Publication") +
-  theme(legend.position = "right")
-```
-
-
-
-```{r}
-# 近五年的关键词及关键词每年的词频
-years <- 2015:2019
-list <- lapply(seq_along(years),function(i){
-  year <- years[[i]]
-  M %>% filter(PY==year) %>% pull(ID) %>% 
-    str_split(pattern = "; ") %>% 
-    unlist() %>% as_tibble() %>% 
-    rename("ID"=value) %>% 
-    mutate(PY=year)
-})
-# M$ID 字段是关键词，以 ; 分隔
-
-IDs <- do.call("rbind",list) %>%
-  group_by(PY,ID) %>%
-  summarise(Freq=n()) %>% 
-  group_by(PY) %>%
-  mutate(proportion=Freq/sum(Freq)) %>%
-  # 有部分文章的 ID 为 NA（没有 ID）
-  filter(!is.na(ID)) %>%
-  ungroup() %>%
-  complete(PY,ID,fill = list(Freq=0,proportion=0))
-```
-
-这其中包括了 `r length(unique(IDs$ID))` 个不同的关键词。大部分的关键词使用的频率较低，可以事先去掉，减少干扰因素。
-
-```{r}
-breaks <- 10^(-10:10)
-minor_breaks <- rep(1:9, 21)*(10^rep(-10:10, each=9))
-ID_usage <- IDs %>% group_by(ID) %>%
-  summarise(Freq = sum(Freq,na.rm = T)) %>%
-  arrange(desc(Freq)) %>%
-  mutate(No=row_number()) 
-
-ID_usage %>%
-  ggplot(aes(No,Freq)) +
-  geom_line() +
-  scale_x_log10(minor_breaks=minor_breaks) +
-  scale_y_log10(minor_breaks=minor_breaks) +
-  theme(panel.grid.major = element_line(colour = "grey60"))
-```
-
-从上图可以看出，出现频率最高的关键词总共使用了近8000次（“GUT MICROBIOTA”）；使用次数在 100 次以上的有 400 个左右；使用次数在40次以上的有1000个左右；使用次数在10次以上的有3000个左右。
-
-基于此，我们选择使用频次在 100 次以上的关键词继续分析。
-
-```{r}
-selected_ID <- ID_usage %>% filter(Freq>100) %>% pull(ID)
-IDs_filtered <- IDs %>% filter(ID %in% selected_ID)
-```
-
-
-为了得到五年显著上升或下降的关键词，我们分别计算每个关键词在5年中所占比例（proportion）的变异系数（CV），变异系数较大的则变化比较显著。
-
-$CV = (SD/Mean) * 100\%$
-
-```{r}
-# 计算关键词的变异系数
-ID_CV <- IDs_filtered %>% group_by(ID) %>% 
-  summarise(CV=(sd(proportion)/mean(proportion))) %>% 
-  arrange(desc(CV))
-
-```
-
-接下来再根据2015-2019年之间的差值变化的比例确定总体上的变化趋势（备注：如果比较差值变化的数值而不是比例的话，可以发现多说关键词占的比例还是挺小的，小众的关键词更容易发生“显著”变化，而大众的关键词该如何找出来呢？）。
-
-$change=(Proportion_{2019}-Proportion_{2015})/Proportion_{2015}$
-
-```{r}
-# 评估关键词的上升或下降
-ID_change <- IDs_filtered %>% filter(PY %in% c(2015,2019)) %>%
-  pivot_wider(id_cols = ID, names_from = PY,values_from = proportion) %>%
-  mutate(change=(`2019`-`2015`)/`2015`) %>%
-  select(ID,change)
-```
-
-
-```{r fig.width=10,fig.asp=1}
-change_cutoff <- c(-0.5,1) # 
-CV_cutoff <- 0.3
-
-# 根据变异系数和五年差异作图
-ID_CV_change <- ID_CV %>% left_join(ID_change) %>%
-  mutate(type=ifelse((change > change_cutoff[[1]] & change < change_cutoff[[2]]) | CV < CV_cutoff,
-                     "grey",
-                     ifelse(change>0,"red","blue")))
-
-ggplot(ID_CV_change,aes(change,CV,label=ID,color=I(type))) + 
-  geom_point() +
-  ggrepel::geom_text_repel(aes(label=ID),
-                           data = filter(ID_CV_change,type!="grey"),
-                           size=3) +
-  geom_vline(xintercept=change_cutoff,lty="dashed",color="grey40") +
-  geom_hline(yintercept = CV_cutoff,lty="dashed",color="grey40") +
-  xlim(-5,8)
-```
-
-
-结合变异系数和五年总体变化率的结果，分出“明显上升”和“明显下降”的关键词。如上图所示，我们分别对变异系数和总体变化率取阈值，进而得到热度明显上升、下降显著的关键词。
-
-```{r}
-# 去掉几个无意义的关键词
-non_sense_ID <- regex("MICROBIOTA|MICROBIOME|flora",ignore_case = T)
-change <- ID_CV_change %>% filter(!str_detect(ID,non_sense_ID))
-
-# 增加的 ID
-up_IDs <- change %>% filter(type=="red") %>% pull(ID)
-
-# 降低的 ID
-dn_IDs <- change %>% filter(type=="blue") %>% pull(ID)
-```
-
-
-### 显著上升的关键词
-
-显著上升的关键词有 `r length(up_IDs)` 个，分成 `r ceiling(length(up_IDs)/10)` 幅图。
-
-```{r}
-# 每幅图 10 个关键词
-seperate_idx <- function(total, per=10){
-  n <- ceiling(total/per)
-  list <- lapply(1:n,function(i){
-    from <- (i-1)*per+1
-    to <- i*per
-    to <- ifelse(to>total,total,to)
-    seq(from,to)
-  })
-  return(list)
-}
-
-idx <- seperate_idx(length(up_IDs))
-
-plots <- lapply(seq_along(idx), function(i){
-  x <- idx[[i]]
-  ID_up <- IDs %>% filter(ID %in% up_IDs[x])
-
-  ggplot(ID_up,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
-    geom_text(aes(label=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=1.1, fontface="bold", size=3) + 
-    xlim(2015,2019) + labs(x="",y="") +
-    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
-})
-
-# geom_text(aes(x=I(2005),label=ID,color=ID),data = filter(ID_up, PY==2019),position = position_stack(vjust = 0.5),hjust=0, fontface="bold", size=3)
-```
-
-```{r}
-# 两幅图一起（一共四副图）
-plot_grid(plotlist = plots[1:2], ncol = 2,align = "hv")
-
-
-plot_grid(plotlist = plots[3:4], ncol = 2,align = "hv")
-
-
-```
-
-
-
-### 显著下降的关键词
-
-显著下降的关键词有 `r length(dn_IDs)` 个，分成 `r ceiling(length(dn_IDs)/10)` 幅图。
-
-```{r}
-# 针对几个显著下降的关键词绘制趋势
-idx <- seperate_idx(length(dn_IDs))
-
-plots <- lapply(seq_along(idx), function(i){
-  x <- idx[[i]]
-  ID_dn <- IDs %>% filter(ID %in% dn_IDs[x])
-
-  ggplot(ID_dn,aes(PY,proportion,fill=ID)) + geom_area(color="grey") +
-    geom_text(aes(label=ID),data = filter(ID_dn, PY==2015),position = position_stack(vjust = 0.5),hjust=-.1, fontface="bold", size=3) + 
-    xlim(2015,2019) + labs(x="",y="") +
-    scale_y_continuous(labels = function(x){paste0(round(x*100,digits = 2),"%")})
-})
-```
-
-
-```{r }
-# 保存图片
-plot_grid(plotlist = plots, ncol = 2,align = "hv")
-
-
-
-```
-
-```{r}
-## 不同类型期刊的关注点是否不同？
-
+# library(UpSetR)
+# upset(fromList(topic_articles_core_SR),
+#       sets=rev(names(topic_articles_core_SR)),
+#       keep.order = FALSE,
+#       mb.ratio = c(0.7, 0.3),
+#       order.by = "freq")
+
+ggVennDiagram::ggVennDiagram(topic_articles_core_SR)
 ```
 
