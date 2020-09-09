@@ -98,6 +98,13 @@ library(treemap)
 library(gganimate)
 library(ggraph)
 library(visNetwork)
+
+# user defined functions
+# 会覆盖 bibliometrix 中一些有问题的函数
+library(mrgut)
+library(aplot)
+library(patchwork)
+library(DT)
 ```
 
 ```{r colors}
@@ -196,23 +203,10 @@ additional_stopwords <- "yet may one two use thus like work part either show but
 
 
 ```{r}
-# 函数
-
-# 使用鼠标响应事件
-plot.ly <- function(g,tooltip=c("text"),...){
-  ggplotly(g, tooltip = tooltip,...) %>% 
-    config(displaylogo = FALSE,
-           modeBarButtonsToRemove = c(
-             'sendDataToCloud',
-             # 'pan2d', 
-             'select2d', 
-             'lasso2d',
-             'toggleSpikelines',
-             'hoverClosestCartesian',
-             'hoverCompareCartesian'
-           ))
-}
+authorProdOverTime <- mrgut::authorProdOverTime
+delete.isolates <- bibliometrix:::delete.isolates
 ```
+
 
 
 ```{r}
@@ -222,6 +216,10 @@ keep_but_not_include <- FALSE   # 有用的图片，暂时没有收录
 under_construction <- FALSE     # 计划中的分析
 run_and_save <- FALSE           # 耗时较长的运算过程，运行后保存，使用保存的结果而不用每次都运算
 ```
+
+
+
+
 
 
 
@@ -242,9 +240,9 @@ run_and_save <- FALSE           # 耗时较长的运算过程，运行后保存�
 
 [^index-1]: 关于人类微生物组计划的一般常识，请参见[维基百科](https://en.wikipedia.org/wiki/Human_Microbiome_Project)，[百度百科](https://baike.baidu.com/item/%E4%BA%BA%E7%B1%BB%E5%BE%AE%E7%94%9F%E7%89%A9%E7%BB%84%E8%AE%A1%E5%88%92/10745945)。
 
-于是，我们写了一本书。这本书是这样的，第一部分是“肠道菌群”研究的概述，包括第 \@ref(intro) 章，介绍了肠道菌群研究的概述；第二部分是国际研究格局，包括第 \@ref(global) - \@ref(china-study) 章，分别介绍研究的国际协作、不同国家主要的研究力量的分布、主要的科学研究中心（机构、高校等）和研究团队等；第三部分是主要的研究发现和变迁，包括第 \@ref(milestone) - \@ref(CVD) 章，对“肠道菌群”研究取得的主要成果及其研究的脉络进行阐述。
+于是，我们写了一本书。这本书是这样的，第一部分是“肠道菌群”研究的概述，包括第 \@ref(intro) 章，介绍了肠道菌群研究的概述；第二部分是国际研究格局，包括第 \@ref(global) - \@ref(china-study) 章，分别介绍研究的国际协作、不同国家主要的研究力量的分布、主要的科学研究中心（机构、高校等）和研究团队等；第三部分是主要的研究发现和变迁，包括第 \@ref(research-topic) - \@ref(disease) 章，对“肠道菌群”研究取得的主要成果及其研究的脉络进行阐述。
 
-本书的写作遵循**可重复研究**的范式，我们采用的主要研究手段是文献计量学方法，基于 **bibliometrix**\index{bibliometrix} [@R-bibliometrix] 和 R 语言数据科学工具包提供的方法 **tidyverse**\index{tidyverse} [@R-tidyverse] 和可视化工具 **ggraph**\index{ggraph} [@R-ggraph] 等。分析的数据来自于 Web of Science 数据库的核心合集（参见附录\@ref(data-source)）。最终，我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。下面附上我的 R 进程信息，以便相关人士查询：
+本书的写作遵循**可重复研究**的范式，我们采用的主要研究手段是文献计量学方法，基于 **bibliometrix**\index{bibliometrix} [@R-bibliometrix] 和 R 语言数据科学工具包提供的方法 **tidyverse**\index{tidyverse} 和一系列可视化工具如 **wordcloud2**\index{wordcloud2} [@R-wordcloud2]、 **plotly**\index{plotly} [@R-plotly]、**networkD3**\index{networkD3} [@R-networkD3]等。分析的数据来自于 Web of Science 数据库的核心合集（参见附录\@ref(data-source)）。最终，我用了两个 R 包编译这本书，分别是 **knitr**\index{knitr} [@xie2015] 和 **bookdown**\index{bookdown} [@R-bookdown]。下面附上我的 R 进程信息，以便相关人士查询：
 
 ```{r include=TRUE}
 sessionInfo()
@@ -252,7 +250,7 @@ sessionInfo()
 
 ## 致谢 {-}
 
-非常感谢科睿唯安公司的郭老师以及中科院微生物研究所王军研究员对我们的帮助。
+欢迎就本书内容提出宝贵建议。
 
 ```{block2, type='flushright', html.tag='p'}
 本书编者
