@@ -26,7 +26,6 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
-                      # out.width = "95%",
                       fig.align = "center",
                       eval=T,       # 不执行代码
                       include=TRUE, # 是否显示执行代码的结果
@@ -35,7 +34,8 @@ knitr::opts_chunk$set(fig.width = 8,
                       warning = FALSE,  # 是否显示警告
                       error = FALSE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
                       cache=T,  # 加速预览
-                      fig.path = "plots/"
+                      fig.path = "plots/",
+                      out.width = "75%"
                       ) 
 
 # disable Sys.setlocale output
@@ -59,6 +59,16 @@ success <- lapply(github_packages, function(pkg) {
   name <- gsub(".*\\/","",pkg)
   if (system.file(package = name) == '') devtools::install_github(pkg)
 })
+
+if (knitr::is_html_output()) {
+  # ignore percentage widths for HTML output, unless they are used for multiple
+  # figures side by side
+  knitr::opts_hooks$set(out.width = function(options) {
+    if (options$fig.show != 'hold' && grepl('%$', options$out.width))
+      options$out.width = NULL
+    options
+  })
+}
 ```
 
 
@@ -66,21 +76,20 @@ success <- lapply(github_packages, function(pkg) {
 ```{r load_pacakges}
 # load frequentely used packages
 # tidyverse
-library(tidyverse)
+library(tibble)
 library(dplyr)
 library(tidyr)
 library(stringr)
-# library(ggplot2)
-# library(forcats)
-# library(lubridate)
+library(ggplot2)
+library(forcats)
+library(lubridate)
 library(magrittr)
+library(purrr)
 
 # knitr
 library(knitr)
 
 
-# user defined functions
-library(mrgut)
 
 # data analysis
 library(bibliometrix)
