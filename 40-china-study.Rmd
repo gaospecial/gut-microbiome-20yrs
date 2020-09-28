@@ -1,8 +1,8 @@
 # 中国的肠道菌群研究 {#china-study}
 
+在这一部分，我们将针对中国参与发表的研究论文进行文献计量学分析，以展示中国肠道菌群研究的全景。
 
-
-```{r}
+```{r eval=FALSE}
 # 中国的肠道菌群研究论文
 # 根据通讯作者地址获取中国的研究 M$RP 
 China_study <- M %>% filter(is.part_of_china(C1))
@@ -15,6 +15,14 @@ China_study$Au_UN <- China_study$AU_UN_NR
 China_study_core <- China_study %>% 
   filter(HC == TRUE | CORE == TRUE) %>% 
   biblio_df()
+
+saveRDS(China_study, "data/China-study.RDS")
+saveRDS(China_study_core, "data/China-study-core.RDS")
+```
+
+```{r}
+China_study <- readRDS("data/China-study.RDS")
+China_study_core <- readRDS("data/China-study-core.RDS")
 ```
 
 
@@ -62,7 +70,7 @@ p_all_article %>% aplot::insert_bottom(p_highlycited)
 
 ### 研究的主要脉络
 
-我们使用历史引证网络分析的方法来厘清我国肠道菌群的研究脉络（图 \@ref(fig:china-histnet)）。历史引证网络中共包含了19篇关键文献，其主要信息列示在表 \@ref(fig:china-histnet-artilces) 中。接下来，我们将逐一回顾一下这些文献。
+我们使用历史引证网络分析的方法来厘清我国肠道菌群的研究脉络（图 \@ref(fig:china-histnet)）。历史引证网络中共包含了19篇关键文献，其主要信息列示在表 \@ref(fig:china-histnet-articles) 中。接下来，我们将逐一回顾一下这些文献。
 
 ```{r china-histnet, fig.cap="我国肠道菌群研究的核心历史引证网络。水平线指示文章发表的年份，点之间的灰色线条指示引用关系，每个点代表着一篇文章（以名字和年份区分）。"}
 china_histnet <- histNetwork(China_study,min.citations = 10,verbose = F)
@@ -151,17 +159,14 @@ China_affiliation_translation <- openxlsx::read.xlsx("data/China_affiliations.xl
 China_affiliations <- China_affiliations %>%
   left_join(China_affiliation_translation, by = c("aff"="WoS_Name"))
 
-p <- China_affiliations  %>%
+d <- China_affiliations  %>%
   head(30) %>%
-  arrange(nRecord) %>%
-  mutate(aff = as_factor(as.character(Chinese_Name))) %>%
-  mutate(text = paste0(aff, "(", nRecord, "篇)")) %>%
-  ggplot(aes(aff,nRecord,text=text)) +
-  geom_col() +
-  coord_flip() +
+  select(Chinese_Name, nRecord)
+
+hbarplot(d) +
   labs(x="",y="",title = "主要科研机构（以论文发表量计）")
 # plot.ly(p)
-p
+
 ```
 
 ```{r}
