@@ -276,20 +276,8 @@ gut_axis_keywords <- list(primary = c("gut.{4,15}axis"),
                           secondary = NULL)
 
 
-metabolism_effect_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
-                        secondary = c("SCFA","short-chain fatty acids","butyrate","TMAO","TMA","secondary bile acids"))
-
 medicine_keywords <- list(primary = c("medicine|medication|drug|[:alpha:]+pharmaco[:alpha:]+|xenobiotic"),
                         secondary = NULL)
-
-early_life_keywords <- list(primary = c("early.{1,2}life|infan[:alpha:]+|maternal"),
-                        secondary = c("pregnan[:alpha:]+","[:alpha:]+natal","in utero","uterus","placent[:alpha:]+","vertical transmission"))
-
-cohort_keywords <- list(primary = c("cohort"),
-                        secondary = NULL)
-
-dark_matter_keywords <- list(primary = c("dark matter|virome|mycobiome|culturomics"),
-                             secondary = NULL)
 
 
 chinese_medicine_keywords <- list(primary = c("chinese herbal medicine|traditional Chinese medicine"))
@@ -481,7 +469,7 @@ university_network(Taiwan_study)
 主要的研究立足点与中国总体结构还是比较类似的，像炎症、疾病、健康、饮食、肥胖等关键词都有出现且均占主要地位。
 
 ```{r}
-keyword_network(Taiwan_study,2000,2019,field = "ID",nNode = 30)
+keyword_network(Taiwan_study,field = "ID",nNode = 30, edge_weight_cutoff = 3)
 ```
 
 与台湾相比，香港的研究机构与域外机构间的合作则十分常见。在下方的研究机构合作网络中，内地、欧洲的多所科研院所均名列其中。从中也可以发现，香港大学是香港肠道菌群研究的生力军。
@@ -492,7 +480,7 @@ university_network(HK_study, edge_weight_cutoff = 4)
 从香港肠道菌群研究的关键词共现网络中，可发现他们对溃疡性结肠炎、克罗恩病这两种疾病的研究较多。
 
 ```{r}
-keyword_network(HK_study,2000,2019,field = "ID",nNode = 30)
+keyword_network(HK_study,field = "ID",nNode = 30)
 ```
 
 澳门的肠道菌群研究体量最小，其研究领域也最少，在此不再详述。
@@ -502,5 +490,5 @@ keyword_network(HK_study,2000,2019,field = "ID",nNode = 30)
 university_network(Macao_study,edge_weight_cutoff = 3)
 ```
 ```{r}
-keyword_network(Macao_study,2000,2019,field = "ID",nNode = 30,edge_weight_cutoff = 2)
+keyword_network(Macao_study,field = "ID",nNode = 30,edge_weight_cutoff = 2)
 ```
