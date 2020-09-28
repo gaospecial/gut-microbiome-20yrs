@@ -36,8 +36,8 @@ metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
 cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
                         secondary = c("CRC","CAC","PDAC","HCC"))
 # 心血管疾病
-cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+"),
-                        secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","hypertension","blood pressure"))
+cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+|hypertension"),
+                        secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","blood pressure"))
 # 炎症性肠病
 ibd_keywords <- list(primary = c("IBD|inflammatory bowl disease|ulcerative colitis|crohn.{1,5}disease|\\bUC\\b"),
                      secondary = NULL)
@@ -149,7 +149,7 @@ topic_nRecords_core <- lapply(topic_articles_core, function(article){
 })
 ```
 
-在接下来的分析中，我们将基于 `r nrow(MC_HC_article)` 篇**关键论文**进行。显而易见，每个研究主题都具有庞大的发文量（图 \@ref:(fig:topic-nRecord-in-core-articles)）。
+在接下来的分析中，我们将基于 `r nrow(MC_HC_article)` 篇**关键论文**进行。显而易见，每个研究主题都具有庞大的发文量（图 \@ref(fig:topic-nRecord-in-core-articles)）。
 
 
 ```{r eval=FALSE}
@@ -173,7 +173,7 @@ for (i in 1:nTopic){
 
 
 
-```{r topic-nRecord-in-core-articles, fig.cap="各研究主题关键论文数量对比"}
+```{r topic-nRecord-in-core-articles, fig.cap="各研究主题关键论文数量对比",fig.width=4}
 count <- sapply(topic_articles_core, nrow)
 df <- data.frame(topic=topic, count=count)
 df$topic <- factor(df$topic, levels = rev(topic))
