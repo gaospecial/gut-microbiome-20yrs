@@ -35,7 +35,7 @@ knitr::opts_chunk$set(fig.width = 8,
                       error = FALSE, # 是否因报错而停止执行代码，设为 TRUE 表示不停止
                       cache=T,  # 加速预览
                       fig.path = "plots/",
-                      out.width = "75%"
+                      out.width = "90%"
                       ) 
 
 # disable Sys.setlocale output
