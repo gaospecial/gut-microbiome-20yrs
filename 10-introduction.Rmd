@@ -339,27 +339,28 @@ export::graph2ppt(p)
 
 `r if (knitr:::is_html_output()) '如果您正在查看的是在线版，则可以通过下面的动画了解主要国家发文量的排行变化情况。'`
 
-```{r , eval=FALSE}
+```{r eval=FALSE}
 library(ggflags)
 # 生成图片保存在 images 文件夹
-p <- ggplot(top_country_output,aes(rank,contribution,fill=CO)) + 
-  geom_col() + 
+p <- ggplot(top_country_output,aes(rank,contribution,fill=CO,group=CO)) + 
+  geom_col(width = 0.7) + 
   geom_text(aes(label=CO),position = position_stack(vjust = 1), hjust=0) +
-  # geom_flag(aes(country=tolower(ISO2)), size=20)+
-  transition_time(PY) + 
-  labs(x="",y="",title = "各国加权发文量",subtitle="年份：{round(frame_time)}") +
+  # geom_flag(aes(y = contribution + 100, country=tolower(ISO2)), size=10)+
+  labs(x="",y="",title = "各国加权发文量",subtitle="年份：{closest_state}") +
   theme(axis.text.y = element_blank(),
         plot.title = element_text(hjust = 0,size=16),
         plot.subtitle = element_text(hjust=0,color = "grey20",size=14)) +
-  coord_flip()
+  coord_flip() +
+  transition_states(PY,transition_length = 10,state_length = 2,wrap = FALSE)
 
-if (knitr:::is_html_output()) animate(p,fps = 10,start_pause=20,end_pause = 20)
+
+if (knitr:::is_html_output()) animate(p,fps = 10, duration = 30, end_pause = 10)
 ```
 
 ```{r top-country-output-gif, fig.cap="各国加权发文量"}
 if (knitr:::is_html_output()) include_graphics("images/top-country-output.gif")
 
-```
+``` 
 
 
 
