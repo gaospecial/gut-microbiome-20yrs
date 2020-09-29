@@ -1,0 +1,221 @@
+## 心血管疾病 {#CVD}
+
+
+心血管疾病是一组心脏和血管疾患的名称，包括：
+
+- 高血压（血压升高），hypertension (high blood pressure)
+- 冠心病（心脏病发作），coronary heart disease (heart attack)
+- 脑血管疾病（中风），cerebrovascular disease (stroke)
+- 周围血管疾病，peripheral vascular disease
+- 心力衰竭，heart failure
+- 风湿性心脏病，rheumatic heart disease
+- 先天性心脏病，congenital heart disease
+- 心肌病，cardiomyopathies.
+
+关于该病，世界卫生组织公布了以下**重要事实**：
+
+- 心血管疾病是全球的头号死因：每年死于心血管疾病的人数多于其它任何病因。
+- 估计在2012年有1750万人死于心血管疾病，占全球死亡总数的31％。这些死者中，估计740万人死于冠心病，670万人死于中风。
+- 四分之三以上的心血管疾病死亡发生在低收入和中等收入国家。
+- 大多数心血管疾病可以通过面向全民的战略解决诸如烟草使用、不健康饮食和肥胖、缺乏身体活动和有害使用酒精等危险因素而得到预防。
+
+那么，该病与肠道菌群之间究竟存在哪些联系呢？通过这一部分的分析，或许可以帮助我们找到问题的答案。
+
+
+```{r}
+cvd <- disease_dt_output("CVD")
+cvd_cn <- cvd %>% filter(str_detect(AU_CO_NR,"CHINA"))
+```
+
+
+
+```{r}
+four_dimension_barplot_caption <- paste0("心血管疾病",
+                                         "相关研究的简要信息。",
+                                         "（A）发表文章最多的10个国家；",
+                                         "（B）发表文章最多的10家机构；",
+                                         "（C）发表文章最多的10位科学家；",
+                                         "（D）发表文章最多的10本杂志。")
+```
+
+
+```{r cvd-four-dimension-barplot, fig.cap=four_dimension_barplot_caption}
+four_dimension_barplot(cvd)
+```
+
+
+```{r}
+histPlot(histNetwork(cvd %>% filter(DT == "ARTICLE")))
+```
+
+
+
+```{r}
+d1 <- tableTag(cvd,Tag = "J9") %>% enframe() %>%
+  mutate(name=as_factor(as.character(name)),group="count") %>%
+  head(30) 
+
+d2 <- cvd %>% group_by(J9) %>% summarise(total_IF=sum(impact_factor), value=n()) %>%
+  arrange(desc(total_IF)) %>%
+  mutate(name=as_factor(as.character(J9)),group="IF") %>%
+  select(-J9) %>%
+  head(30) 
+
+uniq_J9 <- unique(c(as.character(d1$name),as.character(d2$name))) 
+colors <- colorRampPalette( RColorBrewer::brewer.pal(5,"Blues")[3:5])(length(uniq_J9))
+color_set <- data.frame(name=uniq_J9,color=colors) 
+
+d1 <- d1 %>% 
+  left_join(color_set)
+d2 <- d2 %>%
+  left_join(color_set)
+```
+
+
+```{r cvd-J9, fig.cap="心血管疾病研究的主要发文期刊",fig.asp=0.5}
+
+ 
+p1 <-  ggplot(d1,aes(fct_rev(as_factor(name)),value,fill=I(color))) +
+  geom_col() +
+  labs(x="",y="No. of record",title = "文章数量Top30") +
+  coord_flip()
+
+
+p2 <- ggplot(d2,aes(fct_rev(as_factor(name)),total_IF,fill=I(color))) +
+  geom_col() +
+  labs(x="",y="sum of impact factor",title = "累计影响因子Top30") +
+  coord_flip()
+
+plot_grid(p1,p2,ncol = 2)
+
+# graph2ppt( plot_grid(p1,p2,ncol = 2), append=TRUE)
+
+```
+
+```{r}
+tableTag_barplot(cvd, Tag="AU_CO_NR",n=15)
+graph2ppt(append=TRUE)
+
+```
+
+
+
+```{r}
+country_network(cvd,edge_weight_cutoff = 5)
+```
+
+
+```{r}
+tableTag_barplot(cvd, Tag = "AU_UN_NR")
+
+# graph2ppt( p1, append=TRUE)
+```
+```{r}
+
+tableTag_barplot(cvd_cn,n=15,Tag = "AU_UN_NR")
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+university_network(cvd,  from = 2010,to=2020,nNode = 30,edge_weight_cutoff = 3)
+```
+
+
+
+```{r}
+university_network(cvd_cn,  from = 2010,to=2020,nNode = 15,edge_weight_cutoff = 2)
+```
+
+```{r}
+tableTag_barplot(cvd,Tag = "AU")
+# graph2ppt( append=TRUE)
+
+```
+```{r}
+author_network(cvd,from = 2010,nNode = 100)
+```
+```{r}
+tableTag_barplot(cvd_cn,Tag = "AU",n=15)
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+author_network(cvd_cn,from = 2010,to=2019,nNode = 15,edge_weight_cutoff = 2)
+```
+
+
+
+
+```{r}
+tableTag_barplot(cvd,Tag = "ID")
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+keyword_network(cvd, from = 2010,to=2020,nNode = 50,edge_weight_cutoff = 20)
+```
+
+
+
+## 核心(研究）论文引用历史脉络
+
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+## 领域内专家  
+
+
+```{r}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+## 作者合作网络
+
+```{r}
+# Author collaboration
+author_network(df,nNode = 30)
+```
+
+
+## 机构合作网络
+
+
+```{r disease-article-university-collaboration-network, fig.cap="疾病相关研究机构合作网络"}
+## 机构合作网络（显示前 15 家）
+university_network(df, nNode = 30, edge_weight_cutoff = 3)
+```
+
+## 共词分析
+
+```{r}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+```
+
+
+```{r}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+## 研究主题地图
+
+```{r}
+# Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
