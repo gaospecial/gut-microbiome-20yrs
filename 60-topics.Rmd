@@ -34,7 +34,7 @@ metabolism_keywords <- list(primary = c("\\bmetabol[:alpha:]+"),
 
 # 癌症
 cancer_keywords <- list(primary = c("cancer|\\btumo[:alpha:]+|oncology|melanoma|carcino[:alpha:]+"),
-                        secondary = c("CRC","CAC","PDAC","HCC"))
+                        secondary = NULL)
 # 心血管疾病
 cardio_keywords <- list(primary = c("heart|cardi[:alpha:]+|hypertension"),
                         secondary = c("stroke","cardiac","arterial","athero[:alpha:]+","blood pressure"))
