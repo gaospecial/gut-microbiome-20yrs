@@ -360,20 +360,24 @@ upset(fromList(topic_articles_core_SR), nintersects = 20,
 第一个阶段（图 \@ref(fig:keyword-net-2010-2014)），自2010年到2014年，关键字的共现网络一共只有9个关键词，其中最突出的是饮食诱导的肥胖（Diet-induced obesity）、炎症（inflammation）和胰岛素抗性（insulin resistance）。这直观的反映了我们对肠道菌群的认知是始于对肥胖机制的新认识。这一新认识或许可以由肥胖（Obesity）和多样性（Diversity）之间的关系来指代——这是另外两个与肥胖相关的核心关键词。除此之外，还可以发现16S rRNA与人粪便有了重要的联系，直观来看，这意味着16S rRNA基因测序技术的进步在肠道菌群研究中起到了关键的推动作用。但可能会被忽视的一点是，选择粪便样本作为研究对象在这其中也功不可没。这五年间的另两个关键词是溃疡性结肠炎和克罗恩病，它们与肠道菌群失衡的关系逐步被揭示。
 
 ```{r keyword-net-2010-2014, fig.cap=" 2010年-2014年间的研究热点。图中的点表示研究论文的关键词，线表示关键词的共现关系（即两个关键词同时出现在一篇文献中）。点的大小指示对应关键词出现次数的多少，线的粗细指示关键词共现关系的强弱。为简化图形，共现次数少于3次的在图中不可见。同时，孤立的关键词也被删除。"}
-keyword_network(China_study_core,from = 2010,to=2014,edge_weight_cutoff = 3)
+keyword_network(China_study_core,from = 2010,to=2014,edge_weight_cutoff = 3,
+                remove_keyword = search_keyword_regex)
 ```
 
 
 第二个阶段（图 \@ref(fig:keyword-net-2015-2017)），自2015年到2017年，三年间的关键字共现网络比第一个阶段已经明显更加丰富。肥胖、炎症、饮食、多样性等关键字蝉联入榜。除此之外，健康、疾病、代谢和小鼠等相关研究也成为主要的研究主题。特别值得关注的是小鼠-炎症之间具有特别强的共现关系，这体现了小鼠作为模式动物在相关研究中已经处于不可或缺的地位。此外，多样性-代谢之间也具有特别强的共现关系，说明在多样性之上，研究人员开始关注菌群的代谢产物——而代谢产物被后来证明是重要的菌群效应分子。图中也可以发现，胆碱（Phosphatidylcholine）是这一阶段重点关注的代谢物。这一时期，肠道菌群与肿瘤之间的关系被进一步理解，在图中这体现在具核梭杆菌（Fusobacterium nucleatum）与肿瘤之间的较强的共现关系上。除此之外，蔗糖和减脂手术（Bariatric surgery）之间的关系也在这一阶段的研究中处于比较突出的地位。
 
 ```{r keyword-net-2015-2017, fig.cap="2015-2017年间主要的研究方向（WoS关键词）"}
-keyword_network(China_study_core,from = 2015,to=2017,edge_weight_cutoff = 3)
+keyword_network(China_study_core,from = 2015,to=2017,edge_weight_cutoff = 3,
+                remove_keyword = search_keyword_regex)
 
 ```
 第三个阶段，2018年到2019年，这两年间的研究主题呈现出异彩纷呈的情形。首先，我们可以发现炎症的关键地位得到加强，甚至已经处于核心节点的位置上，所有其它的研究主题都直接或者间接的与其相连。而炎症之外，在肥胖、胰岛素抗性、代谢、健康等传统主题的基础上，大量增加了毒性（toxicity）、激活（activation）、暴露（exposure）、调节（modulation）等与环境因子相关的研究主题，特别是阿特拉津（atrazine）和多酚类（polyphenols）这两种典型环境污染物的出现，标志着环境微生物学与肠道菌群的结合成为主流。还可以看到，（短）链脂肪酸（chain fatty acids）作为一个关键的菌群代谢产物，在这一时期成为主要研究主题。一些机制相关的主题词也开始出现，如基因表达，蛋白偶联受体等，标志着肠道菌群的作用机制逐渐明确。特别值得一提的是，大脑出现在这一阶段的关键词中，这反映了肠脑轴相关研究在此期间取得的进步。
 
 ```{r keyword-net-2018-2019, fig.cap="2018-2019年间主要的研究方向（WoS关键词）"}
-keyword_network(China_study_core,from = 2018,to=2019,edge_weight_cutoff = 3) 
+keyword_network(China_study_core,from = 2018,to=2019,
+                edge_weight_cutoff = 3,
+                remove_keyword = search_keyword_regex) 
 
 ```
 
