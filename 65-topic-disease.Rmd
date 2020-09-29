@@ -1,22 +1,402 @@
 # 肠道菌群与疾病 {#disease}
 
-## 核心文章列表
+在这一章节，我们将分析最常见的十余种与肠道菌群相关的疾病研究的概况。
+
+## 疾病类型概览
 
 ```{r}
-i <- "disease"
-topic_header <- topic[[i]]
-topic_caption <- paste0(topic_header,"研究核心论文")
+disease <- list(cancer_keywords,cardio_keywords,ibd_keywords,ibs_keywords,
+                                                   alzheimer_keywords,autism_keywords,hepatology_keywords,
+                                                   allergy_keywords,obesity_keywords,diabetes_keywords,asthma_keywords,
+                                                  diarrhea_keywords,constipation_keywords)
+disease_name <- c("cancer","CVD","IBD","IBS","Alzheimer's","autism","hepatology","allergy","obesity","diabetes","asthma","diarrhea","constipation")
+disease_name_cn <- c("肿瘤","心血管","炎症性肠病","肠易激综合征","阿尔兹海默症","自闭症","肝病","过敏","肥胖","糖尿病","哮喘","腹泻","便秘")
+```
 
-# 文章列表
-df <- topic_articles_core[[i]]
-df <- biblio_df(df)
-produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+
+
+一共有 `r length(disease_name)` 中不同的疾病纳入了我们的分析之中。
+它们分别是：`r paste0(disease_name_cn, collapse="、")` 等。
+
+通过比较常见的与肠道菌群相关疾病的研究论文数量，可以得到最受关注的疾病类型分别是：
+肿瘤、肥胖、炎症性肠病、心血管疾病、糖尿病等（图 \@ref(fig:disease-research-count)）。
+
+
+```{r}
+disease_subtopic_core_article <- lapply(disease, function(keyword){
+  MC_HC_article %>%
+    filter(str_detect(content, regex(paste0(c(keyword$primary),collapse = "|"), ignore_case = T))) %>%
+    mutate(DT=factor(DT))
+})
+
+names(disease_subtopic_core_article) <- disease_name
+
+disease_subtopic_core_article_count <- lapply(disease_subtopic_core_article, function(article){
+  article %>% group_by(PY) %>%
+    summarise(nRecord = n())
+})
+```
+
+```{r disease-research-count, fig.cap="过去20年在WoS数据库中收录的肠道菌群研究中，与10多种疾病相关的关键论文数量"}
+count <- sapply(disease_subtopic_core_article, nrow)
+count <- data.frame(disease=disease_name_cn, count=count)
+count <- count %>% arrange(desc(count)) %>%
+  mutate(disease=  fct_rev(as_factor(as.character(disease))))
+count$angle <- 1:length(disease_name) * 360 / length(disease_name)
+ggplot(count, aes(disease,count,fill=count)) + 
+  geom_col(width = 0.9) +
+  geom_col(aes(y=I(2)),width = 1,fill="white") +
+  geom_text(aes(label=disease,y=count*0.85),color="white",vjust=0.5,size=3,fontface="bold",data = function(d) d[d$count>3000,]) +
+  geom_text(aes(label=disease,y=count*1.02),color="black",vjust=0,hjust=0,size=3,fontface="bold",data = function(d) d[d$count<3000,]) +
+  annotate(geom="text",y=800,x=1,label="数据分析：热心肠研究院",color="grey",size=3,hjust=0.9,vjust=1) +
+  labs(x="",y="",title = "") +
+  coord_flip() +
+  scale_fill_gradientn(colors=c("darkgreen","green","orange","firebrick","red"),trans="sqrt") +
+  # coord_polar(direction = -1) +
+  # theme_void() +
+  theme(legend.position = "none",
+        axis.text.y = element_blank())
+
+# graph2ppt()
+
+# count
+```
+这10多种疾病之间的联系，可以从图 \@ref(fig:diet-id-top30) 中窥其一斑。
+
+
+```{r disease-overlap, fig.cap="10多种疾病之间的重叠度"}
+# 不同疾病文献间的重叠度
+SR <- lapply(disease_subtopic_core_article, function(d) d %>% pull(SR))
+names(SR) <- disease_name_cn
+library(UpSetR)
+
+# 这个重叠度就比较低
+upset(fromList(SR),
+      keep.order = F,
+      sets = disease_name_cn,
+      mb.ratio = c(0.5,0.5))  
+
+```
+
+```{r}
+
+# 针对疾病章节提取文章
+disease_dt_output <- function(i=1){
+  topic <- disease_name[[i]]
+  topic_cn <- disease_name_cn[[i]]
+  topic_caption <- paste(topic_cn, "相关的关键论文")
+  df <- biblio_df(disease_subtopic_core_article[[topic]]) %>% 
+    filter(CORE==TRUE | HC==TRUE)
+  widget <- produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
+  print(widget)
+  return(df)
+}
+```
+
+
+
+
+## 癌症
+
+### 癌症相关研究的核心论文
+
+
+```{r crc-articles, fig.cap="本表格仅列出了相关研究中关键论文"}
+crc <- disease_dt_output(1)
+```
+
+与肿瘤相关的研究一共有 `r nrow(crc)` 篇关键论文发表。
+图 \@ref(fig:crc-articles) 列出了这些论文。借助这些文章，可以快速掌握这一领域研究的主要成果。
+
+
+```{r}
+# 对一批论文进行四维分析，显示国家、机构、人员和期刊
+four_dimension_barplot <- function(M, tags = c("AU_CO_NR","AU_UN_NR","AU","J9")){
+  plots <- lapply(tags, function(x){
+    tableTag_barplot(M,Tag = x, n=10) + labs(title="") + scale_y_continuous(expand = c(0,1))
+    })
+  plot_grid(plotlist = plots, labels = "AUTO")
+}
+```
+
+
+
+```{r}
+four_dimension_barplot_caption <- paste0("肿瘤",
+                                         "相关研究的简要信息。",
+                                         "（A）发表文章最多的10个国家；",
+                                         "（B）发表文章最多的10家机构；",
+                                         "（C）发表文章最多的10位科学家；",
+                                         "（D）发表文章最多的10本杂志。")
+```
+
+
+```{r crc-four-dimension-barplot, fig.cap=four_dimension_barplot_caption}
+four_dimension_barplot(crc)
+```
+简单统计一下，可以发现相关研究的主体来源于美国、中国、英国和意大利等国（图 \@ref(fig:crc-four-dimension-barplot)A）。
+
+十大顶尖的研究机构中，哈佛大学及其分支占了其中的一半以上（图 \@ref(fig:crc-four-dimension-barplot)B），
+包括哈佛大学、丹那-法博癌症研究所、哈佛医学院、麻省总医院、哈佛大学公共卫生学院和布莱根妇女医院等六家，
+其余机构也多位于美国，包括加州大学圣地亚哥分校、国立癌症研究所NCI等。
+此外，法国国家健康医学研究院（INSERM）位列第六，实力不俗。
+中国的上海交通大学屈居第十，是唯一上榜的国内研究机构。
+
+在十大科学家的名单中，我们很高兴的发现了一个中国人的名字 YU JUN（图 \@ref(fig:crc-four-dimension-barplot)C），
+不出意外的话，这应该是来自于中国香港的于君教授。
+于教授在肠道菌群与癌症的研究中蜚声海内外，她能进入 Top10 可谓是实至名归。
+
+在十大来源期刊中，GUT、Science、Cell Host & Microbe 杂志拔得前三（图 \@ref(fig:crc-four-dimension-barplot)D）。
+
+
+### 癌症相关研究的合作网络
+
+进一步地，我们看看相关机构和科学家的合作网络（图 \@ref(fig:crc-university-net)）。
+
+美国的哈佛系、欧洲的法国班底，是世界上两大合作团体。
+
+```{r crc-university-net, fig.cap="癌症研究的机构合作网络"}
+university_network(crc,edge_weight_cutoff = 3,nNode = 30,delete_isolate=FALSE) 
+```
+
+
+我们取前 30 位发表文章数量最多的作者，分析他们的合作网络（图 \@ref(fig:crc-author-net)）。
+几乎绝大多数的研究者，都存在着彼此之间的联系，又组成了三个联系非常紧密的学术群体。
+而中国相关的于君教授，则相对比较独立的开展了相关研究，其主要的合作者只有两位老师。
+
+```{r crc-author-net, fig.cap="癌症研究的作者合作网络"}
+author_network(crc,edge_weight_cutoff = 1,nNode = 30,delete_isolate=FALSE) 
+```
+
+
+### 具核梭杆菌——肠癌的重要诱因
+
+通过历史引证网络梳理相关研究的脉络。在图 \@ref(fig:crc-histplot) 中，列出了 20 篇最关键的研究论文。
+这 20 篇论文明显分成了两个部分，在图中分别位列上半块区域和下半块区域。
+
+```{r crc-histplot, fig.cap="癌症相关研究的历史脉络"}
+hist_graph <- histPlot(histNetwork(crc %>% filter(DT == "ARTICLE")))
+```
+
+这些论文的具体信息可以参阅图 \@ref(fig:crc-histplot-articles)。
+
+最早的一项重要研究发表在 Nature Medcine 杂志上，发现了一种可以产毒素的脆弱拟杆菌可以诱导小鼠肿瘤的发生，
+并指出肿瘤发生的过程依赖于 Th17 细胞介导的免疫反应通路[@wuHumanColonicCommensal2009]。
+
+2011年发表在 PLoS One 杂志上的一篇论文，则首次用 16S rRNA 基因测序的方芳，
+比较分析了大肠癌患者和非大肠癌患者粪便菌群的差异[@sobhaniMicrobialDysbiosisColorectal2011]。
+研究一共分析了 12 个粪便样本，其中一半是大肠癌患者。
+PCA 分析结果很清晰的显示，大肠癌患者具有与正常人不同的粪便菌群。
+
+
+2011年发表在 PLoS One 杂志上的另一篇论文，则首次用 16S rRNA 基因测序的方法，
+比较分析了人大肠癌组织和正常组织中的微生物群落分布情况[@marchesiHumanColorectalCancer2011]。
+这一项研究详细报道了两个微环境下的群落结构差异，并发现结肠细菌科在肿瘤组织中富集，
+而肠杆菌科的细菌则在肿瘤组织中下降。
+
+2012年发表在 Science 上的研究，主要关注了炎症反应在肠道菌群诱导癌症发生过程中的关键作用。
+《热心肠日报》解读了 [这篇文章](https://www.mr-gut.cn/papers/read/1070902056)，
+简而言之就是：炎症毁菌，菌增炎症，终而癌也！。
+
+
+2012年背靠背发表在 Genome Research 上的两篇论文，明确了致癌的一个关键物种。
+其中的一项研究发现了梭杆菌在肠癌组织中富集，
+为揭示诱导癌症发生的肠道共生菌指出了一条关键的方向[@kosticGenomicAnalysisIdentifies2012]。
+而另一项研究则直接指出具核梭杆菌（*Fusobacterium nucleatum*）的感染，除能够引发牙周炎和阑尾炎之外，
+还与肠癌发生存在关联[@castellarinFusobacteriumNucleatumInfection2012]。
+
+2012年发表在 ISME J 杂志上的一篇研究，有上海交通大学的赵立平团队完成[@wangStructuralSegregationGut2012a]。
+在这项研究中，一共分析了 46 个大肠癌患者和 56 个健康志愿者的肠道菌群，
+进一步确认了二者之间存在的肠道菌群差异，并鉴定出 11 个在大肠癌患者中富集的 OTU，
+以及 5 个在大肠癌患者中下降的 OTU。
+
+
+```{r crc-histplot-articles}
+cap <- "癌症相关研究的关键节点文献"
+vip <- extract_from_hist_graph(crc, hist_graph)
+produce_topic_article_datatable(vip, cap, cap)
+```
+
+2013年发表在 JNCI 杂志上的研究同样是用 16S rRNA 基因测序的方法比较了大肠癌患者与健康人的肠道菌群差异。
+研究纳入了 47 例患者和 94 例对照，最终指出梭杆菌（*Fusobacterium*）和
+卟啉单胞菌（*Porphyromonas*）可能在致癌过程中的作用[@ahnHumanGutMicrobiome2013]。
+
+具核梭杆菌与肠癌之间的联系，在 2013 - 2014 年还有另外的多篇研究发表，其中 Cell Host & Microbe 两篇，
+PLoS One 一篇，PNAS 一篇，Cancer Research 一篇，等等。不仅明确了具核梭杆菌的致癌作用、机制，
+还尝试利用此类标记为进行早期的诊断等，在此不一一赘述。
+总之，具核梭杆菌就这样成了臭名昭著的致癌细菌，再无翻身之处。
+
+### 肠道菌群影响癌症治疗的效果
+
+在历史引证网络的上半部分，是一个有所不同的研究领域（图 \@ref(fig:crc-histplot)）。
+这几篇研究主要关注肠道菌群对癌症治疗药物的作用，以及对癌症治疗效果的影响。
+
+先是发现抗癌药的是否有效，肠道菌群说了算。进而认识到，在肠道菌群的助力下，一些抗癌药的作用可被显著加强。
+并给出了使用阿克曼氏菌等益生菌能够促进癌症治疗效果的例子。
+
+这些论文均有《热心肠日报》的解读，在此一笔带过。
+
+需要说明的是，此处的癌症其实不仅仅是肠道癌症，这些研究属于肠道菌与药物相互作用的范畴。
+
+
+
+
+### 癌症相关的重要研究主题
+
+```{r}
+keyword_network(crc,edge_weight_cutoff = 5,nNode = 30,delete_isolate=FALSE) %>%
+  visOptions(manipulation = TRUE)
+
+```
+
+
+
+## 心血管疾病
+
+**定义**
+
+心血管疾病是一组心脏和血管疾患的名称，包括：
+
+- 高血压（血压升高），hypertension (high blood pressure)
+- 冠心病（心脏病发作），coronary heart disease (heart attack)
+- 脑血管疾病（中风），cerebrovascular disease (stroke)
+- 周围血管疾病，peripheral vascular disease
+- 心力衰竭，heart failure
+- 风湿性心脏病，rheumatic heart disease
+- 先天性心脏病，congenital heart disease
+- 心肌病，cardiomyopathies.
+
+**重要事实**
+
+- 心血管疾病是全球的头号死因：每年死于心血管疾病的人数多于其它任何病因。
+- 估计在2012年有1750万人死于心血管疾病，占全球死亡总数的31％。这些死者中，估计740万人死于冠心病，670万人死于中风。
+- 四分之三以上的心血管疾病死亡发生在低收入和中等收入国家。
+- 大多数心血管疾病可以通过面向全民的战略解决诸如烟草使用、不健康饮食和肥胖、缺乏身体活动和有害使用酒精等危险因素而得到预防。
+
+
+```{r}
+cvd <- biblio_df(disease_subtopic_core_article[["CVD"]])
+cvd_cn <- cvd %>% filter(str_detect(AU_CO_NR,"CHINA"))
 ```
 
 
 ```{r}
-topic_trend_core_plot_list[[i]]
+histPlot(histNetwork(cvd %>% filter(DT == "ARTICLE")))
 ```
+
+
+
+```{r}
+d1 <- tableTag(cvd,Tag = "J9") %>% enframe() %>%
+  mutate(name=as_factor(as.character(name)),group="count") %>%
+  head(30) 
+
+d2 <- cvd %>% group_by(J9) %>% summarise(total_IF=sum(impact_factor), value=n()) %>%
+  arrange(desc(total_IF)) %>%
+  mutate(name=as_factor(as.character(J9)),group="IF") %>%
+  select(-J9) %>%
+  head(30) 
+
+uniq_J9 <- unique(c(as.character(d1$name),as.character(d2$name))) 
+colors <- colorRampPalette( RColorBrewer::brewer.pal(5,"Blues")[3:5])(length(uniq_J9))
+color_set <- data.frame(name=uniq_J9,color=colors) 
+
+d1 <- d1 %>% 
+  left_join(color_set)
+d2 <- d2 %>%
+  left_join(color_set)
+```
+
+
+```{r cvd-J9, fig.cap="心血管疾病研究的主要发文期刊",fig.asp=0.5}
+
+ 
+p1 <-  ggplot(d1,aes(fct_rev(as_factor(name)),value,fill=I(color))) +
+  geom_col() +
+  labs(x="",y="No. of record",title = "文章数量Top30") +
+  coord_flip()
+
+
+p2 <- ggplot(d2,aes(fct_rev(as_factor(name)),total_IF,fill=I(color))) +
+  geom_col() +
+  labs(x="",y="sum of impact factor",title = "累计影响因子Top30") +
+  coord_flip()
+
+plot_grid(p1,p2,ncol = 2)
+
+# graph2ppt( plot_grid(p1,p2,ncol = 2), append=TRUE)
+
+```
+
+```{r}
+tableTag_barplot(cvd, Tag="AU_CO_NR",n=15)
+graph2ppt(append=TRUE)
+
+```
+
+
+
+```{r}
+country_network(cvd,edge_weight_cutoff = 15)
+```
+
+
+```{r}
+tableTag_barplot(cvd, Tag = "AU_UN_NR")
+
+# graph2ppt( p1, append=TRUE)
+```
+```{r}
+
+tableTag_barplot(cvd_cn,n=15,Tag = "AU_UN_NR")
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+university_network(cvd,  from = 2010,to=2020,nNode = 30,edge_weight_cutoff = 3)
+```
+
+
+
+```{r}
+university_network(cvd_cn,  from = 2010,to=2020,nNode = 15,edge_weight_cutoff = 2)
+```
+
+```{r}
+tableTag_barplot(cvd,Tag = "AU")
+# graph2ppt( append=TRUE)
+
+```
+```{r}
+author_network(cvd,from = 2010,nNode = 100)
+```
+```{r}
+tableTag_barplot(cvd_cn,Tag = "AU",n=15)
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+author_network(cvd_cn,from = 2010,to=2019,nNode = 15,edge_weight_cutoff = 2)
+```
+
+
+
+
+```{r}
+tableTag_barplot(cvd,Tag = "ID")
+# graph2ppt( append=TRUE)
+
+```
+
+
+```{r}
+keyword_network(cvd, from = 2010,to=2020,nNode = 50,edge_weight_cutoff = 20)
+```
+
 
 
 ## 核心(研究）论文引用历史脉络
@@ -41,23 +421,24 @@ topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 
 ```{r}
 # Author collaboration
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
-net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+author_network(df,nNode = 30)
 ```
 
 
 ## 机构合作网络
 
 
-```{r}
-# 机构合作网络（显示前 15 家）
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
-net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
-                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
-                curved = TRUE,halo = TRUE)
+```{r disease-article-university-collaboration-network, fig.cap="疾病相关研究机构合作网络"}
+## 机构合作网络（显示前 15 家）
+university_network(df, nNode = 30, edge_weight_cutoff = 3)
 ```
 
 ## 共词分析
+
+```{r}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+```
+
 
 ```{r}
 # 共词分析
