@@ -3,12 +3,25 @@
 我们都知道，对于肠道菌群研究而言，饮食、免疫、代谢、疾病等是四大最重要的研究主题。在这一部分，我们将在这四大研究主题之间逐步展开。
 
 ```{r}
+
+# 整合多个关键词为一个关键词
 keywords_from <- function(..., name = "primary"){
   keyword_list <- list(...)
   result <- lapply(keyword_list, function(x){
     x[[name]]
   })
   paste0(unlist(result), collapse = "|")
+}
+
+
+
+
+# 提取历史引证网络中的论文
+extract_from_hist_graph <- function(M=NULL, g=NULL){
+  name <- V(g)$name
+  doi <- str_extract_all(name, "10\\.[0-9]+\\/\\S+")
+  doi <- unlist(doi)
+  M %>% filter(DI %in% doi)
 }
 
 
