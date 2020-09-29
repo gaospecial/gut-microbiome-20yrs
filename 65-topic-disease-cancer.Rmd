@@ -3,6 +3,7 @@
 ### 癌症相关研究的核心论文
 
 
+
 ```{r crc-articles, fig.cap="本表格仅列出了相关研究中关键论文"}
 crc <- disease_dt_output("cancer")
 ```
@@ -77,7 +78,7 @@ author_network(crc,edge_weight_cutoff = 1,nNode = 30,delete_isolate=FALSE)
 这 20 篇论文明显分成了两个部分，在图中分别位列上半块区域和下半块区域。
 
 ```{r crc-histplot, fig.cap="癌症相关研究的历史脉络"}
-hist_graph <- histPlot(histNetwork(crc %>% filter(DT == "ARTICLE")))
+hist_graph <- histPlot(histNetwork(crc %>% filter(DT == "ARTICLE"), verbose = FALSE), verbose = FALSE)
 ```
 
 这些论文的具体信息可以参阅图 \@ref(fig:crc-histplot-articles)。
@@ -98,7 +99,7 @@ PCA 分析结果很清晰的显示，大肠癌患者具有与正常人不同的�
 
 2012年发表在 Science 上的研究，主要关注了炎症反应在肠道菌群诱导癌症发生过程中的关键作用。
 《热心肠日报》解读了 [这篇文章](https://www.mr-gut.cn/papers/read/1070902056)，
-简而言之就是：炎症毁菌，菌增炎症，终而癌也！。
+简而言之就是：炎症毁菌，菌增炎症，终而癌也！
 
 
 2012年背靠背发表在 Genome Research 上的两篇论文，明确了致癌的一个关键物种。
@@ -113,7 +114,7 @@ PCA 分析结果很清晰的显示，大肠癌患者具有与正常人不同的�
 以及 5 个在大肠癌患者中下降的 OTU。
 
 
-```{r crc-histplot-articles}
+```{r crc-histplot-articles, fig.cap=""}
 cap <- "癌症相关研究的关键节点文献"
 vip <- extract_from_hist_graph(crc, hist_graph)
 produce_topic_article_datatable(vip, cap, cap)
@@ -141,6 +142,8 @@ PLoS One 一篇，PNAS 一篇，Cancer Research 一篇，等等。不仅明确�
 需要说明的是，此处的癌症其实不仅仅是肠道癌症，这些研究属于肠道菌与药物相互作用的范畴。
 
 
+总之，肠道菌群与癌症的关系可能存在两个方面，一是肠道菌群在消化道癌症发病过程中起到的作用，
+二是肠道菌群对癌症治疗可能存在的影响。
 
 
 ### 癌症相关的重要研究主题
