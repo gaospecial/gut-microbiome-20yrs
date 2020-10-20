@@ -5,22 +5,15 @@
 
 
 ```{r crc-articles, fig.cap="本表格仅列出了相关研究中关键论文"}
-crc <- disease_dt_output("cancer")
+crc_result <- disease_dt_output("cancer")
+crc <- crc_result$data
+crc_result$widget
 ```
 
 与肿瘤相关的研究一共有 `r nrow(crc)` 篇关键论文发表。
 图 \@ref(fig:crc-articles) 列出了这些论文。借助这些文章，可以快速掌握这一领域研究的主要成果。
 
 
-```{r}
-# 对一批论文进行四维分析，显示国家、机构、人员和期刊
-four_dimension_barplot <- function(M, tags = c("AU_CO_NR","AU_UN_NR","AU","J9")){
-  plots <- lapply(tags, function(x){
-    tableTag_barplot(M,Tag = x, n=10) + labs(title="") + scale_y_continuous(expand = c(0,1))
-    })
-  plot_grid(plotlist = plots, labels = "AUTO")
-}
-```
 
 
 
@@ -114,7 +107,7 @@ PCA 分析结果很清晰的显示，大肠癌患者具有与正常人不同的�
 以及 5 个在大肠癌患者中下降的 OTU。
 
 
-```{r crc-histplot-articles, fig.cap=""}
+```{r crc-histplot-articles, fig.cap="癌症相关研究的关键节点文献"}
 cap <- "癌症相关研究的关键节点文献"
 vip <- extract_from_hist_graph(crc, hist_graph)
 produce_topic_article_datatable(vip, cap, cap)
