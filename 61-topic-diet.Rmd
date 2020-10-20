@@ -5,12 +5,11 @@
 
 
 ```{r diet-article-datatable, fig.cap=" "}
-i <- 1
 topic_header <- topic[["diet"]]
 topic_caption <- paste0(topic_header,"研究核心论文")
 
 # 文章列表
-df <- topic_articles_core[[i]]
+df <- topic_articles_core[["diet"]]
 df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
