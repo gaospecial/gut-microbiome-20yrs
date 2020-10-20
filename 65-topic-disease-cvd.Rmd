@@ -23,8 +23,9 @@
 
 
 ```{r}
-cvd <- disease_dt_output("CVD")
-cvd_cn <- cvd %>% filter(str_detect(AU_CO_NR,"CHINA"))
+cvd_result <- disease_dt_output("CVD")
+cvd <- cvd_result$data
+cvd_result$widget
 ```
 
 
@@ -39,183 +40,224 @@ four_dimension_barplot_caption <- paste0("心血管疾病",
 ```
 
 
+
+简单统计一下，可以发现相关研究的主体中，美国独占鳌头，几乎相当于第二名英国到第九名比利时的加和（图 \@ref(fig:cvd-four-dimension-barplot)A）。
+
+十大顶尖的研究机构中，克利夫兰的研究中心是领先单位（图 \@ref(fig:cvd-four-dimension-barplot)B），
+在癌症领域独占鳌头的哈佛大学并没有出现在其中。
+
+
 ```{r cvd-four-dimension-barplot, fig.cap=four_dimension_barplot_caption}
 four_dimension_barplot(cvd)
 ```
 
 
+在十大科学家的名单中，有多位中国人的名字（图 \@ref(fig:cvd-four-dimension-barplot)C），
+包括 WANG ZENENG，WU YUPING, LI LIN 等等。
+不过，他们大多并非是在国内的单位开展的相关工作，而是在排名第一的 HAZEN STANLEY L 博士课题组工作。
+HAZEN 是一个临床医生，他目前仍然在克利夫兰诊所接诊。
+在他的[个人简介](https://my.clevelandclinic.org/staff/2509-stanley-hazen#biography)中，这样写道：
+
+> 斯坦利·哈森（Stanley Hazen）博士是预防心脏病学和康复科的负责人，心血管诊断和预防中心主任，克利夫兰诊所质谱核心设施主任，细胞生物学系主任和科室负责人，心血管医学系 Robert and Suzanne Tomsich 部门的主任。
+>
+> Hazen 博士获得美国内科医学委员会的文凭。他还完成了内分泌学，糖尿病和新陈代谢方面的专科培训。他在预防心脏病诊所内看到患者，专门从事患者的预防性心血管医学护理，包括高脂血症，糖尿病，高血压，肥胖症的治疗。他还看到了心血管康复计划中的患者。他的研究兴趣包括了解炎症和氧化应激在动脉粥样硬化和其他炎症性疾病的发病机理中的作用。他是动脉粥样硬化，HDL结构和代谢机制，白细胞过氧化物酶的生物化学，自由基和活性氧物种以及氧化损伤机制的专家。
+>
+> Hazen 博士在动脉粥样硬化，氧化和炎症化学以及心血管疾病领域发表了200多篇同行评审文章，受邀评论和书籍章节。他的研究工作获得了许多荣誉和奖项，这有助于人们对心血管疾病中的炎症有了新的认识，并开发了新的诊断和治疗工具。他在确定心血管疾病风险增加，诊断哮喘，治疗炎症和相关并发症方面的工作被列为多项专利的共同发明人。他一直是许多国立卫生研究院与他的专业兴趣有关的研究补助金和主要研究人员。
+
+
+
+在十大来源期刊中，Nutrients、Nature、Nature Medcine 杂志拔得前三（图 \@ref(fig:cvd-four-dimension-barplot)D）。
+
+
+### 心血管疾病相关研究的合作网络
+
+进一步地，我们看看相关机构和科学家的合作网络（图 \@ref(fig:crc-university-net)）。
+
+可以发现，心血管疾病相关研究的比较集中，以克利夫兰诊所为最主要力量。很多传统的大机构在这方面的优势并不明显。
+
+```{r cvd-university-net, fig.cap="心血管疾病相关研究的机构合作网络"}
+university_network(cvd,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T) 
+```
+
+而在中国，也可以看到有几个合作群体（图 \@ref(fig:cvd-university-net-china)）。
+首先是深澳两地大学与丹麦两所高校的合作，其次是浙江大学与北京大学的合作，
+最后，来自于中科院、首都医科大学等机构的研究人员组成了一个最大的机构。
+
+```{r cvd-university-net-china, fig.cap="中国的心血管疾病相关研究的机构合作网络"}
+university_network(cvd %>% filter(is.part_of_china(AU_CO_NR)),edge_weight_cutoff = 2,nNode = 30,delete_isolate=T) 
+```
+
+
+我们取前 30 位发表文章数量最多的作者，分析他们的合作网络（图 \@ref(fig:cvd-author-net)）。
+几乎绝大多数的研究者，都存在着彼此之间的联系，这就是图中最大的一个子网络。
+
+```{r cvd-author-net, fig.cap="心血管研究的作者合作网络"}
+author_network(cvd,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T) 
+```
+
+而中国较大的合作网络有四个，其中较大的是周宏伟、蔡军等两位教授的研究团体。
+
+
+```{r cvd-author-net-china, fig.cap="心血管研究的中国作者合作网络"}
+author_network(cvd %>% filter(is.part_of_china(AU_CO_NR)),edge_weight_cutoff = 2,nNode = 30,delete_isolate=T) 
+```
+
+
+
+
+
+
+### 心血管疾病相关研究脉络
+
+通过历史引证网络梳理相关研究的脉络。在图 \@ref(fig:cvd-histplot) 中，列出了 20 篇最关键的研究论文。
+在这些论文中，除左下的一篇研究外，其余文献间的联系基本都十分紧密。
+
+```{r cvd-histplot, fig.cap="心血管疾病相关研究的历史脉络"}
+hist_graph <- histPlot(histNetwork(cvd %>% filter(DT == "ARTICLE"), verbose = FALSE), verbose = FALSE)
+```
+
+这些论文的具体信息可以参阅图 \@ref(fig:cvd-histplot-articles)。
+
+#### 肠道菌群紊乱是心血管疾病的重要特征
+
+最早的一项研究于 2010 年发表在 Science 杂志上[@vijay-kumarMetabolicSyndromeAltered2010]。
+本文指出了 Toll 样受体-5（TLR5） 缺失的小鼠体内发现肠道菌群紊乱和多种代谢疾病。
+TLR5 是在肠粘膜表达的固有免疫系统组件，主要作用是抵抗细菌感染。
+TLR5 缺失的小鼠中，出现食欲旺盛、胰岛素抗性、高脂血症、高血压等多种代谢病征。
+将 TLR5 缺失小鼠的肠道菌群移植到健康小鼠体内，可以发现健康小鼠也会产生胰岛素抗性。
+通过 TLR5 受体，将肠道菌群与心血管疾病等首次关联了起来。
+
+2011年有两项重要研究，分别发表在 Nature 和 PNAS 杂志上。
+Nature 文是一篇由 Stanley 署名通讯作者的论文，第一作者是 Zeneng Wang [@wangGutFloraMetabolism2011]。
+在该项研究中，指出了肠道菌群代谢磷脂可以促进心血管疾病的发展。
+而磷脂代谢产生的三种代谢产物，就是胆碱、氧化三甲胺（TMAO）和甜菜碱。
+这些物质都能够预测心血管疾病的风险。
+本文可能是第一次较系统的揭示了 TMAO 在心血管疾病中的重要作用。
+
+
+PNAS 文研究了人口腔、肠道和动脉粥样硬化斑块中的菌群结构，发现所有的斑块中都
+有单胞菌的存在，同时在口腔和肠道菌群中发现了疾病相关的物种类群[@korenHumanOralGut2011]。
+
+在此基础上，2012 年发表在 Nature Communications 上的论文则直接指出了
+动脉粥样硬化是与失调的肠道代谢组相关[@karlssonSymptomaticAtherosclerosisAssociated2012]。
+
+
+2013 年，Stanley 团队在 Nature Medicine 上面发文，指出肠道菌群代谢红肉中的肉毒碱，
+会促进心血管疾病的发生[@koethIntestinalMicrobiotaMetabolism2013]。
+与此同时，他们还在 NEJM 杂志发文，进一步阐述了肠道菌群代谢卵磷脂和心血管疾病风险之间的关系[@tangIntestinalMicrobialMetabolism2013b]。
+
+
+#### 肠道菌群代谢产生的 TMAO 是心血管疾病重要的标志物
+
+2014 年，Stanley 团队又发表 3 篇重磅研究，分别由 Koeth，Tang 和 Wang 发表在 3 个不同的杂志上。
+3 篇文章都聚焦于 TMAO 的合成代谢，明确了肉毒碱、胆碱、甜菜碱被肠道菌群代谢为 TMAO，
+并进一步促进心血管疾病的发生[@koethGButyrobetaineProatherogenicIntermediate2014, @tangPrognosticValueElevated2014, @wangPrognosticValueCholine2014]。
+
+
+
+```{r cvd-histplot-articles, fig.cap="心血管疾病相关研究的关键节点文献"}
+cap <- "心血管疾病相关研究的关键节点文献"
+vip <- extract_from_hist_graph(cvd, hist_graph)
+produce_topic_article_datatable(vip, cap, cap)
+```
+
+2015 年是相关研究的一波爆发期，一共有 9 篇重磅研究发表。
+它们分别发表在 Cell，Hypertension，J Intern. Med. 等杂志上，
+其中 Stanley 是其中 4 篇的通讯作者，我们首先来看这一部分的研究。
+
+首先，是一篇发表在 Cell 杂志的论文[@wangNonlethalInhibitionGut2015]。
+其主要工作是探索了通过抑制菌群代谢产物合成，应对动脉粥样硬化的可能性。结果包括：
+
+> ①胆碱类似物3,3-二甲基-1-丁醇（DMB）可抑制微生物生成三甲胺TMA，减弱胆碱引起的动脉粥样硬化；
+②DMB的治疗靶点为TMA裂解酶，但不抑制微生物的生长；
+③DMB抑制载脂蛋白E基因敲除小鼠内源巨噬泡沫细胞形成，降低血浆TMAO水平，减轻动脉粥样硬化；
+④补充DMB会降低与动脉粥样硬化斑块和血浆TMA/TMAO水平正相关的菌群丰度，升高负相关的菌群丰度；
+⑤非致死性抑制肠道微生物三甲胺裂解酶是动脉粥样硬化的新型治疗手段，可影响宿主心脏代谢表型。
+> ——来自《热心肠日报》
+
+
+其次，是一篇发表在 JBC 杂志上面的研究，
+其主要结果是发现了动脉粥样硬化的易感性可以通过粪菌移植的途径传递[@gregoryTransmissionAtherosclerosisSusceptibility2015]。
+本研究是在小鼠中开展的，通过将易感小鼠的粪菌移植给抗性小鼠，
+可使后者动脉粥样硬化的患病和 TMAO 的水平增加。
+
+再次，是一篇发表在 Journal of Cardiac Failure 上的论文[@tangIntestinalMicrobiotaDependentPhosphatidylcholine2015]。
+这是一篇临床研究，纳入了 112 名慢性收缩性心力衰竭患者，
+通过测量患者中一系列相关代谢物的水平，如 TMAO、胆碱、甜菜碱等，
+建立了代谢物与该病的相关模型。发现了 TMAO 较 胆碱/甜菜碱与心衰之间的联系更加紧密，
+且 TMAO 可作为一个独立于心肾指数外的预测性指标；代谢物特异性的与左心室舒张功能相关。
+
+第四篇研究发表在 Circulation Research 杂志上，
+关注肠道菌群代谢物 TMAO 在慢性肾病中的作用[@tangw.h.wilsonGutMicrobiotaDependentTrimethylamine2015]。
+研究发现慢性肾病患者血浆中 TMAO 水平升高，且可以预示长期生存率的下降。
+在动物模型中，增加氧化三甲胺的饮食暴露可直接导致进行性肾纤维化和功能障碍。
+
+#### 除动脉粥样硬化外，TMAO 还与高血压和其它疾病存在关联
+
+
+在 2015 年发表的其余的 5 篇研究中，其中两篇讲述了肠道菌群失调与高血压之间存在关联[@mellEvidenceLinkGut2015, @yangtaoGutDysbiosisLinked2015]，分别发表在 Hypertension 和 Physiological Genomics 杂志上，
+两项研究都使用了小鼠疾病模型，其中一篇还使用了一个小规模人群队列进行了佐证。
+另外 3 篇研究则都是围绕 TMAO 展开的。
+第一篇发表在 Journal of  Internal Medicine 杂志上[@troseidMicrobiotadependentMetaboliteTrimethylamineNoxide2015]，
+是一项临床研究成果，一共纳入了155例连续慢性心衰患者、100例稳定无心衰的冠心病患者和33例健康人作为对照。
+研究发现心衰患者中氧化三甲胺水平升高，与疾病级、缺血病因和不良结局相关。
+指出未来的研究应该关注与氧化三甲胺水平和心衰临床结果相关的肠道菌群、膳食组成和肠道功能障碍。
+第二篇发表在 MBio 杂志上，介绍了肠道菌群组成可以通过饮食和 TMAO 的积累调节胆碱生物利用度[@romanoIntestinalMicrobiotaComposition2015]。
+第三篇研究发表在 Cell Reports 杂志上，介绍了具有 TMAO 合成功能的黄素单氧酶3（FMO3）是调节胆固醇平衡的关键因子[@warrierTMAOGeneratingEnzymeFlavin2015]。
+这个被作者称为一项偶然发现的研究是在小鼠中进行的，FMO3 所参与的过程是反向胆固醇转运过程。
+FMO3被确定为肝胆固醇和三酰基甘油代谢、炎症和内质网应激的主要整合者。
+研究表明，肠道菌群驱动的 TMAO 代谢途径是脂质代谢和炎症的关键调节剂。
+
+
+2016 年，Stanley 组又在 Cell 杂志发文，指出 TMAO 与血栓形成相关[@zhuGutMicrobialMetabolite2016]。
+
+> ①血浆中氧化三甲胺（TMAO）水平的升高预示血栓形成的风险增加；
+②TMAO增强血小板对多个受体激动剂的响应强度，增加血小板胞内钙库的刺激依赖性释放。增加体内血栓形成；
+③饮食中添加胆碱在肠道菌群的作用下可以升高体内TMAO水平，增强血小板的高敏性和体内血栓形成；
+④特定的肠道菌群可能存在胆碱裂解酶，粪菌移植实验发现体内TMAO水平和血栓形成风险可随肠道菌群转移；
+⑤特定的膳食、肠道菌群、血小板功能和血栓形成风险之间有机制联系。
+> —— [《热心肠日报》](https://www.mr-gut.cn/papers/read/1049676576)
+
+2016 年在 Hypertension 上还发表了一篇研究，介绍了患有阻塞性睡眠呼吸暂停的个体中，
+肠道菌群对于其发展高血压的贡献[@durgandavidj.RoleGutMicrobiome2016]。
+研究在大鼠模型中进行，首先明确了肠道菌群失调与该类高血压的关联性，
+并进一步通过粪菌移植的方法，揭示了肠道菌群对该类高血压的诱导功能。
+
+2017 年发表在 Microbiome 杂志上的论文是心血管疾病相关研究脉络中的最后一篇重要文献。
+这是唯一一篇由国内研究人员独立完成的研究，由蔡军、朱宝利和杨新春等合作完成，是一项高水平的临床研究成果。
+
+> ①分析41名健康人、56名高血压前期和99名原发性高血压患者的宏基因组和代谢组；
+②高血压前期和高血压患者的菌群失衡且非常类似，且均与宿主的代谢变化紧密相关；
+③两个患者组均表现出：微生物丰度和多样性明显降低，普氏菌占优的肠型，有益菌明显降低而普氏菌和克雷伯氏菌过度生长，微生物功能与疾病关联；
+④研究者建立了基于菌群并能从对照组准确区分高血压前期和高血压个体的分类器；
+⑤将患者菌群转入无菌小鼠，发现小鼠血压升高。
+> ——[《热心肠日报》](https://www.mr-gut.cn/papers/read/1083526920)
+
+
+### 心血管相关的重要研究主题
+
 ```{r}
-histPlot(histNetwork(cvd %>% filter(DT == "ARTICLE")))
+cvd_keyword_net_cap <- paste0("心血管相关的研究主题。",
+                              "在这个共现网络中，显示最多不超过 50 个最常见的节点，",
+                              "且为突出网络主题，去掉了类似于 Gut Microbiota 的一般词汇",
+                              "以及共现次数小于 3 次的连接")
 ```
 
 
+心血管疾病相关的研究主题，基本上可以分为 3 类（图 \@ref(fig:cvd-keyword-net)）。
 
-```{r}
-d1 <- tableTag(cvd,Tag = "J9") %>% enframe() %>%
-  mutate(name=as_factor(as.character(name)),group="count") %>%
-  head(30) 
+首先，是不同的疾病类型，包括（高）血压、动脉粥样硬化、心力衰竭等；
+其次，是一系列代谢物，包括 TMAO、磷脂、肉毒碱 等；
+再此，是与心血管疾病相关的一些其它关键词，包括 Toll样受体、肥胖、胰岛素抗性、短链脂肪酸等等。
 
-d2 <- cvd %>% group_by(J9) %>% summarise(total_IF=sum(impact_factor), value=n()) %>%
-  arrange(desc(total_IF)) %>%
-  mutate(name=as_factor(as.character(J9)),group="IF") %>%
-  select(-J9) %>%
-  head(30) 
-
-uniq_J9 <- unique(c(as.character(d1$name),as.character(d2$name))) 
-colors <- colorRampPalette( RColorBrewer::brewer.pal(5,"Blues")[3:5])(length(uniq_J9))
-color_set <- data.frame(name=uniq_J9,color=colors) 
-
-d1 <- d1 %>% 
-  left_join(color_set)
-d2 <- d2 %>%
-  left_join(color_set)
-```
-
-
-```{r cvd-J9, fig.cap="心血管疾病研究的主要发文期刊",fig.asp=0.5}
-
- 
-p1 <-  ggplot(d1,aes(fct_rev(as_factor(name)),value,fill=I(color))) +
-  geom_col() +
-  labs(x="",y="No. of record",title = "文章数量Top30") +
-  coord_flip()
-
-
-p2 <- ggplot(d2,aes(fct_rev(as_factor(name)),total_IF,fill=I(color))) +
-  geom_col() +
-  labs(x="",y="sum of impact factor",title = "累计影响因子Top30") +
-  coord_flip()
-
-plot_grid(p1,p2,ncol = 2)
-
-# graph2ppt( plot_grid(p1,p2,ncol = 2), append=TRUE)
-
-```
-
-```{r}
-tableTag_barplot(cvd, Tag="AU_CO_NR",n=15)
-graph2ppt(append=TRUE)
-
-```
-
-
-
-```{r}
-country_network(cvd,edge_weight_cutoff = 5)
-```
-
-
-```{r}
-tableTag_barplot(cvd, Tag = "AU_UN_NR")
-
-# graph2ppt( p1, append=TRUE)
-```
-```{r}
-
-tableTag_barplot(cvd_cn,n=15,Tag = "AU_UN_NR")
-# graph2ppt( append=TRUE)
-
-```
-
-
-```{r}
-university_network(cvd,  from = 2010,to=2020,nNode = 30,edge_weight_cutoff = 3)
-```
-
-
-
-```{r}
-university_network(cvd_cn,  from = 2010,to=2020,nNode = 15,edge_weight_cutoff = 2)
-```
-
-```{r}
-tableTag_barplot(cvd,Tag = "AU")
-# graph2ppt( append=TRUE)
-
-```
-```{r}
-author_network(cvd,from = 2010,nNode = 100)
-```
-```{r}
-tableTag_barplot(cvd_cn,Tag = "AU",n=15)
-# graph2ppt( append=TRUE)
-
-```
-
-
-```{r}
-author_network(cvd_cn,from = 2010,to=2019,nNode = 15,edge_weight_cutoff = 2)
-```
+应该说，关键词网络中也充分展示了 TMAO 相关的代谢在研究中的关键地位。
 
 
 
 
-```{r}
-tableTag_barplot(cvd,Tag = "ID")
-# graph2ppt( append=TRUE)
+```{r cvd-keyword-net, fig.cap=cvd_keyword_net_cap}
+keyword_network(cvd,edge_weight_cutoff = 5,nNode = 50,delete_isolate=T,
+                remove_keyword = search_keyword_regex) %>%
+  visOptions(manipulation = TRUE)
 
-```
-
-
-```{r}
-keyword_network(cvd, from = 2010,to=2020,nNode = 50,edge_weight_cutoff = 20)
-```
-
-
-
-## 核心(研究）论文引用历史脉络
-
-
-```{r}
-safe_histNetwork <- purrr::possibly(histNetwork, NULL)
-hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
-safe_histPlot <- purrr::possibly(histPlot,NULL)
-safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
-```
-
-## 领域内专家  
-
-
-```{r}
-topAU <- authorProdOverTime(df, k=10, graph = TRUE)
-```
-
-
-## 作者合作网络
-
-```{r}
-# Author collaboration
-author_network(df,nNode = 30)
-```
-
-
-## 机构合作网络
-
-
-```{r disease-article-university-collaboration-network, fig.cap="疾病相关研究机构合作网络"}
-## 机构合作网络（显示前 15 家）
-university_network(df, nNode = 30, edge_weight_cutoff = 3)
-```
-
-## 共词分析
-
-```{r}
-keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
-```
-
-
-```{r}
-# 共词分析
-safe_conceptualStructure <- possibly(conceptualStructure,NULL)
-CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
-CS$graph_terms
-```
-
-## 研究主题地图
-
-```{r}
-# Thematic Map
-safe_thematicMap <- purrr::possibly(thematicMap, NULL)
-Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
-Map$map
 ```
