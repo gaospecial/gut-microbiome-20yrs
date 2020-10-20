@@ -10,7 +10,7 @@ disease <- list(cancer_keywords,cardio_keywords,ibd_keywords,ibs_keywords,
                                                    allergy_keywords,obesity_keywords,diabetes_keywords,asthma_keywords,
                                                   diarrhea_keywords,constipation_keywords)
 disease_name <- c("cancer","CVD","IBD","IBS","Alzheimer's","autism","hepatology","allergy","obesity","diabetes","asthma","diarrhea","constipation")
-disease_name_cn <- c("肿瘤","心血管","炎症性肠病","肠易激综合征","阿尔兹海默症","自闭症","肝病","过敏","肥胖","糖尿病","哮喘","腹泻","便秘")
+disease_name_cn <- c("肿瘤","心血管疾病","炎症性肠病","肠易激综合征","阿尔兹海默症","自闭症","肝病","过敏","肥胖","糖尿病","哮喘","腹泻","便秘")
 names(disease_name_cn) <- disease_name
 ```
 
@@ -62,7 +62,8 @@ ggplot(count, aes(disease,count,fill=count)) +
 
 # count
 ```
-这10多种疾病之间的联系，可以从图 \@ref(fig:diet-id-top30) 中窥其一斑。
+这10多种疾病之间的联系，可以从图 \@ref(fig:disease-overlap) 中窥其一斑。
+
 
 
 ```{r disease-overlap, fig.cap="10多种疾病之间的重叠度"}
@@ -79,6 +80,13 @@ upset(fromList(SR),
 
 ```
 
+- 肿瘤与炎症性肠病之间的关系最为密切，或可佐证长期发炎可致癌的观点；
+- 肥胖和糖尿病之间的关系也很密切，两种疾病相伴相生诚不欺我；
+- 肥胖还与肿瘤有关，说明胖真的是坏处多多；
+- 过敏和哮喘也是关系密切，本质上都属于免疫系统过于敏感造成的疾病；
+- 等等等等。
+
+
 ```{r}
 
 # 针对疾病章节提取文章
@@ -88,232 +96,18 @@ disease_dt_output <- function(name){
   df <- biblio_df(disease_subtopic_core_article[[name]]) %>% 
     filter(CORE==TRUE | HC==TRUE)
   widget <- produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
-  print(widget)
-  return(df)
+  return(list(widget = widget, data = df))
+}
+
+
+# 对一批论文进行四维分析，显示国家、机构、人员和期刊
+four_dimension_barplot <- function(M, tags = c("AU_CO_NR","AU_UN_NR","AU","J9")){
+  plots <- lapply(tags, function(x){
+    tableTag_barplot(M,Tag = x, n=10) + labs(title="") + scale_y_continuous(expand = c(0,1))
+    })
+  plot_grid(plotlist = plots, labels = "AUTO")
 }
 ```
 
 
 
-
-
-## 心血管疾病
-
-**定义**
-
-心血管疾病是一组心脏和血管疾患的名称，包括：
-
-- 高血压（血压升高），hypertension (high blood pressure)
-- 冠心病（心脏病发作），coronary heart disease (heart attack)
-- 脑血管疾病（中风），cerebrovascular disease (stroke)
-- 周围血管疾病，peripheral vascular disease
-- 心力衰竭，heart failure
-- 风湿性心脏病，rheumatic heart disease
-- 先天性心脏病，congenital heart disease
-- 心肌病，cardiomyopathies.
-
-**重要事实**
-
-- 心血管疾病是全球的头号死因：每年死于心血管疾病的人数多于其它任何病因。
-- 估计在2012年有1750万人死于心血管疾病，占全球死亡总数的31％。这些死者中，估计740万人死于冠心病，670万人死于中风。
-- 四分之三以上的心血管疾病死亡发生在低收入和中等收入国家。
-- 大多数心血管疾病可以通过面向全民的战略解决诸如烟草使用、不健康饮食和肥胖、缺乏身体活动和有害使用酒精等危险因素而得到预防。
-
-
-```{r}
-cvd <- disease_dt_output("CVD")
-cvd_cn <- cvd %>% filter(str_detect(AU_CO_NR,"CHINA"))
-```
-
-
-
-```{r}
-four_dimension_barplot_caption <- paste0("心血管疾病",
-                                         "相关研究的简要信息。",
-                                         "（A）发表文章最多的10个国家；",
-                                         "（B）发表文章最多的10家机构；",
-                                         "（C）发表文章最多的10位科学家；",
-                                         "（D）发表文章最多的10本杂志。")
-```
-
-
-```{r cvd-four-dimension-barplot, fig.cap=four_dimension_barplot_caption}
-four_dimension_barplot(cvd)
-```
-
-
-```{r}
-histPlot(histNetwork(cvd %>% filter(DT == "ARTICLE")))
-```
-
-
-
-```{r}
-d1 <- tableTag(cvd,Tag = "J9") %>% enframe() %>%
-  mutate(name=as_factor(as.character(name)),group="count") %>%
-  head(30) 
-
-d2 <- cvd %>% group_by(J9) %>% summarise(total_IF=sum(impact_factor), value=n()) %>%
-  arrange(desc(total_IF)) %>%
-  mutate(name=as_factor(as.character(J9)),group="IF") %>%
-  select(-J9) %>%
-  head(30) 
-
-uniq_J9 <- unique(c(as.character(d1$name),as.character(d2$name))) 
-colors <- colorRampPalette( RColorBrewer::brewer.pal(5,"Blues")[3:5])(length(uniq_J9))
-color_set <- data.frame(name=uniq_J9,color=colors) 
-
-d1 <- d1 %>% 
-  left_join(color_set)
-d2 <- d2 %>%
-  left_join(color_set)
-```
-
-
-```{r cvd-J9, fig.cap="心血管疾病研究的主要发文期刊",fig.asp=0.5}
-
- 
-p1 <-  ggplot(d1,aes(fct_rev(as_factor(name)),value,fill=I(color))) +
-  geom_col() +
-  labs(x="",y="No. of record",title = "文章数量Top30") +
-  coord_flip()
-
-
-p2 <- ggplot(d2,aes(fct_rev(as_factor(name)),total_IF,fill=I(color))) +
-  geom_col() +
-  labs(x="",y="sum of impact factor",title = "累计影响因子Top30") +
-  coord_flip()
-
-plot_grid(p1,p2,ncol = 2)
-
-# graph2ppt( plot_grid(p1,p2,ncol = 2), append=TRUE)
-
-```
-
-```{r}
-tableTag_barplot(cvd, Tag="AU_CO_NR",n=15)
-graph2ppt(append=TRUE)
-
-```
-
-
-
-```{r}
-country_network(cvd,edge_weight_cutoff = 15)
-```
-
-
-```{r}
-tableTag_barplot(cvd, Tag = "AU_UN_NR")
-
-# graph2ppt( p1, append=TRUE)
-```
-```{r}
-
-tableTag_barplot(cvd_cn,n=15,Tag = "AU_UN_NR")
-# graph2ppt( append=TRUE)
-
-```
-
-
-```{r}
-university_network(cvd,  from = 2010,to=2020,nNode = 30,edge_weight_cutoff = 3)
-```
-
-
-
-```{r}
-university_network(cvd_cn,  from = 2010,to=2020,nNode = 15,edge_weight_cutoff = 2)
-```
-
-```{r}
-tableTag_barplot(cvd,Tag = "AU")
-# graph2ppt( append=TRUE)
-
-```
-```{r}
-author_network(cvd,from = 2010,nNode = 100)
-```
-```{r}
-tableTag_barplot(cvd_cn,Tag = "AU",n=15)
-# graph2ppt( append=TRUE)
-
-```
-
-
-```{r}
-author_network(cvd_cn,from = 2010,to=2019,nNode = 15,edge_weight_cutoff = 2)
-```
-
-
-
-
-```{r}
-tableTag_barplot(cvd,Tag = "ID")
-# graph2ppt( append=TRUE)
-
-```
-
-
-```{r}
-keyword_network(cvd, from = 2010,to=2020,nNode = 50,edge_weight_cutoff = 20)
-```
-
-
-
-## 核心(研究）论文引用历史脉络
-
-
-```{r}
-safe_histNetwork <- purrr::possibly(histNetwork, NULL)
-hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
-safe_histPlot <- purrr::possibly(histPlot,NULL)
-safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
-```
-
-## 领域内专家  
-
-
-```{r}
-topAU <- authorProdOverTime(df, k=10, graph = TRUE)
-```
-
-
-## 作者合作网络
-
-```{r}
-# Author collaboration
-author_network(df,nNode = 30)
-```
-
-
-## 机构合作网络
-
-
-```{r disease-article-university-collaboration-network, fig.cap="疾病相关研究机构合作网络"}
-## 机构合作网络（显示前 15 家）
-university_network(df, nNode = 30, edge_weight_cutoff = 3)
-```
-
-## 共词分析
-
-```{r}
-keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
-```
-
-
-```{r}
-# 共词分析
-safe_conceptualStructure <- possibly(conceptualStructure,NULL)
-CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
-CS$graph_terms
-```
-
-## 研究主题地图
-
-```{r}
-# Thematic Map
-safe_thematicMap <- purrr::possibly(thematicMap, NULL)
-Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
-Map$map
-```
