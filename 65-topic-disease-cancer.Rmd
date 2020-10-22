@@ -64,8 +64,9 @@ university_network(crc,edge_weight_cutoff = 3,nNode = 30,delete_isolate=FALSE)
 author_network(crc,edge_weight_cutoff = 1,nNode = 30,delete_isolate=FALSE) 
 ```
 
+### 肠癌相关研究的历史脉络
 
-### 具核梭杆菌——肠癌的重要诱因
+#### 具核梭杆菌——肠癌的重要诱因
 
 通过历史引证网络梳理相关研究的脉络。在图 \@ref(fig:crc-histplot) 中，列出了 20 篇最关键的研究论文。
 这 20 篇论文明显分成了两个部分，在图中分别位列上半块区域和下半块区域。
@@ -122,7 +123,7 @@ PLoS One 一篇，PNAS 一篇，Cancer Research 一篇，等等。不仅明确�
 还尝试利用此类标记为进行早期的诊断等，在此不一一赘述。
 总之，具核梭杆菌就这样成了臭名昭著的致癌细菌，再无翻身之处。
 
-### 肠道菌群影响癌症治疗的效果
+#### 肠道菌群影响癌症治疗的效果
 
 在历史引证网络的上半部分，是一个有所不同的研究领域（图 \@ref(fig:crc-histplot)）。
 这几篇研究主要关注肠道菌群对癌症治疗药物的作用，以及对癌症治疗效果的影响。

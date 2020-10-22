@@ -3,6 +3,7 @@
 
 该病与肠道菌群之间究竟存在哪些联系呢？通过这一部分的分析，或许可以帮助我们找到问题的答案。
 
+### 糖尿病相关研究的核心论文
 
 ```{r}
 result <- disease_dt_output("diabetes")
@@ -43,7 +44,7 @@ Patrice D Cani 教授在肠道菌群方面的研究已经持续了 18 年之久�
 名列第二位的是 Fredrik Bäckhed 教授。他来自于赫尔辛基大学，是一位细胞微生物学和小鼠生理学专家。
 他的工作是将临床研究与无菌小鼠模型相结合，以解决正常肠道菌群在代谢疾病中的作用。
 
-其他的科学家在此不一样介绍了。
+其他的科学家在此不一一介绍了。
 
 在十大来源期刊中，GUT、Nutrients、Nature 杂志拔得前三（图 \@ref(fig:diabetes-four-dimension-barplot)D）。
 接下来是四个与糖尿病研究密切相关的专业刊物，Diabetes、Nature Reviews Endocrinology、Diabetes Care、
@@ -66,21 +67,95 @@ university_network(diabetes,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T)
 我们取前 30 位发表文章数量最多的作者，分析他们的合作网络（图 \@ref(fig:diabetes-author-net)）。
 发现他们主要组成了五个相对独立的学术群体。
 
+
 ```{r diabetes-author-net, fig.cap="癌症研究的作者合作网络"}
 author_network(diabetes,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T) 
 ```
 
+### 糖尿病相关研究的历史脉络
+
+#### 小白鼠先行，发现糖尿病与肠道菌群之间的重要关联
+
+通过历史引证网络梳理相关研究的脉络。在图 \@ref(fig:diabetes-histplot) 中，
+一共展示了 21 篇最关键的研究论文。
+这 21 篇论文的发表年限介于 2007 - 2017 年之间。
+这些论文的具体信息可以参阅图 \@ref(fig:diabetes-histplot-articles)。
 
 
+如图 \@ref(fig:diabetes-histplot) 所示，最早的一批成果中，有 4 项研究的第一作者都是 Cani PD，
+分别发表在 2007 年，2008 年和 2009 年。
+看文章内容应当是同一项研究的不同成果
+[@caniChangesGutMicrobiota2008; @caniChangesGutMicrobiota2009; @caniMetabolicEndotoxemiaInitiates2007; @caniSelectiveIncreasesBifidobacteria2007]。
+在这项研究中，通过高脂饮食诱导在小鼠中建立了肥胖和糖尿病模型，并进一步研究了相应的机制，
+主要的结论包括：
 
-通过历史引证网络梳理相关研究的脉络。在图 \@ref(fig:diabetes-histplot) 中，列出了 20 篇最关键的研究论文。
-这 20 篇论文明显分成了两个部分，在图中分别位列上半块区域和下半块区域。
+- 高脂饮食可以诱导小鼠产生肥胖和糖尿病；
+- 糖尿病小鼠中，肠道菌群中的双歧杆菌含量增加；
+- 小鼠患病的原因在于内毒素诱导的身体炎症；
+- 内毒素是由肠道菌群代谢产生的；
+- 肠道菌群可以控制代谢产生的内毒素，进而影响肥胖和糖尿病小鼠体内的炎症反应；
+- 在肠道菌群发挥作用的过程中，类胰高血糖素-2（GLP-2）是重要因子。
+
+这一系列文章中，在动物模型中逐步明确了肠道菌群在糖尿病中作用，并发现了肠道菌群的代谢产物是重要的效应分子。
+
+类似的，2008 年发表的另一篇研究中，也是用小鼠模型，发表在 Nature 杂志，主要
+研究了固有免疫缺陷时导致的肠道菌群改变是 1 型糖尿病的重要成因[@wenInnateImmunityIntestinal2008]。
+
+接下来，2010 年在 Science 杂志也发表了一篇比较类似的研究，在缺失了 Toll 样受体-5（TLR5）的小鼠中，
+发现了肠道菌群的改变和代谢综合征[@vijay-kumarMetabolicSyndromeAltered2010]。
+TLR5 与 前一篇研究缺失的 MyD88 蛋白都是固有免疫的重要受体蛋白，
+当此类蛋白缺失时，会引起肠道菌群的改变，从而诱发包括糖尿病在内的代谢综合征的发生。
+
+
 
 ```{r diabetes-histplot, fig.cap="心血管疾病相关研究的历史脉络"}
 hist_graph <- histPlot(histNetwork(diabetes %>% filter(DT == "ARTICLE"), verbose = FALSE), verbose = FALSE)
 ```
 
-这些论文的具体信息可以参阅图 \@ref(fig:diabetes-histplot-articles)。
+
+#### 人群中验证，明确了肠道菌群在糖尿病中的关键作用
+
+截至目前，所有的研究都是在**小鼠**中进行的，包括基因缺陷小鼠和无菌小鼠的模型。
+接下来的研究中，则出现了以人为对象的临床研究。
+
+第一项研究是在进行过胃旁路手术的群体中开展的[@furetDifferentialAdaptationHuman2010]。
+该手术是一项有效和流行的减肥手术，主要是通过在胃中造一个小室与小肠直接相连，
+减少食物在体内的滞留时间，从而达到减肥的效果（图 \@ref(fig:gastric-bypass)）。
+
+
+```{r gastric-bypass, fig.cap="胃旁路手术前后示意图"}
+include_graphics("./images/gastric-bypass.jpg")
+```
+
+在该项研究中，一共纳入了 43 人，其中 13 人是对照，另外 30 人是肥胖患者，并接受了这一手术。
+在术前和术后 3 个月、6 个月进行粪便取样，使用定量 PCR 技术分析了肠道菌群阶段性的变化。
+研究揭示了一些发生显著变化的菌群类型，并表示菌群能够适应饥饿诱导的肠道环境，
+进而形成新的稳态。
+
+
+2010 年发表在 PLoS One 杂志上的另一项研究中，
+分析了 2 型糖尿病患者与健康成年男性之间的肠道菌群差异[@larsenGutMicrobiotaHuman2010]。
+一共纳入了 54 名对象，其中 36 人为对照，另外 18 人为 2 型糖尿病患者。
+该研究中采用了新兴的 16S rRNA 基因测序技术，发现了糖尿病患者的菌群特征，包括：
+
+- 厚壁菌门和梭菌门在糖尿病患者体内下降；
+- β-变形菌在糖尿病患者体内富集；
+- 拟杆菌门/厚壁菌门、拟杆菌/普氏菌等比值与血糖浓度存在显著相关性。
+
+
+2010 年发表在 ISME J 上的一篇研究，
+则分析了 1 型糖尿病人群中的菌群特征[@giongoDefiningAutoimmuneMicrobiome2011]。
+
+- 发现了卵形拟杆菌（*Bacteroides ovatus*）在 1 型糖尿病中升高的现象比较普遍；
+- 相反的，厚壁菌 CO19 则在非 1 型糖尿病患者的对照人群中普遍较高。
+
+
+#### 饮食干预出手，让“食疗”成为可能
+
+在 2011 年发表在 Diabetes 杂志上的一篇研究中，则通过益生元饮食对小鼠糖尿病进行了干预。
+益生元干预后，糖尿病小鼠的肠道菌群显著改变，且图图图耐受性等相关指标有所提高。
+这表明，通过饮食干预可以缓解或者治疗小鼠的糖尿病和肥胖[@everardResponsesGutMicrobiota2011]。
+
 
 
 
