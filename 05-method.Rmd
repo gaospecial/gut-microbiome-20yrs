@@ -26,7 +26,7 @@
 
 我们使用的数据集中，高被引论文一共有 `r nrow(highly_cited)` 篇高被引论文。我们按照 LCS 前 5% 筛选后得到的文献共有 `r nrow(MC)` 篇，其中覆盖了约三分之二的WoS高被引论文，比WoS高被引论文少了700多篇。不过，另外新增了约800多篇新文献（图 \@ref(fig:HC-vs-MC)）。
 
-```{r HC-vs-MC, fig.cap="本地被引频次前5%的文献与WoS数据库高被引论文的重叠度",fig.width=6,out.width="50%"}
+```{r HC-vs-MC, fig.cap="本地被引频次前5%的文献与WoS数据库高被引论文的重叠度", fig.width=4, out.width="50%"}
 list <- list(HC=highly_cited$SR,MC=MC$SR)
 ggVennDiagram::ggVennDiagram(list,category.names = c("WOS\n","本地\n"),label="both") +
   theme(legend.position = "none")
@@ -225,11 +225,10 @@ success <- lapply(gs[c(3,6,8,9)],function(x){
 ```
 
 
-最终简化得到的网络，可视化结果如下所示：
+通过对网络结构的优化，可以更加突出的展示关键的信息，从而形成了本书中最终的网络可视化效果。
+在实际显示的时候，每个网络还要经过参数的优化，达到最佳的展示效果。
+并且，正文中的网络统一采用了可交互技术，读者可以放大、缩小甚至编辑网络中的元素（仅部分网络允许编辑）。
 
-```{r fig.width=12,fig.asp=1}
-visIgraph(gs[[9]]) %>% visIgraphLayout(physics = TRUE, layout = "layout.kamada.kawai") 
-```
 
 
 
