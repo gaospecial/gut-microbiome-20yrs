@@ -1,8 +1,16 @@
-## 肠道菌群与免疫 {#immunity}
+# 肠道菌群与免疫 {#immunity}
 
-### 核心文章列表
+在这个章节，我们主要讨论肠道菌群与免疫的相关研究。
 
-```{r immune-article-datatable, fig.cap=""}
+西方一位著名的哲学家尼采曾经说过：那些杀不死你的，终将使你更加强大。
+如果用这句话用来形容肠道微生物与免疫的关系，真是再合适不过了。
+
+作为人体内最大的微生物群落的栖息地，肠道中的菌群数量与人身上人类细胞的数目几乎相当。
+这股不可忽视的力量与肠道粘膜间的相互作用因此成为人体免疫前线最重要的部分。
+
+## 免疫相关的核心文章列表
+
+```{r immune-article-datatable, fig.cap="免疫相关的核心文章列表"}
 i <- 2
 topic_header <- topic[["immunity"]]
 topic_caption <- paste0(topic_header,"研究核心论文")
@@ -12,65 +20,110 @@ df <- topic_articles_core[["immunity"]]
 df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
+在图 \@ref(fig:immune-article-datatable) 中，列出了 20 年来肠道菌群与免疫相关研究的核心论文，
+一共有 `r nrow(df)` 篇。近几年的新文献，过半有相应的《热心肠日报》解读。
+通过阅读短科普，可以帮助你快速熟悉这一研究领域。
+
+## 研究力量
+
+首先，我们看一下全球尺度上，相关研究的科学家、团体都有哪些。
 
 
+在图 \@ref(fig:immune-article-top-author) 中，列出了发文量最高的十位科学家，
+以及他们每年发表的文章数量和被引用的次数。
+由图可知，Xavier, Ramnik J. 是相关研究成果最突出的科学家，他最近几年的产出也非常稳定，
+主要研究领域是炎症性肠病（IBD）。炎症性肠病，顾名思义，就是肠道的炎症所引起的疾病。
+它目前是一种原因不明的疾病，也缺乏有效的治疗手段。
+但是已知是由异常的免疫所介导的肠道炎症，这种炎症它反复发作，甚至可以伴随患者终生。
+Xavier, Ramnik J. 的研究成果包括鉴定 IBD 相关的菌群特征、遗传位点和免疫途径等等。
 
-### 核心(研究）论文引用历史脉络
+第二名 Knight, Rob 是一个计算生物学家，他发展了现在最流行的宏基因组分析流程，
+同时也是肠道菌群研究最为知名的科学家之一。不过，他的主要研究成果可能不仅仅限于免疫这一话题，
+在此不多做介绍。
 
+第三名，Cryan， John F. 则是研究“肠脑轴”领域的知名科学家之一。
+一些神经性疾病，包括抑郁症、焦虑等都与肠道菌群免疫、代谢等存在关联，
+Cryan, John F. 的研究就在于揭示“肠脑轴”相关的作用机制，寻求新的治疗手段等。
 
-```{r immune-article-histnet, fig.cap="肠道菌群与免疫核心论文引用历史脉络"}
-safe_histNetwork <- purrr::possibly(histNetwork, NULL)
-hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
-safe_histPlot <- purrr::possibly(histPlot,NULL)
-hisgraph <- safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
-```
-
-### 领域内专家  
 
 
 ```{r immune-article-top-author, fig.cap="肠道菌群与免疫领域内顶尖专家"}
 topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 ```
 
+第四名，Huttenhower, Curtis ，他与 Xavier 是合作关系比较紧密的一名研究者，
+可能来自于同一团队（图 \@ref(fig:immune-article-author-collaboration-network)）。
 
-### 作者合作网络
+第五名，Dinan, Timothy G. 则是 Cryan 最主要的合作者之一（图 \@ref(fig:immune-article-author-collaboration-network)）。
+
+第六、七和九名则组成了另一个研究群体，他们主要的研究领域与糖尿病之间的关系。
+这一部分的内容将在第 \@ref(disease) 章的疾病部分予以更多解读，在此不再赘述。
+
+而第八名和第十名则相对比较独立的开展了相关研究。第八名 Mazmanian, Sarkis K. 与 Knight 有一些合作，
+但是数目比较少（这一点可从图 \@ref(fig:immune-article-author-collaboration-network) 中线的粗细看出来）。
+Mazmanian 的主要研究领域也是与肠脑轴相关，包括自闭症、抑郁症等相关的研究。
+
+而第十名的 Pamer, Eric G. 他关注的主要领域是抗生素耐药性，以及抗生素在肠道菌群结构和功能上的调控作用。
+
 
 ```{r immune-article-author-collaboration-network, fig.cap="免疫相关文献的作者合作网络"}
 ## Author collaboration
-author_network(df,nNode = 30)
+author_network(df,nNode = 20,delete_isolate =F,edge_weight_cutoff = 3)
 
 ```
 
+所以，总体上免疫相关研究的外延可以非常宽，涉及肠道菌群的方方面面。
+从这些研究关键词的共现网络可以看到（图 \@ref(fig:immunity-keyword-network)），
+**炎症**、**克罗恩病**、**（短）链脂肪酸**等 3 个主题是此类研究的重要支撑点，
+整个研究体系因此形成了“三足鼎立”的总体格局。
 
-### 机构合作网络
+与炎症相关的，包括稳态、感染、肥胖、代谢、小鼠、表达、细胞、受体、机制等相关内容，
+与克罗恩病相关的，包括艰难梭菌感染、双盲、基因组关联分析、溃疡性结肠炎、Toll样受体等相关内容，
+与（短）链脂肪酸相关的，包括 NF-κB、蛋白偶联受体、饮食诱导的肥胖、嗜黏蛋白阿克曼氏菌等相关内容。
+这不足 50 个在免疫相关研究中出现最多的关键词，组成了整个免疫相关研究的一副 Big Picture。
 
+```{r immunity-keyword-network, fig.cap="免疫相关研究的关键词共现网络"}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10,remove_keyword = search_keyword_regex)
+```
+
+
+## 知名研究机构
+
+
+接下来，我们简单看一下相关研究中最突出的机构（图 \@ref(fig:immune-article-university-collaboration-network)）。
+显而易见，在这不超过 50 家发文数量最多的研究机构中，大体可以划分为 6 个不同的子网络，
+在图中分别以不同的颜色标示。
+
+其中，最大的两个是北美系列的高校和研究机构，分别是以哈佛大学、麻省理工学院等为主的“波士顿学派”，
+以及以加州大学为主体的“加州学派”。稍小一些的有法国农业科学研究院、巴斯德研究所等为主体的“西欧学派”。
+再次，是以瓦格宁根大学、哥本哈根大学等为主体的“北欧学派”，以及以中科院和上海交通大学为主的“中华学派”。
+最后，纽约大学偏居一隅。
+
+从这里也可能看出来，免疫相关研究非常明显的地理集聚效应。
 
 ```{r immune-article-university-collaboration-network, fig.cap="免疫相关研究机构的合作网络"}
 ## 机构合作网络（显示前 15 家）
-university_network(df, nNode = 30, edge_weight_cutoff = 3)
+university_network(df, nNode = 50, edge_weight_cutoff = 5)
 
 ```
 
-### 共词分析
 
 
-```{r}
-keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+## 免疫相关研究的历史脉络
+
+最后，我们来回顾一下免疫相关研究的历史脉络。
+
+```{r immune-article-histnet, fig.cap="肠道菌群与免疫核心论文引用历史脉络"}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+hisgraph <- safe_histPlot(hist_result,verbose = F,n=20,size = 8,labelsize = 3)
 ```
 
 
-```{r immune-article-conceptual-structure, fig.cap="免疫相关关键词的关联分析"}
-# 共词分析
-safe_conceptualStructure <- possibly(conceptualStructure,NULL)
-CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
-CS$graph_terms
-```
 
-### 研究主题地图
-
-```{r immune-article-thematicmap, fig.cap="免疫相关研究主题地图"}
-## Thematic Map
-safe_thematicMap <- purrr::possibly(thematicMap, NULL)
-Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
-Map$map
+```{r immunity-histplot-articles, fig.cap="心血管疾病相关研究的关键节点文献"}
+cap <- "免疫相关研究的关键节点文献"
+vip <- extract_from_hist_graph(df, hisgraph)
+produce_topic_article_datatable(vip, cap, cap)
 ```
