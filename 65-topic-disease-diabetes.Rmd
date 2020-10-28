@@ -59,7 +59,7 @@ Diabetologia 等。第 8 - 10 位的则分别是 Gastroenterology、Science 和 
 除此之外，绿色的子网络中包括了几个美国的研究单位，主要是 哈佛大学和 MIT 系统。
 而橙色的部分，在哥本哈根大学之外，出现了三个来自于中国的机构，分别是中科院大学、中科院和华大基因。
 
-```{r diabetes-university-net, fig.cap="癌症研究的机构合作网络"}
+```{r diabetes-university-net, fig.cap="糖尿病研究的机构合作网络"}
 university_network(diabetes,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T)
 ```
 
@@ -68,7 +68,7 @@ university_network(diabetes,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T)
 发现他们主要组成了五个相对独立的学术群体。
 
 
-```{r diabetes-author-net, fig.cap="癌症研究的作者合作网络"}
+```{r diabetes-author-net, fig.cap="糖尿病研究的作者合作网络"}
 author_network(diabetes,edge_weight_cutoff = 3,nNode = 30,delete_isolate=T) 
 ```
 
@@ -108,7 +108,7 @@ TLR5 与 前一篇研究缺失的 MyD88 蛋白都是固有免疫的重要受体�
 
 
 
-```{r diabetes-histplot, fig.cap="心血管疾病相关研究的历史脉络"}
+```{r diabetes-histplot, fig.cap="糖尿病疾病相关研究的历史脉络"}
 hist_graph <- histPlot(histNetwork(diabetes %>% filter(DT == "ARTICLE"), verbose = FALSE), verbose = FALSE)
 ```
 
