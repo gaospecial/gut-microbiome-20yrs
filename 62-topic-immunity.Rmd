@@ -112,6 +112,34 @@ university_network(df, nNode = 50, edge_weight_cutoff = 5)
 ## 免疫相关研究的历史脉络
 
 最后，我们来回顾一下免疫相关研究的历史脉络。
+在图 \@ref(fig:immune-article-histnet) 中，展现了最主要的 22 篇研究论文之间的相互印证关系。
+这些论文的更多信息列在图 \@ref(fig:immunity-histplot-articles) 中。
+免疫相关研究的历史比较悠久，在 2004 年就开始有了影响深远的研究发表。
+与此同时，免疫相关研究的发展到后来逐渐细化，导致了诸如肠脑轴等新的研究领域的出现。
+这可能是相关关键文献仅仅列举在 2014 年的内在原因。
+
+接下来，我们就依次过一下相关研究的具体内容。
+
+### 免疫缺陷小鼠在发现肠道菌群的功能中发挥关键作用
+
+免疫缺陷小鼠，即通过基因工程对小鼠基因组中与免疫系统发育中的关键基因进行改造后，
+生产出的一种实验动物。在早期肠道菌群的研究中，它们在肠道菌群功能研究中起到了十分关键的作用。
+也正是在此之后，无菌小鼠和无菌动物才有了更广阔的发展空间。
+
+2004 年，PNAS 上发表的一篇研究，发现肠道菌群参与小鼠中脂肪的存储。
+这个脂肪堆积的过程是与小鼠的固有免疫系统失调密切相关的。
+免疫缺陷导致肠道菌群稳态失衡，以及无菌小鼠的实验都表明
+肠道菌群和宿主间的免疫在代谢性疾病中的作用[@backhedGutMicrobiotaEnvironmental2004]。
+
+同年，在 Cell 上发表的另一篇研究大体也是同样的研究思路，
+即也是借助免疫缺陷的小鼠证明了肠道菌群中的有益菌对于
+肠道内稳态的关键作用[@rakoff-nahoumRecognitionCommensalMicroflora2004]。
+因此，可以说无菌小鼠，以及免疫系统基因缺陷型的小鼠在认识肠道菌群的功能上起到了历史性的关键作用。
+
+同年发表在 Science 上的那篇研究，则以鉴定肠道菌群中的物种多样性为主要目的，
+研究人员先后在肠粘膜、粪便等样本中获得了 13355 个原核生物的 rRNA 基因序列，
+这在当时技术条件尚不发达的背景下，着实称得上一个“大手笔”了[@eckburgDiversityHumanIntestinal2005]。
+
 
 ```{r immune-article-histnet, fig.cap="肠道菌群与免疫核心论文引用历史脉络"}
 safe_histNetwork <- purrr::possibly(histNetwork, NULL)
@@ -119,11 +147,137 @@ hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
 safe_histPlot <- purrr::possibly(histPlot,NULL)
 hisgraph <- safe_histPlot(hist_result,verbose = F,n=20,size = 8,labelsize = 3)
 ```
+### 免疫失调是肠道菌群失调的重要表现
 
 
+现在我们知道，“**炎症**”是很多肠道菌群相关疾病的重要致病机制之一。
+而从 2006 年开始，肠道菌群与宿主的免疫在
+炎症性肠病[@frankMolecularphylogeneticCharacterizationMicrobial2007; @mazmanianMicrobialSymbiosisFactor2008; @frankMolecularphylogeneticCharacterizationMicrobial2007; @manichanhReducedDiversityFaecal2006]（包括克罗恩病、溃疡性结肠炎）、
+肥胖、糖尿病之间的关联不断被揭示出来[@caniChangesGutMicrobiota2008]。
 
-```{r immunity-histplot-articles, fig.cap="心血管疾病相关研究的关键节点文献"}
+2013 年，发表在 Nature 上的一篇研究，首次大样本分析肥胖人群的肠道菌群特征，
+发现其中菌群丰度而不是特定的菌群分类可较为明显区分胖瘦[@lechatelierRichnessHumanGut2013b]。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Nature：肠道菌群的丰度越低，越可能肥胖？**
+> 
+> ①对123名非肥胖和169名肥胖的丹麦人进行肠道菌群分析；
+②两个群体的肠道菌群基因数量存在差异，因此肠道菌群丰度也不同，且含不同比例的已知和未知的细菌种属；
+③相比高菌群丰度个体，低菌群丰度个体整体肥胖比例更高，胰岛素抵抗和血脂异常更为明显，具有更显著的炎症表型；
+④低菌群丰度群体中的肥胖者的体重随时间增加得更多；
+⑤即便是在瘦和胖个体之间进行比较，仅有少数细菌种属可用于区分高/低菌群丰度个体。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1054388132)
+
+
+总的来说，这些疾病都有一个重要特征就是肠道菌群的失调，
+但是同时都与免疫系统紊乱密切相关。
+即便在现在，对于这些疾病的诊治仍然处于方法非常有限的境地。
+肠道菌群功能的发现，可以说为这些疾病的治疗打开了一扇新的窗口。
+在这之后，粪菌移植等基于改善肠道菌群稳态的新方法被临床营养，
+并在克罗恩病等疾病的治疗中展示出了良好的疗效。
+
+
+```{r immunity-histplot-articles, fig.cap="免疫相关研究的关键节点文献"}
 cap <- "免疫相关研究的关键节点文献"
 vip <- extract_from_hist_graph(df, hisgraph)
 produce_topic_article_datatable(vip, cap, cap)
 ```
+
+
+
+### 能调控免疫的肠道菌群关键类群被发现
+
+2005 年，在 Cell 上发表的一篇论文，明确了肠道菌群中的一个成员：
+**脆弱拟杆菌**（*Bacteroides fragilis*）在宿主免疫系统的发育中的作用机制。
+即该菌分泌的细菌多糖在介导免疫系统细胞的成熟及平衡中发挥关键作用[@mazmanianImmunomodulatoryMoleculeSymbiotic2005]。
+
+
+2008 年，在克罗恩病患者身上还鉴定出了普氏杆菌（*Faecalibacterium prausnitzii*）是
+人肠道菌群中的一种具有抗炎功能的有益细菌[@sokolFaecalibacteriumPrausnitziiAntiinflammatory2008]。
+
+2009 年，在 Cell 杂志发表的论文，指出一组丝状细菌组成的菌群，
+可在无菌小鼠内诱发正常且有效的免疫系统发育，
+帮助小鼠抵御致病菌的入侵。这一丝状细菌，是由 16 种拟杆菌组成的混合物[@ivanovInductionIntestinalTh172009]。
+
+2011 年，在 Science 杂志发表的一篇论文，发现了梭菌属的两个类群
+在小鼠调节型 T 细胞的发育过程中起关键作用[@atarashiInductionColonicRegulatory2011]。
+
+2013 年，PNAS 上面发表的一篇论文，指出嗜黏蛋白阿克曼氏菌（*Akkermansia muciniphila*）通过与肠道上皮细胞互作，
+调节饮食诱导的肥胖[@everardCrosstalkAkkermansiaMuciniphila2013]。
+在小鼠模型中证明，服用该菌成分的益生菌能够逆转饮食诱导的代谢异常症状，
+进而使该菌成为新发现益生菌菌种中的一个明星。
+
+
+
+### 代谢产物是肠道菌群调控免疫的物质基础
+
+2013 年，在 Nature 上发表的论文，进一步明确了共生菌是通过分泌的代谢物来促进
+调节型 T 细胞的发生的。而这个代谢物，包括短链脂肪酸、丁酸等[@arpaiaMetabolitesProducedCommensal2013]。
+《热心肠日报》解读了这一篇研究。
+
+> **Nature：菌群产生丁酸盐，促T细胞分化并缓解结肠炎**
+> 
+> ①梭状芽胞杆菌（Clostridia）可诱导结肠调节性T细胞（Treg），但之前机制未知；
+②研究者鉴定出大肠中的菌群发酵产物——丁酸盐，其可在小鼠中促进Treg分化；
+③结肠腔内的丁酸等短链脂肪酸的浓度与结肠中的Treg细胞数量呈正相关；
+④丁酸盐可在体外及体内诱导Treg的分化，并缓解小鼠的结肠炎发展；
+⑤在Treg极化条件下，用丁酸盐处理naive T细胞，可增加Foxp3基因位点启动子及保守非编码区域的组蛋白H3乙酰化。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1054387980)
+
+在同年发表的 Science 论文上，短链脂肪酸也被进一步明确为肠道调节型 T 细胞的重要调控因子[@smithMicrobialMetabolitesShortChain2013]。
+《热心肠日报》解读了这一篇研究。
+
+
+> **Science：肠道T细胞，受短链脂肪酸调控！**
+> 
+> ①鉴定出特定的细菌物种及菌株特异性分子可影响肠道免疫病调节Treg应答，应有普遍性机制调节结肠Treg的数量与功能；
+> ②肠道细菌通过发酵产生的短链脂肪酸（SCFA）可以提高无菌动物肠道结肠Treg细胞数目及其分泌IL-10的能力，在SPF小鼠中也有同样作用；
+> ③SCFA是通过作用于结肠Treg细胞表面的Ffar2受体以抑制组蛋白去乙酰化酶（HDAC），从而促进Treg增殖与功能；
+> ④体内实验表明SCFA可缓解结肠炎，暗示SCFA在代谢疾病中的治疗潜能。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1079814924)
+
+
+### 饮食逐渐成为肠道菌群干预的重要出口
+
+在 2014 年，Cell Host & Microbe 上发表的一篇论文，比较了治疗前后患者肠道菌群的变化情况，
+发现了传统的抗生素治疗方法实际上加剧了疾病相关的微生物组失调[@geversTreatmentNaiveMicrobiomeNewOnset2014]。
+这一结果不仅指出来传统抗生素疗法无效的原理，也指明了新治疗措施可行的发展方向。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Cell子刊：新发克罗恩病患者接受治疗前的微生物组**
+> 
+> ①样本来自于447名新发克罗恩病的儿童和221个无炎症性肠病的个体，取自肠粘膜、血清以及粪便；
+②疾病状态下，Enterobacteriaceae、Pasteurellacaea、eillonellaceae 和 Fusobacteriaceae 丰度增加，同时 Erysipelotrichales、Bacteroidales 和 Clostridiales 丰度减少；
+③抗生素治疗加剧了疾病相关的微生物组失调；
+④直肠粘膜相关微生物组在诊断早期克罗恩病方面具有独特优势和潜力。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1041583916)
+
+饮食干预便是重要的一个发展方向。
+在免疫相关的核心节点文献中，最后也是最近的一篇研究就是与之相关的研究。
+这一篇发表在 2014 年 Nature 杂志上的研究，系统研究了植物性和动物性饮食对人类肠道菌群的影响，
+且发现这种影响是一个非常迅速的过程。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Nature：饮食可快速改变肠道菌群**
+> 
+> ①短期的肉食性或植物性饮食可以改变菌群的结构，这种变化可以掩盖个体的区别；
+②纯动物来源的饮食可以增加胆汁盐耐受性细菌（如嗜胆菌属等）的数量，并降低可代谢植物多糖细菌的厚壁菌门的含量，其中沃氏嗜胆菌的增加可能与肉食性饮食引发的IBD有关；
+③菌群的变化可以反映食草和食肉动物的区别，以及碳水化合物、蛋白质发酵之间的动态变化；
+④动物性及植物性食物来源的细菌、真菌、病毒均可快速瞬时地定殖于肠道中。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1037873068)
+
+
+免疫相关的研究脉络至此就逐渐明朗起来。
+总的来说，免疫是与肠道菌群的发现、功能密切相关的一个重要基础特征。
+在这一类型的文献中，有很多与各种疾病相关的研究。
+随着对肠道菌群研究的不断深入，免疫主题逐渐分化为不同的、具体的研究方向。
+这可能是免疫主题的核心论文仅出现在 2014 年以前的一个缘由。
+
