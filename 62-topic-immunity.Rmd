@@ -112,7 +112,7 @@ university_network(df, nNode = 50, edge_weight_cutoff = 5)
 ## 免疫相关研究的历史脉络
 
 最后，我们来回顾一下免疫相关研究的历史脉络。
-在图 \@ref(fig:immune-article-histnet) 中，展现了最主要的 22 篇研究论文之间的相互印证关系。
+在图 \@ref(fig:immune-article-histnet) 中，展现了最主要的 22 篇研究论文之间的相互引证关系。
 这些论文的更多信息列在图 \@ref(fig:immunity-histplot-articles) 中。
 免疫相关研究的历史比较悠久，在 2004 年就开始有了影响深远的研究发表。
 与此同时，免疫相关研究的发展到后来逐渐细化，导致了诸如肠脑轴等新的研究领域的出现。
