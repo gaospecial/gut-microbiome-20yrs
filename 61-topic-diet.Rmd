@@ -4,7 +4,7 @@
 
 
 
-```{r diet-article-datatable, fig.cap=" "}
+```{r diet-article-datatable, fig.cap="饮食相关研究的核心论文"}
 topic_header <- topic[["diet"]]
 topic_caption <- paste0(topic_header,"研究核心论文")
 
@@ -17,6 +17,104 @@ produce_topic_article_datatable(df, caption = topic_caption, filename = topic_ca
 首先奉上“饮食”相关研究的关键论文清单，如果有《热心肠日报》解读的话，也一并附上（图 \@ref(fig:diet-article-datatable)）。
 这里包括了 `r nrow(df)` 篇论文，包括 `r nrow(dplyr::filter(df,DT=="REVIEW"))` 篇高水平综述，其中有中文短科普的就有 `r nrow(dplyr::filter(df,daily_cn != ""))` 篇。 
 如果你是一个初学者，可按此图索骥，快速把握肠道菌群与饮食相关的研究内容。
+
+
+
+## 领域内专家  
+
+图 \@ref(fig:diet-article-top-author) 中列出了本领域知名专家，其中就包括我们[前面](\@ref(top-scientist))介绍过的两位最出众的科学家：
+KNIGHT, ROB 和 GORDON, JEFFERY I.。应该说，后者在饮食研究领域的贡献更为突出，前面历史脉络中的绝大多数文章都是由他们课题组完成的。
+
+
+```{r diet-article-top-author, fig.cap="饮食相关研究的顶尖学者"}
+topAU <- authorProdOverTime(df, k=10, graph = TRUE)
+```
+
+
+从作者合作网络中（图 \@ref(fig:diet-article-author-collaboration-network)），可以发现 Rob Knight 和 Jeffrey I. Gordon 是来自于同一个研究群体，这一群体还有 3 个重要人物，分别是 Bernard Henrissat，Dan Knights 和 Federico E. Rey。
+
+除此之外，我们还可以发现 5 个其他的研究群体。
+
+- Hazen, Stanley L., Wang, Zeneng, Tang, W. H. Wilson, Wu, Yuping 和 Lusis, Aldons J.
+
+- Cryan, John F., Dinan, Timothy G. 等人
+
+- Cani, Partrice D., Delzenne, Nathalie M. 等人
+
+- Flint, Harry J., Duncan, Sylvia H. 等人
+
+- Ventura, Marco 等人
+
+
+
+```{r diet-article-author-collaboration-network, fig.cap="饮食相关研究的主要作者合作网络。显示发文量最多的 30 位研究者之间的合作关系。"}
+## Author collaboration
+author_network(df,nNode = 30)
+```
+
+
+## 机构合作网络
+
+从发文量看机构排行，前30家机构中领衔的圣路易斯华盛顿大学（WASHINGTON UNIV）、哥本哈根大学（UNIV COPENHAGEN）和科罗拉多大学（UNIV COLORADO）等（图 \@ref(fig:diet-univeristy-top30)）。
+
+```{r diet-univeristy-top30, fig.cap="饮食相关研究发文量最高的30家机构"}
+tableTag_barplot(df,Tag = "AU_UN_NR") +
+  labs(title = "")
+```
+观察机构间的合作网络，可以发现科罗拉多大学和天主教鲁汶大学（CATHOLIC UNIV LOUVAIN）处于网络中非常核心的地（图 \@ref(fig:diet-article-university-collaboration-network)）。哥本哈根大学与哥德堡大学（UNIV GOTHENBURG）之间的合作强度比较大。
+
+```{r diet-article-university-collaboration-network, fig.cap="饮食相关研究机构合作网络\n这个网络中的节点取自本领域发文量最大的30家机构，机构间的连线表明二者存在合作发表论文的情况。连线的线越粗，说明二者间的论文发表数量越多。点的大小越大，说明其在合作网络中处于更重要的节点位置。为了更好的显示效果，本图经过适当简化，去掉了孤立的点和较弱的连接。"}
+## 机构合作网络（显示前 15 家）
+university_network(df, nNode = 30, edge_weight_cutoff = 3)
+```
+
+## 研究热点
+
+从这些研究使用的关键词，可以瞥见研究的热点。最受关注的30个关键词中，最值得关注的是（短）链脂肪酸（Chain Fatty-acids），
+这一个关键词的文章数量仅次于肠道菌群的两种不同表达方法（Gut microbiota 和 intestinal microbiota），排在了多样性（Diversity）的前面。
+
+而肥胖（Obesity）作为与饮食关系最为密切的一种常见病，排在了第6位。其它一些疾病相关的关键词，包括炎症、IBD（Inflammatory-bowel-disease）、
+胰岛素抗性（Insulin resistance）、IBS（Irritable bowel syndrome）、克罗恩病（Crohns Disease）等
+（图 \@ref(fig:diet-id-top30)）。
+
+```{r diet-id-top30, fig.cap="以文章数量计，最受关注的关键词（Top30）"}
+tableTag_barplot(df, Tag = "ID")
+```
+
+这些关键词组成了如下所示的一个共现网络（图 \@ref(fig:diet-id-top30)）。
+不出意外，肥胖和（短）链脂肪酸在网络中占据最突出的地位。
+可以发现，蛋白偶联受体（Protein Coupled Receptor）和（短）链脂肪酸之间有着非常强的联系，
+意味着前者在后者的功能中具有重要的作用。
+
+```{r diet-id-network, fig.cap="关键词共现网络包括了相关研究中最长出现的50个关键词。\n为突出网络主体，一些孤立的节点和较弱的连接被隐去。"}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
+```
+
+
+```{r eval=FALSE}
+
+KeywordGrowth(df,top = 30) %>% pivot_longer(-Year) %>%
+  ggplot(aes(Year,name,size=value,color=value)) +
+  geom_point(alpha=1/3) +
+  scale_size(range = c(1,10))
+  
+```
+
+
+```{r diet-article-conceptual-structure-map, fig.cap="饮食相关研究共词分析", eval=FALSE}
+# 共词分析
+safe_conceptualStructure <- possibly(conceptualStructure,NULL)
+CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+
+```{r diet-article-thematicmap, fig.cap="饮食相关研究的研究主题地图", eval=FALSE}
+## Thematic Map
+safe_thematicMap <- purrr::possibly(thematicMap, NULL)
+Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
+Map$map
+```
 
 ## 肠道菌群与饮食研究的历史脉络
 
@@ -192,101 +290,3 @@ RIDAURA VK 2013年发表在 Science 上面的论文，用人粪菌移植的方�
 
 
 未来，如果我们弄清楚了菌群中不同组分在健康或者疾病中的作用，那么靶向菌群的“精准营养”或许可以成为一种非常有效的治疗手段。
-
-
-## 领域内专家  
-
-图 \@ref(fig:diet-article-top-author) 中列出了本领域知名专家，其中就包括我们[前面](\@ref(top-scientist))介绍过的两位最出众的科学家：
-KNIGHT, ROB 和 GORDON, JEFFERY I.。应该说，后者在饮食研究领域的贡献更为突出，前面历史脉络中的绝大多数文章都是由他们课题组完成的。
-
-
-```{r diet-article-top-author, fig.cap="饮食相关研究的顶尖学者"}
-topAU <- authorProdOverTime(df, k=10, graph = TRUE)
-```
-
-
-从作者合作网络中（图 \@ref(fig:diet-article-author-collaboration-network)），可以发现 Rob Knight 和 Jeffrey I. Gordon 是来自于同一个研究群体，这一群体还有 3 个重要人物，分别是 Bernard Henrissat，Dan Knights 和 Federico E. Rey。
-
-除此之外，我们还可以发现 5 个其他的研究群体。
-
-- Hazen, Stanley L., Wang, Zeneng, Tang, W. H. Wilson, Wu, Yuping 和 Lusis, Aldons J.
-
-- Cryan, John F., Dinan, Timothy G. 等人
-
-- Cani, Partrice D., Delzenne, Nathalie M. 等人
-
-- Flint, Harry J., Duncan, Sylvia H. 等人
-
-- Ventura, Marco 等人
-
-
-
-```{r diet-article-author-collaboration-network, fig.cap="饮食相关研究的主要作者合作网络。显示发文量最多的 30 位研究者之间的合作关系。"}
-## Author collaboration
-author_network(df,nNode = 30)
-```
-
-
-## 机构合作网络
-
-从发文量看机构排行，前30家机构中领衔的圣路易斯华盛顿大学（WASHINGTON UNIV）、哥本哈根大学（UNIV COPENHAGEN）和科罗拉多大学（UNIV COLORADO）等（图 \@ref(fig:diet-univeristy-top30)）。
-
-```{r diet-univeristy-top30, fig.cap="饮食相关研究发文量最高的30家机构"}
-tableTag_barplot(df,Tag = "AU_UN_NR") +
-  labs(title = "")
-```
-观察机构间的合作网络，可以发现科罗拉多大学和天主教鲁汶大学（CATHOLIC UNIV LOUVAIN）处于网络中非常核心的地（图 \@ref(fig:diet-article-university-collaboration-network)）。哥本哈根大学与哥德堡大学（UNIV GOTHENBURG）之间的合作强度比较大。
-
-```{r diet-article-university-collaboration-network, fig.cap="饮食相关研究机构合作网络\n这个网络中的节点取自本领域发文量最大的30家机构，机构间的连线表明二者存在合作发表论文的情况。连线的线越粗，说明二者间的论文发表数量越多。点的大小越大，说明其在合作网络中处于更重要的节点位置。为了更好的显示效果，本图经过适当简化，去掉了孤立的点和较弱的连接。"}
-## 机构合作网络（显示前 15 家）
-university_network(df, nNode = 30, edge_weight_cutoff = 3)
-```
-
-## 研究热点
-
-从这些研究使用的关键词，可以瞥见研究的热点。最受关注的30个关键词中，最值得关注的是（短）链脂肪酸（Chain Fatty-acids），
-这一个关键词的文章数量仅次于肠道菌群的两种不同表达方法（Gut microbiota 和 intestinal microbiota），排在了多样性（Diversity）的前面。
-
-而肥胖（Obesity）作为与饮食关系最为密切的一种常见病，排在了第6位。其它一些疾病相关的关键词，包括炎症、IBD（Inflammatory-bowel-disease）、
-胰岛素抗性（Insulin resistance）、IBS（Irritable bowel syndrome）、克罗恩病（Crohns Disease）等
-（图 \@ref(fig:diet-id-top30)）。
-
-```{r diet-id-top30, fig.cap="以文章数量计，最受关注的关键词（Top30）"}
-tableTag_barplot(df, Tag = "ID")
-```
-
-这些关键词组成了如下所示的一个共现网络（图 \@ref(fig:diet-id-top30)）。
-不出意外，肥胖和（短）链脂肪酸在网络中占据最突出的地位。
-可以发现，蛋白偶联受体（Protein Coupled Receptor）和（短）链脂肪酸之间有着非常强的联系，
-意味着前者在后者的功能中具有重要的作用。
-
-```{r diet-id-network, fig.cap="关键词共现网络包括了相关研究中最长出现的50个关键词。\n为突出网络主体，一些孤立的节点和较弱的连接被隐去。"}
-keyword_network(df,nNode = 50,edge_weight_cutoff = 10)
-```
-
-
-```{r eval=FALSE}
-
-KeywordGrowth(df,top = 30) %>% pivot_longer(-Year) %>%
-  ggplot(aes(Year,name,size=value,color=value)) +
-  geom_point(alpha=1/3) +
-  scale_size(range = c(1,10))
-  
-```
-
-
-```{r diet-article-conceptual-structure-map, fig.cap="饮食相关研究共词分析", eval=FALSE}
-# 共词分析
-safe_conceptualStructure <- possibly(conceptualStructure,NULL)
-CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
-CS$graph_terms
-```
-
-
-```{r diet-article-thematicmap, fig.cap="饮食相关研究的研究主题地图", eval=FALSE}
-## Thematic Map
-safe_thematicMap <- purrr::possibly(thematicMap, NULL)
-Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
-Map$map
-```
-
