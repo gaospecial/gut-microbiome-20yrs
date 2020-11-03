@@ -22,5 +22,8 @@ rmd_files: ["index.Rmd",
             "62-topic-immunity.Rmd",
             "63-topic-metabolism.Rmd",
             "65-topic-disease.Rmd",
+            "65-topic-disease-cancer.Rmd",
+            "65-topic-disease-diabetes.Rmd",
+            "65-topic-disease-cvd.Rmd",
             "90-appendix.Rmd",
             "99-references.Rmd"]
