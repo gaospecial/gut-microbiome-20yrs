@@ -26,7 +26,7 @@ options(
 
 knitr::opts_chunk$set(fig.width = 8,
                       fig.asp=0.618,
-                      fig.align = "center",
+                      # fig.align = "center",
                       eval=T,       # 不执行代码
                       include=TRUE, # 是否显示执行代码的结果
                       echo = FALSE, # 是否显示代码
@@ -37,7 +37,7 @@ knitr::opts_chunk$set(fig.width = 8,
                       fig.path = "plots/",
                       out.width = "90%",
                       fig.showtext = TRUE
-                      ) 
+                      )
 
 # disable Sys.setlocale output
 Sys.setenv(LANG="zh_CN.UTF-8")
