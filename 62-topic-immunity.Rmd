@@ -136,7 +136,7 @@ university_network(df, nNode = 50, edge_weight_cutoff = 5)
 肠道内稳态的关键作用[@rakoff-nahoumRecognitionCommensalMicroflora2004]。
 因此，可以说无菌小鼠，以及免疫系统基因缺陷型的小鼠在认识肠道菌群的功能上起到了历史性的关键作用。
 
-同年发表在 Science 上的那篇研究，则以鉴定肠道菌群中的物种多样性为主要目的，
+随后，发表在 Science 上的那篇研究，则以鉴定肠道菌群中的物种多样性为主要目的，
 研究人员先后在肠粘膜、粪便等样本中获得了 13355 个原核生物的 rRNA 基因序列，
 这在当时技术条件尚不发达的背景下，着实称得上一个“大手笔”了[@eckburgDiversityHumanIntestinal2005]。
 
