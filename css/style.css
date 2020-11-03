@@ -6,6 +6,12 @@ p.caption {
 .figure{
   text-align: center;
 }
+.plotly{
+  margin: auto;
+}
+.html-widget{
+  margin: auto;
+}
 p code {
   white-space: inherit;
 }
