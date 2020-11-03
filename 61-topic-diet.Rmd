@@ -22,8 +22,8 @@ produce_topic_article_datatable(df, caption = topic_caption, filename = topic_ca
 
 ## 领域内专家  
 
-图 \@ref(fig:diet-article-top-author) 中列出了本领域知名专家，其中就包括我们[前面](\@ref(top-scientist))介绍过的两位最出众的科学家：
-KNIGHT, ROB 和 GORDON, JEFFERY I.。应该说，后者在饮食研究领域的贡献更为突出，前面历史脉络中的绝大多数文章都是由他们课题组完成的。
+图 \@ref(fig:diet-article-top-author) 中列出了本领域知名专家，其中就包括我们前面(\@ref(top-scientist))介绍过的两位最出众的科学家：
+KNIGHT, ROB 和 GORDON, JEFFERY I.。应该说，后者在饮食研究领域的贡献更为突出，因为你将会看到历史脉络中的绝大多数文章都是由他们课题组完成的。
 
 
 ```{r diet-article-top-author, fig.cap="饮食相关研究的顶尖学者"}
