@@ -1,8 +1,12 @@
 # 肠道菌群与代谢 {#metabolism}
 
-## 核心文章列表
+在这个章节，我们主要讨论肠道菌群与代谢的相关研究。
 
-```{r metabolism-article-datatable, fig.cap=""}
+
+
+## 代谢相关的核心文章列表
+
+```{r metabolism-article-datatable, fig.cap="代谢相关的核心文章列表"}
 i <- "metabolism"
 topic_header <- topic[[i]]
 topic_caption <- paste0(topic_header,"研究核心论文")
@@ -12,65 +16,183 @@ df <- topic_articles_core[[i]]
 df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
+在图 \@ref(fig:metabolism-article-datatable) 中，列出了 20 年来肠道菌群与代谢相关研究的核心论文，
+一共有 `r nrow(df)` 篇。近几年的新文献，过半有相应的《热心肠日报》解读。
+通过阅读短科普，可以帮助你快速熟悉这一研究领域。
+
+## 研究力量
+
+首先，我们看一下全球尺度上，相关研究的科学家、团体都有哪些。
 
 
-```{r metabolism-article-trend, fig.cap="肠道菌群与代谢相关发文量"}
-topic_trend_core_plot_list[[i]]
-```
+在图 \@ref(fig:metabolism-article-top-author) 中，列出了发文量最高的十位科学家，
+以及他们每年发表的文章数量和被引用的次数。
+
+由图可知，Knight, Rob、Backhed, Fredrik、De vos, Willem M. 等是相关研究成果最突出的科学家。
+他们中的多数在前面的章节中都已经介绍过，在此我们主要来看一下这些科学家组成的合作网络。
 
 
-## 核心(研究）论文引用历史脉络
 
-
-```{r metabolism-article-histnet, fig.cap="肠道菌群与代谢研究的历史脉络"}
-safe_histNetwork <- purrr::possibly(histNetwork, NULL)
-hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
-safe_histPlot <- purrr::possibly(histPlot,NULL)
-safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
-```
-
-## 领域内专家  
-
-
-```{r}
+```{r metabolism-article-top-author, fig.cap="肠道菌群与代谢领域内顶尖专家"}
 topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 ```
 
+由图 \@ref(fig:metabolism-article-author-collaboration-network) 可知，
+贡献最突出的 20 名科学家，大概组成了 1 个比较大的合作网络和 2 个较小的合作网络，
+此外，还包括两个比较独立的研究者。
 
-## 作者合作网络
+其中，最大的合作网络又可以分为 3 个子网络，包括 Knight，Rob 和 Gordon，Jeffrey I. 等组成的一个子网络，
+Backhed，Fredrik 和 Cani，Patrice D. 等组成的一个子网络，
+以及 Raes，Jeroen 等组成的一个子网络。
 
-```{r}
-# Author collaboration
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
-net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+
+2 个较小的合作网络，则分别由 Hazen，Stanley L. 和 Cryan，John F. 领衔。
+
+```{r metabolism-article-author-collaboration-network, fig.cap="代谢相关文献的作者合作网络"}
+## Author collaboration
+author_network(df,nNode = 20,delete_isolate =F,edge_weight_cutoff = 3)
+
+```
+
+在代谢相关研究的关键词共现网络中（图 \@ref(fig:metabolism-keyword-network)），
+**炎症**、**（短）链脂肪酸**等 2 个主题是最重要的两个支撑点，
+这一点与[免疫相关研究](#immunity)中的情况相同。
+不过在这个网络中，**肥胖**这一疾病取代**克罗恩病**，成为支撑代谢相关研究的第三个重要支点。
+除此之外，**多样性**也是代谢相关研究的重要主题之一。
+
+
+```{r metabolism-keyword-network, fig.cap="代谢相关研究的关键词共现网络"}
+keyword_network(df,nNode = 50,edge_weight_cutoff = 10,remove_keyword = search_keyword_regex)
 ```
 
 
-## 机构合作网络
+## 知名研究机构
 
 
-```{r}
-# 机构合作网络（显示前 15 家）
-NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
-net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
-                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
-                curved = TRUE,halo = TRUE)
+接下来，我们简单看一下相关研究中最突出的机构（图 \@ref(fig:metabolism-article-university-collaboration-network)）。
+显而易见，在这不超过 50 家发文数量最多的研究机构中，大体可以划分为 6 个不同的子网络，
+在图中分别以不同的颜色标示。
+
+其中，最大的四个是北美和欧洲的高校和研究机构，它们又组成了一个大的子网络。
+这个大网络中，有两个部分是来自美国的科研机构。
+其中一个是以哈佛大学、麻省理工学院等为主体、
+另一个是以加州大学、科罗拉多大学等为主体。
+这两个团体通过欧洲的一些机构联系了起来。
+有意思的是，欧洲的研究团体也是分了两个部分，其中一个以哥德堡大学、哥本哈根大学为主体，
+另一个以瓦格宁根大学和赫尔辛基大学为主体。
+
+中国的华大基因，通过哥本哈根大学与欧洲的研究团体联系紧密。
+
+在此之外，尚有一个以科克大学为主体的子网络，和以中科院、上海交通大学为主体的子网络。
+
+
+```{r metabolism-article-university-collaboration-network, fig.cap="代谢相关研究机构的合作网络"}
+## 机构合作网络（显示前 15 家）
+university_network(df, nNode = 50, edge_weight_cutoff = 5)
+
 ```
 
-## 共词分析
 
-```{r}
-# 共词分析
-safe_conceptualStructure <- possibly(conceptualStructure,NULL)
-CS <- safe_conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = round(nrow(df)/5), stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
-CS$graph_terms
-```
+可以看出，虽然代谢同饮食、免疫一样是覆盖面非常广的的研究主题，
+但是较其它研究主题仍然有自己特有的研究机构、研究人员和研究关键词。
 
-## 研究主题地图
 
-```{r}
-# Thematic Map
-safe_thematicMap <- purrr::possibly(thematicMap, NULL)
-Map <- safe_thematicMap(df, field="ID",n=250,minfreq = 5,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
-Map$map
-```
+## 代谢相关研究的历史脉络
+
+最后，我们来回顾一下代谢相关研究的历史脉络。
+在图 \@ref(fig:metabolism-article-histnet) 中，展现了最主要的 20 篇研究论文之间的相互引证关系。
+这些论文的更多信息列在图 \@ref(fig:metabolism-histplot-articles) 中。
+
+
+接下来，我们就依次过一下相关研究的具体内容。
+
+### 肥胖是代谢相关研究的绝对主流
+
+前面的关键词分析中（图 \@ref(fig:metabolism-keyword-network)），
+已经可以看出肥胖（Obesity）是重要的研究关键词之一。
+而在这 20 篇代谢研究历史上最关键的文章中，至少有 9 篇论文的标题中含有肥胖这一关键词，
+此外还有另外几篇论文也与肥胖相关，因此肥胖成为代谢研究的绝对主流。
+
+2004 年，发表在 PNAS 上的研究指出了肠道菌群对小鼠脂肪囤积的重要调节作用[@backhedGutMicrobiotaEnvironmental2004]。
+2005 年，发表在 PNAS 上的另一个研究则反过来证明肥胖改变了肠道微生态，
+且主要表现为在肥胖小鼠中拟杆菌门的细菌丰度下降，厚壁菌门细菌的丰度上升[@leyObesityAltersGut2005]。
+
+紧接着，在 2006 年就发表了基于人群的研究成果。
+两篇研究都是发表在 Nature 杂志上，且均来自于 Jeffery I. Gordon 课题组。
+在第一篇研究中，他们指出肥胖人群中拟杆菌门细菌丰度下降，且在减肥或者摄入低热量饮食后，
+拟杆菌门的细菌丰度反之上升[@leyHumanGutMicrobes2006]。
+在第二篇研究中，他们发现改变了的菌群实际上提高了对养分吸收的能力，
+并用小鼠模型验证了这一假设[@turnbaughObesityassociatedGutMicrobiome2006a]。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Nature：肥胖与拟杆菌门和厚壁菌门有关**
+> 
+> ①比较遗传性肥胖小鼠和同窝瘦小鼠、以及肥胖和瘦的人类志愿者的远端肠道菌群，发现肥胖与两种主要的细菌（拟杆菌门和厚壁菌门）丰度相关；
+②通过宏基因组和生化分析发现这种变化影响小鼠肠道菌群的代谢潜力；
+③肥胖菌群具有增加从食物中获得能量的能力，此外，这种特质是可传播的：给无菌小鼠定植“肥胖菌群”导致总身体脂肪的增加显著高于定植“瘦菌群”的小鼠；
+④结论：肠道菌群可能是肥胖病理生理学的另一个重要贡献因子。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1092135820)
+
+
+随后，肠道菌群紊乱导致的代谢失调，特别是代谢产生的内毒素，
+被确定为更为直接的导致肥胖的病因[@caniMetabolicEndotoxemiaInitiates2007; @caniChangesGutMicrobiota2008]。
+并在小鼠体内发现了与饮食诱导的肥胖相关的重要调节因子和信号通路[@backhedMechanismsUnderlyingResistance2007]。
+
+2009 年，在 Nature 上发表的一篇研究，比较了双胞胎中胖和瘦人群的肠道菌群特征[@falonyPopulationlevelAnalysisGut2016]。
+鉴于双胞胎之间共同的遗传背景，所以胖人和瘦人肠道菌群的差异更直观的同是否肥胖关联了起来，
+该文也因此成为一篇非常经典的研究。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Nature：双胞胎的肠道菌群特征**
+> 
+> ①选取成年女性同卵及异卵双胞胎（同一对双胞胎胖瘦一致），分析其与其母亲的粪便菌群，研究宿主基因型、环境暴露及宿主肥胖如何影响肠道菌群；
+②共分析了154个个体，结果显示家庭成员之间既共享部分肠道菌群，也存在群落组成的差异，差异程度在同卵双胞胎与异卵双胞胎中相似；
+③在基因水平而非生物体谱系水平，所有个体拥有一个核心菌群；
+④肥胖与菌群在门水平上的变化、细菌多样性的降低、细菌基因的代谢通路的改变相关。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1062784908)
+
+2013 年，在 Science 上发表了另一篇与双胞胎相关的研究[@ridauraGutMicrobiotaTwins2013a]。
+在这项研究中，作者通过粪菌移植的方法将双胞胎中的胖人和瘦人肠道菌群分别移植到小鼠体内，
+结果发现两种不同的菌群分别诱导小鼠产生了胖和瘦的现象。
+这种直接的因果关系成为肠道菌群功能研究的一个典范。
+《热心肠日报》解读了这一篇研究：
+
+
+> **Science：移植胖人粪菌的小鼠，长得更胖！**
+> 
+> ①将成年女性双胞胎（一瘦一胖）的粪便菌群移植给无菌小鼠，小鼠喂食低脂饮食，饮食中含有不同水平的饱和脂肪酸；
+②移植了胖子的粪便菌群的小鼠，体重及脂肪质量增加，且表现出肥胖相关代谢表型；
+③对于同一对双胞胎，将移植了瘦子菌群的小鼠与移植了相应的胖子菌群的小鼠同窝饲养，可抑制移植了胖子菌群的小鼠的体重增加及肥胖相关代谢表型；
+④对肥胖的抑制与瘦子菌群中的拟杆菌门里的特殊成员相关。
+>
+> —— [热心肠日报](https://www.mr-gut.cn/papers/read/1050193804)
+
+最后一篇与肥胖相关的研究，主要证明了嗜黏蛋白阿克曼氏菌在治疗肥胖中的作用[@everardCrosstalkAkkermansiaMuciniphila2013]。
+
+### 代谢相关疾病的菌群特征被揭示
+
+在代谢的历史脉络中，第二大类的研究论文是揭示相关的菌群特征。
+这里面包括欧洲和非洲农村儿童之间的菌群特征差异[@filippoImpactDietShaping2010]，
+2 型糖尿病人的菌群特征[@qinMetagenomewideAssociationStudy2012b]，
+健康人的菌群特征[@huttenhowerStructureFunctionDiversity2012]，
+不同年龄和地域人群的肠道菌群特征[@yatsunenkoHumanGutMicrobiome2012]，
+以及肥胖人群中的菌群特征[@lechatelierRichnessHumanGut2013b]等。
+
+
+上述研究更多关注菌群结构和多样性指标的差异，
+而 2010 年华大基因领衔的研究人员则通过宏基因组的方法，
+在人类肠道中鉴定出 330 万个微生物基因[@qinHumanGutMicrobial2010a]，
+对从基因组层面认识肠道菌群的差异奠定了重要基础。
+
+
+除了上述两个方面，其余几篇代谢历史脉络中的节点文献分别涉及
+柔嫩梭菌和短链脂肪酸等对肠道免疫功能的调控等[@sokolFaecalibacteriumPrausnitziiAntiinflammatory2008; @smithMicrobialMetabolitesShortChain2013]。
+
+
+总的来说，代谢相关研究的历史脉络与免疫相关研究的历史脉络可能有较多的类似，
+应该说二者都是非常经典的研究领域。相关研究既是推动肠道菌群研究的重要力量，
+也是肠道菌群新认识最直接的受惠者。而不管是免疫还是代谢，又都与饮食这个主题存在这样那样的关系。
