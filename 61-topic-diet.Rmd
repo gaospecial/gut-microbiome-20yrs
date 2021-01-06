@@ -231,7 +231,7 @@ TURNBAUGH PJ 2009年的另一个研究，选取成年女性同卵及异卵双胞
 
 
 ```{r filippoImpactDietShaping2010-fig1,fig.cap="非洲乡村的风貌和居民饮食[@filippoImpactDietShaping2010]"}
-knitr::include_graphics("images/filippoImpactDietShaping2010_fig1.gif")
+knitr::include_graphics("images/filippoImpactDietShaping2010_fig1.png")
 ```
 
 2010年DE FLILIPPO 发表在 PNAS 上的那篇论文，通过比较欧洲和非洲农村地区儿童的肠道菌群和饮食差异，发现饮食是塑造肠道菌群的关键因素[@filippoImpactDietShaping2010]。在非洲农村（图 \@ref(fig:filippoImpactDietShaping2010-fig1)），儿童饮食中含有更多的植物多糖，相应地造成肠道菌群中有更加丰富的拟杆菌门细菌，更加少的厚壁菌门细菌，以及非常丰富的普雷沃氏菌和 *Xylanibacter*。后者被认为在纤维素和木聚糖的水解中发挥重要作用，在欧洲儿童肠道菌群中没有发现。

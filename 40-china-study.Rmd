@@ -106,14 +106,14 @@ histnet <- histPlot(china_histnet,verbose = FALSE)
 
 ```{r china-histnet-articles,fig.cap="我国肠道菌群研究的核心历史引证网络中列出的19篇研究论文的详细信息"}
 
-nodes <- names(V(histnet))
+nodes <- names(V(histnet$net))
 node_doi <- str_extract(nodes, "10\\.[0-9]+\\/[^\\/]+")
 China_study %>% filter(DI %in% node_doi) %>%
   mutate(SR=mrgut_doi_link(uuid=DI,type="html",title=SR)) %>%
   select(SR,TI,J9,PY) %>%
   arrange(PY) %>%
   mutate_at(c("TI","J9"), str_to_title) %>%
-  DT::datatable(colnames = c("引文","标题","期刊","发表年份"),
+  DT::datatable(colnames = c("引文","标题"),
                 rownames = FALSE,
                 escape = FALSE,
                 extensions = c("Buttons"),

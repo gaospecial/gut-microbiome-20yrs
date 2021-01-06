@@ -76,7 +76,12 @@ p <- ggplot(count_by_year) +
                     breaks=1:10*1e4) +
   xlim(c(2000,2020)) +
   theme_labs
-plot.ly(p) 
+
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 具体到每年的发文量，从 2000 年的三百余篇增长到 2019 年的近一万篇，增长了近三十倍。年均同比增长率基本保持在 10% 以上，特别是 2012-2017 年间连续六年同比增长率保持在 20% 以上。2018年以来，虽然较之有所下降，但仍然在 10% 以上（图 \@ref(fig:trend-publications-increasing-rate)）。
@@ -91,7 +96,13 @@ p <- ggplot(count_by_year,aes(PY,increasing_rate)) +
   labs(x="年份",y="同比增长率",title="发表文章数量较去年的同比增长率") + 
   xlim(c(2000,2020)) +
   scale_y_continuous(labels = function(x)paste(x*100,"%"))
-plot.ly(p,tooltip = c("x","text"))
+
+
+if (knitr:::is_html_output()) {
+  plot.ly(p,tooltip = c("x","text"))
+} else {
+  p
+}
 ```
 
 ## 肠道菌群研究仍然在收获持续的关注
@@ -112,7 +123,11 @@ trend_TC <- ggplot(TC_by_year,aes(PY)) +
                     breaks=seq(0,200,by=50)*1e4) +
   xlim(c(2000,2020))
 
-plot.ly(trend_TC)
+if (knitr:::is_html_output()) {
+  plot.ly(trend_TC)
+} else {
+  trend_TC
+}
 ```
 
 
@@ -136,7 +151,12 @@ trend_U1U2 <- ggplot(U1U2_by_year,aes(PY,total_U1,text=total_U1)) +
   scale_y_continuous(labels = function(x) paste0(round(x/1e4),"万"),
                     breaks=1:10*1e4) 
 
-plot.ly(trend_U1U2)
+if (knitr:::is_html_output()) {
+  plot.ly(trend_U1U2)
+} else {
+  trend_U1U2
+}
+
 ```
 
 从图 \@ref(fig:trend-U1U2) 中看，可以发现最近半年间人们对肠道菌群相关文献的访问次数呈现显著的增长趋势。这当然是因为人们在阅读的时候更愿意去看最近发表的文献，另一方面也说明研究人员对肠道菌群研究的最新成果仍然保有持续的关注。可以预见，这些关注将在未来的几年逐渐反映到引用次数的增加上去。
@@ -184,7 +204,11 @@ p <- ggplot(df, aes(China,all,text=text)) +
   labs(x="",y="文章总数",title = "发文量最大的国家（地区）")  +
   scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
                     breaks=(0:20)/2*1e4) 
-plot.ly(p)
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 
@@ -237,10 +261,16 @@ p <- ggplot(mostProdCountries,
                     breaks=(0:20)/2*1e4) +
   theme(legend.position = c(0.5,0.3))
 
-plot.ly(p) %>%
-  layout(
-    legend = list(x=0.5,y=0.3,orientation="v")
-  )
+
+if (knitr:::is_html_output()) {
+  plot.ly(p) %>%
+    layout(
+      legend = list(x=0.5,y=0.3,orientation="v")
+    )
+  } else {
+  p
+}
+
   
 ```
 
@@ -302,7 +332,11 @@ p <- ggplot(top_country_output,aes(PY,rank,text=paste0(PY,",",China),color=CO,gr
   xlim(c(2000,2020)) +
   theme(legend.position = "none") 
 
-plot.ly(p)
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 ```{r eval=FALSE}
@@ -437,7 +471,12 @@ p <- ggplot(df, aes(AFF,total,text=text)) +
   geom_col() +
   coord_flip() +
   labs(x="",y="加权文章总数",title="顶尖研究机构（Top20）")
-plot.ly(p)
+
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 
@@ -640,7 +679,12 @@ p <- ggplot(top_author_by_nRecord, aes(Author,nRecord,text=text)) +
   geom_col() +
   coord_flip() +
   labs(x="",y="文章总数",title="发表文章数量最多的科学家（Top20）")
-plot.ly(p)
+
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 在作者的排行榜中（图 \@ref(fig:summary-author)），[KNIGHT ROB](https://www.mr-gut.cn/search?q=KNIGHT+ROB "查看《热心肠日报》解读的论文") 以 260 篇的总发文量拔得头筹，占全部文章的 0.5%。这是一个非常恐怖的数字，相当于在总共的几万篇文献中，每 200 篇中就有一篇是他的文章。[Knight 的实验室](https://knightlab.ucsd.edu/)主要开发**最先进的**的用于菌群研究的生物信息学工具和实验技术，其中包括最常使用的 QIIME 和 QIIME2 等分析平台。
@@ -686,8 +730,12 @@ p <- ggplot(topAU_by_LCS,
   labs(x="",y="",title = "发表文章本地被引频次最多的科学家（Top20）") +
   scale_y_continuous(labels = function(x) paste0(round(x/1e4,1),"万"),
                     breaks=(0:20)*1e4) 
-plot.ly(p)
 
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 当然，仅凭发文数量可能还不足以说明研究人员的影响力。为此，我们使用被引次数来衡量顶尖学者的学术表现。
@@ -733,7 +781,12 @@ p <- ggplot(author_prod, aes(PY,Author,size=record,color=LCS)) +
   labs(x="",y="",title = "Top学者发表论文的数量和本地被引频次") +
   scale_size(range = c(0.1,5))
 # p
-plot.ly(p, tooltip = c("y","x","size","colour"))
+
+if (knitr:::is_html_output()) {
+  plot.ly(p, tooltip = c("y","x","size","colour"))
+} else {
+  p
+}
 ```
 
 
@@ -767,7 +820,12 @@ p <- ggplot(df, aes(fct_reorder(Tab,Freq),Freq,text=text)) +
   # theme(axis.text.x = element_text(angle = 60,vjust = 0.5,hjust = 1)) +
   labs(x="",y="文章总数") +
   coord_flip()
-plot.ly(p)
+
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 ```
 
 ```{r fig-top-J9-by-nRecord, fig.cap="发表文章数量最多的期刊中高被引论文（绿色）的比例"}
@@ -795,8 +853,11 @@ p <- ggplot(top_journal,aes(J9,nRecord,fill=HC)) +
   labs(x="",y="文章总数") +
   coord_flip()
 
-p
-# plot.ly(p,tooltip = c("y")) 
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
   
 ```
 
@@ -807,7 +868,12 @@ p <- ggplot(top_journal,aes(J9,ave_TC,fill=HC)) +
   geom_col(position = "dodge") +
   labs(x="",y="平均引用次数") +
   coord_flip()
-plot.ly(p,tooltip = c("y"))
+
+if (knitr:::is_html_output()) {
+  plot.ly(p)
+} else {
+  p
+}
 
 ```
 
@@ -922,7 +988,7 @@ p
 系统关键词与作者关键词的关注点有所不同（图 \@ref(fig:summary-keyword)），多样性（DIVERSITY）是最常见的关键词，文章数量有近 4000 篇；其次是疾病（DISEASE）、炎症（INFLAMMATION）、健康（HEALTH）、克罗恩病（CROHN'S DISEASE）、感染（INFECTION）、肥胖（OBESITY）/风险（RISK）和溃疡性结肠炎（ULCERATIVE COLITIS）等于疾病密切相关的关键词；再次，是表达（EXPRESSION）、鉴定（IDENTIFICATION）、小鼠（MICE）、双盲（DOUBLE BLIND）、体外（IN VITRO）和细胞（CELL）等于实验设计密切相关的字眼；最后是饮食（DIET）和代谢（METABOLISM）等其它相关字眼。
 
 
-```{r summary-keyword-wordcloud, fig.cap="关键字词云"}
+```{r summary-keyword-wordcloud, fig.cap="关键字词云", screenshot.opts = list(delay = 10, cliprect = 'viewport')}
 df <-  rbind(df1,df2) %>% group_by(Tab) %>% summarise(n=sum(n)) %>% arrange(desc(n)) %>% head(100)
 wordcloud2(df,size=0.4,fontFamily = "微软雅黑")
 ```

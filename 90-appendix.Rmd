@@ -55,18 +55,13 @@ cat export.*.txt > all.text
 
 值得一提的是，我们按照 LCS 前 5% 筛选后得到的文献共有 `r nrow(MC)` 篇，其中覆盖了约三分之二的WoS高被引论文，比WoS高被引论文少了700多篇。不过，另外新增了约800多篇新文献（图 \@ref(fig:HC-vs-MC)）。
 
-```{r HC-vs-MC, fig.cap="本地被引频次前5%的文献与WoS数据库高被引论文的重叠度",fig.width=8}
-list <- list(HC=highly_cited$SR,MC=MC$SR)
-ggVennDiagram::ggVennDiagram(list,category.names = c("WOS高被引","本地核心文献"),label="both") +
-  theme(legend.position = "none")
-
-```
 
 图 \@ref(fig:HC-vs-MC-year) 显示这些论文的差别主要在哪些年份。
 
 ```{r HC-vs-MC-year, fig.cap="高被引和核心论文的差别"}
-HC_specific <- setdiff(list$HC,list$MC)
-MC_specific <- setdiff(list$MC,list$HC)
+
+HC_specific <- setdiff(highly_cited$SR,MC$SR)
+MC_specific <- setdiff(MC$SR,highly_cited$SR)
 
 df1 <- M %>% filter(SR  %in% HC_specific ) %>% group_by(PY,DT) %>% summarise(count=-n(),type="缺少")
 df2 <- M %>% filter(SR  %in% MC_specific ) %>% group_by(PY,DT) %>% summarise(count=n(),type="新增")
@@ -109,7 +104,7 @@ MC_HC_article <- M %>%
 
 下表显示仅在LCS核心论文中出现的文章（图 \@ref(fig:HC-specific-article)）[^data-table]。
 
-[^data-table]: 这幅图中显示的表格支持交互操作，可以点击标题排序、在搜索框搜索和按不同的行过滤。
+[^data-table]: 这幅图中显示的表格支持交互操作，可以点击标题排序、在搜索框搜索和按不同的行过滤，也可以点击按钮导出数据为 Excel 文件。
 
 ```{r eval=F}
 # Lists elements are written to individual worksheets, using list names as sheet names if available
@@ -131,7 +126,24 @@ datatable(MC_specific_article[,c("PY","impact_factor","LCS","TC","title","source
           colnames = c("年份","IF","LCS","GCS","标题","原文"),
           escape = FALSE,
           filter = "top",
-          caption = "仅在LCS核心论文中出现的文章")
+          caption = "",
+          extensions = c("Buttons"),
+          width = "95%",
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="export",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="35%",targets=5)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
 ```
 
 下面的表格列出了仅在WoS高被引论文中出现的文章（图 \@ref(fig:HC-specific-article)）。
@@ -141,7 +153,24 @@ datatable(HC_specific_article[,c("PY","impact_factor","LCS","TC","title","source
           colnames = c("年份","IF","LCS","GCS","标题","原文"),
           escape = FALSE,
           filter = "top",
-          caption = "仅在WoS高被引论文中出现的文章")
+          caption = "",
+          extensions = c("Buttons"),
+          width = "95%",
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="export",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="35%",targets=5)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
 ```
 
 下面的表格列出了既为WoS高被引又为LCS核心论文的文章（图 \@ref(fig:MC-HC-article)）。
@@ -152,8 +181,312 @@ datatable(MC_HC_article[,c("PY","impact_factor","LCS","TC","title","source")],
           colnames = c("年份","IF","LCS","GCS","标题","原文"),
           escape = FALSE,
           filter = "top",
-          caption = "既为WoS高被引又为LCS核心论文的文章")
+          caption = "",
+          extensions = c("Buttons"),
+          width = "95%",
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="export",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="35%",targets=5)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
 ```
+
+
+### 近两年的研究进展
+
+
+特别关注近两年的最新研究进展。
+下面是依据LCS筛选得到的最近两年研究论文（图 \@ref(fig:recent-LCS-research-article)）。
+
+
+```{r recent-LCS-research-article,fig.cap="近两年的重要研究论文（LCS高被引）"}
+# 导出这两年的重要研究/观点论文（高被引+日报收录的20分以上的肠道菌群研究），
+# 辛苦你周一列个表给我。完整的关键词变化列表+每年高频关键词（前50）
+# 下周也优先做一下吧，多谢~
+db_cache <- "E:/Spring_Work/Corporate_Bussiness/C40_Data/cache/"
+papers <- readRDS(paste0(db_cache,"papers.RDS")) %>% as_tibble()
+fragments <- readRDS(paste0(db_cache,"fragments.RDS")) %>% as_tibble()
+
+real_paper <- papers %>% 
+  filter(status==3 & classify=="audit" & journal_id=="1") %>%
+  select(uuid,title,share_title,summary,remark,fragment_id) %>% 
+  left_join(fragments %>% rename("fragment_id"=id) %>% select(-uuid,-title,-remark))
+
+mc <- real_paper %>% mutate(DI=toupper(doi)) %>% select(DI,title,summary,uuid,share_title)
+recent_research_article <- MC %>% 
+  left_join(mc) %>%
+  filter(PY>=2018,DT != "REVIEW") %>%
+  mutate(DT = as_factor(DT),
+         source=ifelse(str_detect(DI,"10"),
+                       mrgut_permanent_link(base_url = "https://doi.org/",
+                                     type = "html",
+                                     uuid = DI,
+                                     title = J9,
+                                     alt = ""),
+                       ""),
+         daily=ifelse(is.na(uuid),
+                      "",
+                      mrgut_permanent_link(type="html",
+                                    uuid = uuid,
+                                    title = title,
+                                    alt = share_title)
+                      ),
+         Title=str_to_title(TI)) %>%
+  select(Title,PY,DT,impact_factor,source,daily,TC,LCS)
+
+
+DT::datatable(recent_research_article, 
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="export",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="35%",targets=0),
+                         list(width="35%", targets=5)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
+
+```
+
+下面是《热心肠日报》中收录的最近两年发表的影响因子大于20的研究论文（图 \@ref(fig:high-IF-research-article-in-daily)）。
+
+
+```{r high-IF-research-article-in-daily, fig.cap="日报中收录的影响因子＞20的高水平研究论文"}
+high_IF_daily_research <- real_paper %>%
+  mutate(DI=toupper(doi),
+         year=year(time)) %>% 
+  select(DI,title,year,type,periodical,summary,uuid,share_title) %>%
+  left_join(MC) %>%
+  filter(type %in% c("Article","Communication","Letter","Perspective"),
+         impact_factor >= 20,
+         year >= 2018) %>%
+  mutate(DT = as_factor(DT),
+         source=ifelse(str_detect(DI,"10"),
+                       mrgut_permanent_link(base_url = "https://doi.org/",
+                                     type = "html",
+                                     uuid = DI,
+                                     title = periodical,
+                                     alt = ""),
+                       ""),
+         daily=ifelse(is.na(uuid),
+                      "",
+                      mrgut_permanent_link(type="html",
+                                    uuid = uuid,
+                                    title = title,
+                                    alt = share_title)
+                      ),
+         Title=str_to_title(title)) %>%
+  select(Title,year,DT,impact_factor,source,daily,TC,LCS)
+
+DT::datatable(high_IF_daily_research, 
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              filename="export",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="35%",targets=0),
+                         list(width="35%", targets=5)
+                       ),
+                       lengthMenu=list(c(20,50,100,-1),
+                                       c("20","50","100","All"))))
+```
+
+### 重点论文
+
+重要文章，综合考虑引用和影响因子，即LCS高被引文章+当年高分文章（按IF排序取前5%）
+
+1. 论文列表（区分文章类型）
+2. 按关键词聚类：高频关键词列表（前50），以及每个关键词对应的文章列表
+  ① 仅分析研究论文
+  ② 仅分析综述
+  ③ 全部文章类型
+3. 按关键词共现聚类：高频共现关键词列表（取前50），以及每组共现关键词对应的文章列表
+  ① 仅分析研究论文
+  ② 仅分析综述
+  ③ 全部文章类型
+
+```{r fig.cap="近三年的重点论文"}
+
+recent_research_article_2019 <- M %>% 
+  filter(PY>=2017,percent_rank(impact_factor)>=0.95 | CORE==TRUE) %>%
+  left_join(mc) %>%
+  mutate(DT = as_factor(DT),
+         source=ifelse(str_detect(DI,"10"),
+                       mrgut_permanent_link(base_url = "https://doi.org/",
+                                     type = "html",
+                                     uuid = DI,
+                                     title = J9,
+                                     alt = ""),
+                       ""),
+         daily=ifelse(is.na(uuid),
+                      "",
+                      mrgut_permanent_link(type="html",
+                                    uuid = uuid,
+                                    title = title,
+                                    alt = share_title)
+                      ),
+         Title=str_to_title(TI))
+
+
+DT::datatable(recent_research_article_2019 %>%
+  select(Title,DT,PY,impact_factor,source,daily,TC,LCS,ID) %>%
+    mutate(ID = str_to_title(ID),
+           PY = as_factor(PY)), 
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          caption = "",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 10,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="25%",targets=0),
+                         list(width="6em",targets=2),
+                         list(width="25%", targets=5),
+                         list(width="15%",targets=8)
+                       ),
+                       lengthMenu=list(c(10,20,50,100,-1),
+                                       c("10","20","50","100","All"))))
+```
+
+```{r keyword-tf-idf-2019, fig.cap="对2019年的关键词进行挖掘"}
+tableTag <- function (M, Tag = "CR", sep = ";") 
+{
+    if (Tag %in% c("AB", "TI")) {
+        M = termExtraction(M, Field = Tag, stemming = F, verbose = FALSE)
+        i = dim(M)[2]
+    }
+    else {
+        i <- which(names(M) == Tag)
+    }
+    if (Tag == "C1") {
+        M$C1 = gsub("\\[.+?]", "", M$C1)
+    }
+    Tab <- unlist(strsplit(as.character(M[, i]), sep))
+    Tab <- trimws(trimES(Tab))
+    Tab <- Tab[Tab != ""]
+    Tab <- sort(table(Tab), decreasing = TRUE)
+    return(Tab)
+}
+
+ID <- tableTag(recent_research_article_2019,Tag ="ID") %>%
+  data.frame() %>%
+  filter(!str_detect(Tab,search_keyword_regex)) %>%
+  mutate(Keyword=as_factor(str_to_title(Tab))) %>%
+  ungroup() %>%
+  select(Keyword,Freq)
+```
+
+
+
+```{r eval=F}
+mat <- biblioNetwork(recent_research_article_2019, analysis = "co-occurrences", network = "keywords")
+net <- networkPlot(NetMatrix = mat, 
+                     # normalize = "jaccard", 
+                     weighted = TRUE,
+                     n=100, 
+                     Title = year, 
+                     verbose = FALSE)
+
+g <- net$graph_pajek
+
+# 简化图
+# 删掉常用词
+g <- delete.edges(g, E(g)[edge_attr(g)$weight > 2])
+g <- delete.vertices(g, V(g)[str_detect(vertex.attributes(g)$id, search_keyword_regex)])
+
+# 聚类
+cluster <- cluster_fast_greedy(g)
+vertex_attr(g)$group <- membership(cluster)
+
+# size by deg
+vertex_attr(g)$size <- vertex_attr(g)$deg/15
+
+# 可视化
+data <- toVisNetworkData(g)
+
+nodes <- data$nodes %>%
+  mutate(size=log(deg))
+edges <- data$edges 
+
+visNetwork(nodes,edges,width = 1000,height = 800) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE,selectedBy = "group") %>%
+  visNodes(size = "size") %>%
+  visIgraphLayout()
+```
+
+```{r eval=FALSE}
+ID <- ID %>% mutate(id=tolower(Keyword)) %>%
+  left_join(nodes) %>%
+  select(Keyword,Freq,deg,group) %>%
+  mutate(group=as_factor(group))
+
+
+DT::datatable(ID, 
+          rownames = FALSE,
+          filter = "top",
+          width = "95%",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 20,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="75%",targets=0)
+                       ),
+                       lengthMenu=list(c(10,20,50,100,-1),
+                                       c("10","20","50","100","All"))))
+
+```
+
 
 
 ## 数据库资料信息不全的情形
@@ -175,7 +508,7 @@ M %>% filter(str_detect(AU_CO_NR,"\\bNA\\b")) %>%
 df <- M %>% filter(str_detect(AU_CO_NR,"\\bNA\\b")) %>% 
   select(SR,C1,AU_CO_NR) %>% 
   head(10)
-kable(df,filter = "top",caption = "国家信息缺失的文献信息")
+kable(df,caption = "国家信息缺失的文献信息")
 ```
 
 
@@ -219,57 +552,41 @@ a <- M %>% sample_n(100)
 a <- metaTagExtraction(a,Field = "AU_UN")
 a$AU_UN2 <- AU_UN_wos(a$C1)
 a %>% filter(AU_UN != AU_UN2) %>%
-  select(SR,AU_UN,AU_UN2) %>%
-  head(10) %>%
-  kable(caption = "不同方式获取机构信息的差异")
+  select(SR,AU_UN,AU_UN2,C1) %>%
+  DT::datatable(caption = "不同方式获取机构信息的差异")
 ```
+
+```{r}
+M <- metaTagExtraction(M,Field = "AU_UN")
+original <- tableTag(M, "AU_UN")
+M$AU_UN2 <- AU_UN_wos(M$C1)
+modified <- tableTag(M, "AU_UN2")
+df <- data.frame(original) %>% left_join(data.frame(modified), by=c("Tab"="Tab"))
+colnames(df) <- c("AFF","original","modified")
+top_AFF <- df %>% group_by(AFF) %>% summarise(total=original+modified) %>% arrange(desc(total)) %>% head(1000) %>% pull(AFF)
+
+df <- df %>% mutate(diff = modified - original, AFF = as_factor(AFF)) %>%
+  pivot_longer(cols = c("original","modified"), names_to = "type", values_to = "count")
+df_label <- df %>% filter(diff!=0) %>% filter(percent_rank(abs(diff))>0.99) %>% select(AFF, diff) %>%
+  mutate(color=ifelse(diff >0, "red","blue")) %>% unique()
+p <- df %>% filter(AFF %in% top_AFF) %>%
+  ggplot(aes(AFF,count,fill=type,color=type,group=type)) + geom_point() + geom_line() + geom_area(alpha=1/3,position = "identity") +
+  # geom_line(aes(AFF,diff,color=I(color)),inherit.aes = FALSE,data = df_label) +
+  geom_point(aes(AFF,diff,color=I(color)),inherit.aes = FALSE,data = df_label) +
+  ggrepel::geom_text_repel(aes(AFF, diff, label=AFF,color=I(color)),data = df_label %>% filter(AFF %in% top_AFF), inherit.aes = FALSE) +
+  theme(axis.text.x = element_blank())
+plotly::ggplotly(p)
+```
+
 
 
 # 使用影响因子评价 {#impact-factor}
 
 在我们的分析中，并没有对影响因子这一指标进行过多涉及，而主要是基于引用次数来评价文章的重要性。相对于影响因子，引用次数更能反映文章的重要性。引用次数本身就是影响因子的基础，是期刊所有论文引用次数除以发文量之后得到的一个指标。然而，即便是同一本期刊上发表论文的引用次数事实上也存在巨大差异，用一个平均指标不利于发现那些最重要的文献。与此同时，同一篇文章的全局被引频次和本地被引频次也会存在明显差异，考虑到我们主要立足点是“肠道菌群”研究，那些本地被引频次更高的文献理论上更加重要。
 
-当然，我们也基于影响因子指标进行了一些分析。
-
-```{r}
-# 按影响因子分析文章数量和比例
-plot_by_IF <- function(df){
-  p1 <- ggplot(df,aes(PY,n,fill=group)) + 
-    geom_col() + 
-    facet_wrap(~group,ncol = 1,scales = "free_y")  +
-    labs(x="论文发表年份",y="数量") +
-    theme(strip.text = element_blank(),
-          axis.text.x = element_text(),
-          axis.ticks.x = element_line(),
-          legend.position = "none")
-
-  p2 <- ggplot(df,aes(PY,proportion,fill=group)) +
-    geom_col() + 
-    scale_y_continuous(labels = function(x)paste0(x*100,"%"),
-                       breaks = 0:10/10) +
-    labs(x="论文发表年份",y="比例") +
-    guides(fill=guide_legend(title="Impact\nFactor")) + 
-    theme(legend.position = "right")
-  
-  # return(p1)
-  plot_grid(p1,p2)
-}
-```
-
-在所有的论文中，影响因子介于3到5之间的论文数目最多，小于3的论文次之，数目最少的是影响因子大于10（小于20）和大于20的论文（图 \@ref(fig:all-article-group-by-IF)）。每年影响因子在5以上的论文基本上不超过30%。
-
-```{r all-article-group-by-IF, fig.cap="全部论文影响因子的分布情况",cache=FALSE}
-df <- M  %>% group_by(PY,group) %>% 
-  summarise(n=n()) %>%
-  group_by(PY) %>%
-  mutate(proportion=n/sum(n))
-
-plot_by_IF(df)
-```
-
 而在高被引论文中，影响因子小于3的论文数量最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当。大体上有50%的高被引论文影响因子在10分以上，另外有50%的高被引论文在10分以下（图 \@ref(fig:HC-article-group-by-IF)）。
 
-```{r HC-article-group-by-IF, fig.cap="WoS高被引论文影响因子的分布情况",cache=F}
+```{r HC-article-group-by-IF, fig.cap="WoS高被引论文影响因子的分布情况"}
 df <- M %>% filter(HC==TRUE)  %>% group_by(PY,group) %>% 
   summarise(n=n()) %>%
   group_by(PY) %>%
@@ -282,8 +599,10 @@ plot_by_IF(df)
 
 基于 LCS 得到的核心文献中，与高被引论文的影响因子分组情况较为相似，同样可以发现影响因子小于3的论文同样最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当（图 \@ref(fig:LCS-core-article-group-by-IF)）。
 
-```{r LCS-core-article-group-by-IF, fig.cap="LCS核心论文影响因子的分布情况",cache=F}
-df <- M %>% filter(CORE==TRUE) %>% group_by(PY,group) %>% summarise(n=n()) %>%
+```{r LCS-core-article-group-by-IF, fig.cap="LCS核心论文影响因子的分布情况"}
+df <- M %>% filter(CORE==TRUE) %>% 
+  group_by(PY,group) %>% 
+  summarise(n=n()) %>%
   group_by(PY) %>%
   mutate(proportion=n/sum(n))
 
