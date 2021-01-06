@@ -1,0 +1,137 @@
+# 肠道菌群与碳水化合物 {#carbohydrate}
+
+在这一章节，我们将分析最常见的十余种与肠道菌群相关的疾病研究的概况。
+
+
+
+
+```{r}
+df <-   M %>%
+    filter(str_detect(content, regex("carbohydrate", ignore_case = T))) %>%
+    mutate(DT=factor(DT))
+```
+
+
+```{r}
+df %>% group_by(PY) %>%
+    summarise(nRecord = n()) %>%
+  ggplot(aes(PY,nRecord)) +
+  geom_col() +
+  labs(x="",title = "SCI数据库中相关论文的发文量（2000-2019）")
+graph2ppt(append = T)
+```
+
+
+
+
+```{r}
+four_dimension_barplot_caption <- paste0("肠道菌群与碳水化合物",
+                                         "相关研究的简要信息。",
+                                         "（A）发表文章最多的10个国家；",
+                                         "（B）发表文章最多的10家机构；",
+                                         "（C）发表文章最多的10位科学家；",
+                                         "（D）发表文章最多的10本杂志。")
+```
+
+```{r}
+# 对一批论文进行四维分析，显示国家、机构、人员和期刊
+four_dimension_barplot <- function(M, tags = c("AU_CO_NR","AU_UN_NR","AU","J9")){
+  plots <- lapply(tags, function(x){
+    tableTag_barplot(M,Tag = x, n=10) + labs(title="") + scale_y_continuous(expand = c(0,1))
+    })
+  plot_grid(plotlist = plots, labels = "AUTO")
+}
+```
+
+```{r carbonhydrate-four-dimension-barplot, fig.cap=four_dimension_barplot_caption}
+four_dimension_barplot(df) +
+  labs(caption = four_dimension_barplot_caption)
+
+graph2ppt(append = T)
+```
+
+## 疾病类型概览
+
+```{r}
+disease <- list(cancer_keywords,cardio_keywords,ibd_keywords,ibs_keywords,
+                                                   alzheimer_keywords,autism_keywords,hepatology_keywords,
+                                                   allergy_keywords,obesity_keywords,diabetes_keywords,asthma_keywords,
+                                                  diarrhea_keywords,constipation_keywords)
+disease_name <- c("cancer","CVD","IBD","IBS","Alzheimer's","autism","hepatology","allergy","obesity","diabetes","asthma","diarrhea","constipation")
+disease_name_cn <- c("肿瘤","心血管疾病","炎症性肠病","肠易激综合征","阿尔兹海默症","自闭症","肝病","过敏","肥胖","糖尿病","哮喘","腹泻","便秘")
+names(disease_name_cn) <- disease_name
+```
+
+
+
+一共有 `r length(disease_name)` 中不同的疾病纳入了我们的分析之中。
+它们分别是：`r paste0(disease_name_cn, collapse="、")` 等。
+
+通过比较常见的与肠道菌群相关疾病的研究论文数量，可以得到最受关注的疾病类型分别是：
+肿瘤、肥胖、炎症性肠病、心血管疾病、糖尿病等（图 \@ref(fig:disease-research-count)）。
+
+
+```{r}
+disease_subtopic_core_article <- lapply(disease, function(keyword){
+  df %>%
+    filter(str_detect(content, regex(paste0(c(keyword$primary),collapse = "|"), ignore_case = T))) %>%
+    mutate(DT=factor(DT))
+})
+
+names(disease_subtopic_core_article) <- disease_name
+
+disease_subtopic_core_article_count <- lapply(disease_subtopic_core_article, function(article){
+  article %>% group_by(PY) %>%
+    summarise(nRecord = n())
+})
+```
+
+```{r disease-research-count, fig.cap="过去20年在WoS数据库中收录的肠道菌群研究中，与10多种疾病相关的关键论文数量"}
+count <- sapply(disease_subtopic_core_article, nrow)
+count <- data.frame(disease=disease_name_cn, count=count)
+count <- count %>% arrange(desc(count)) %>%
+  mutate(disease=  fct_rev(as_factor(as.character(disease))))
+count$angle <- 1:length(disease_name) * 360 / length(disease_name)
+ggplot(count, aes(disease,count,fill=count)) + 
+  geom_col(width = 0.9) +
+  geom_col(aes(y=I(2)),width = 1,fill="white") +
+  geom_text(aes(label=disease,y=count-30),color="white",vjust=0.5,size=3,fontface="bold",data = function(d) d[d$count>=200,]) +
+  geom_text(aes(label=disease,y=count+30),color="black",vjust=0,hjust=0,size=3,fontface="bold",data = function(d) d[d$count<200,]) +
+  annotate(geom="text",y=400,x=1,label="数据分析：热心肠研究院",color="grey",size=3,hjust=0.9,vjust=1) +
+  labs(x="",y="",title = "") +
+  coord_flip() +
+  scale_fill_gradientn(colors=c("darkgreen","green","orange","firebrick","red"),trans="sqrt") +
+  # coord_polar(direction = -1) +
+  # theme_void() +
+  theme(legend.position = "none",
+        axis.text.y = element_blank())
+
+graph2ppt(file="carbonhydrate.pptx", append=T)
+
+# count
+```
+
+
+```{r}
+df2 <- df %>% filter(HC == TRUE | CORE == TRUE )
+```
+
+
+```{r}
+country_network(df2, delete_isolate=T)
+```
+
+
+```{r}
+university_network(df2, edge_weight_cutoff = 2, delete_isolate = T)
+```
+
+```{r}
+author_network(df2,edge_weight_cutoff = 5)
+```
+
+```{r}
+keyword_network(df2,edge_weight_cutoff = 5)
+```
+
+
