@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>C 使用影响因子评价 | 肠道菌群研究二十年·大数据</title>
+  <meta name="description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="C 使用影响因子评价 | 肠道菌群研究二十年·大数据" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  <meta name="github-repo" content="gaospecial/gut-microbiome-20yrs" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="C 使用影响因子评价 | 肠道菌群研究二十年·大数据" />
+  
+  <meta name="twitter:description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  
+
+<meta name="author" content="热心肠研究院" />
+
+
+<meta name="date" content="2021-01-06" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="core-article.html"/>
+<link rel="next" href="references.html"/>
+<script src="libs/header-attrs/header-attrs.js"></script>
+<script src="libs/jquery/jquery.min.js"></script>
+<link href="libs/gitbook/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections/anchor-sections.js"></script>
+<script src="libs/htmlwidgets/htmlwidgets.js"></script>
+<link href="libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding/datatables.js"></script>
+<link href="libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core/js/jquery.dataTables.min.js"></script>
+<script src="libs/jszip/jszip.min.js"></script>
+<link href="libs/dt-ext-buttons/css/buttons.dataTables.min.css" rel="stylesheet" />
+<script src="libs/dt-ext-buttons/js/dataTables.buttons.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.flash.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.html5.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.colVis.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.print.min.js"></script>
+<link href="libs/nouislider/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="libs/nouislider/jquery.nouislider.min.js"></script>
+<link href="libs/selectize/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="libs/selectize/selectize.min.js"></script>
+<link href="libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk/js/crosstalk.min.js"></script>
+<script src="libs/plotly-binding/plotly.js"></script>
+<script src="libs/typedarray/typedarray.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main/plotly-latest.min.js"></script>
+<link href="libs/wordcloud2/wordcloud.css" rel="stylesheet" />
+<script src="libs/wordcloud2/wordcloud2-all.js"></script>
+<script src="libs/wordcloud2/hover.js"></script>
+<script src="libs/wordcloud2-binding/wordcloud2.js"></script>
+<script src="libs/d3/d3.min.js"></script>
+<script src="libs/sankey/sankey.js"></script>
+<script src="libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
+<link href="libs/vis/vis.css" rel="stylesheet" />
+<script src="libs/vis/vis.min.js"></script>
+<script src="libs/visNetwork-binding/visNetwork.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">肠道菌群二十年·大数据</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>前言</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#致谢"><i class="fa fa-check"></i>致谢</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="method.html"><a href="method.html"><i class="fa fa-check"></i><b>1</b> 方法论</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="method.html"><a href="method.html#如何确定核心文献"><i class="fa fa-check"></i><b>1.1</b> 如何确定核心文献？</a></li>
+<li class="chapter" data-level="1.2" data-path="method.html"><a href="method.html#network-concept"><i class="fa fa-check"></i><b>1.2</b> 如何进行文献网络分析？</a>
+<ul>
+<li class="chapter" data-level="1.2.1" data-path="method.html"><a href="method.html#文献的引用网络"><i class="fa fa-check"></i><b>1.2.1</b> 文献的引用网络</a></li>
+<li class="chapter" data-level="1.2.2" data-path="method.html"><a href="method.html#合作网络"><i class="fa fa-check"></i><b>1.2.2</b> 合作网络</a></li>
+<li class="chapter" data-level="1.2.3" data-path="method.html"><a href="method.html#共词分析"><i class="fa fa-check"></i><b>1.2.3</b> 共词分析</a></li>
+<li class="chapter" data-level="1.2.4" data-path="method.html"><a href="method.html#文献网络的简化"><i class="fa fa-check"></i><b>1.2.4</b> 文献网络的简化</a></li>
+</ul></li>
+<li class="chapter" data-level="1.3" data-path="method.html"><a href="method.html#核心论文的分类"><i class="fa fa-check"></i><b>1.3</b> 核心论文的分类</a></li>
+</ul></li>
+<li class="part"><span><b>I 概况</b></span></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> 研究概述</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="intro.html"><a href="intro.html#肠道菌群是一个高速发展的研究领域"><i class="fa fa-check"></i><b>2.1</b> 肠道菌群是一个高速发展的研究领域</a></li>
+<li class="chapter" data-level="2.2" data-path="intro.html"><a href="intro.html#肠道菌群研究仍然在收获持续的关注"><i class="fa fa-check"></i><b>2.2</b> 肠道菌群研究仍然在收获持续的关注</a></li>
+<li class="chapter" data-level="2.3" data-path="intro.html"><a href="intro.html#肠道菌群研究建立在广泛的全球合作之上"><i class="fa fa-check"></i><b>2.3</b> 肠道菌群研究建立在广泛的全球合作之上</a></li>
+<li class="chapter" data-level="2.4" data-path="intro.html"><a href="intro.html#全球范围内的知名大学和研究所广泛参与"><i class="fa fa-check"></i><b>2.4</b> 全球范围内的知名大学和研究所广泛参与</a></li>
+<li class="chapter" data-level="2.5" data-path="intro.html"><a href="intro.html#top-scientist"><i class="fa fa-check"></i><b>2.5</b> 来看看本领域内最负盛名的科学家</a></li>
+<li class="chapter" data-level="2.6" data-path="intro.html"><a href="intro.html#发表肠道菌群研究的主流期刊有哪些"><i class="fa fa-check"></i><b>2.6</b> 发表肠道菌群研究的主流期刊有哪些？</a></li>
+<li class="chapter" data-level="2.7" data-path="intro.html"><a href="intro.html#研究领域和研究内容一瞥"><i class="fa fa-check"></i><b>2.7</b> 研究领域和研究内容一瞥</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="citespace-network.html"><a href="citespace-network.html"><i class="fa fa-check"></i><b>3</b> CiteSpace 网络</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="citespace-network.html"><a href="citespace-network.html#citespace-network-result"><i class="fa fa-check"></i><b>3.1</b> 网络分析结果</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="citespace-network.html"><a href="citespace-network.html#文献的引用网络-1"><i class="fa fa-check"></i><b>3.1.1</b> 文献的引用网络</a></li>
+<li class="chapter" data-level="3.1.2" data-path="citespace-network.html"><a href="citespace-network.html#作者的合作网络"><i class="fa fa-check"></i><b>3.1.2</b> 作者的合作网络</a></li>
+<li class="chapter" data-level="3.1.3" data-path="citespace-network.html"><a href="citespace-network.html#关键词的共现网络"><i class="fa fa-check"></i><b>3.1.3</b> 关键词的共现网络</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II 国际研究格局</b></span></li>
+<li class="chapter" data-level="4" data-path="global.html"><a href="global.html"><i class="fa fa-check"></i><b>4</b> 全球合作网络</a></li>
+<li class="chapter" data-level="5" data-path="china-study.html"><a href="china-study.html"><i class="fa fa-check"></i><b>5</b> 中国的肠道菌群研究</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="china-study.html"><a href="china-study.html#中国研究概况"><i class="fa fa-check"></i><b>5.1</b> 中国研究概况</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="china-study.html"><a href="china-study.html#研究的主要脉络"><i class="fa fa-check"></i><b>5.1.1</b> 研究的主要脉络</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="china-study.html"><a href="china-study.html#主要的研究机构"><i class="fa fa-check"></i><b>5.2</b> 主要的研究机构</a></li>
+<li class="chapter" data-level="5.3" data-path="china-study.html"><a href="china-study.html#研究领域"><i class="fa fa-check"></i><b>5.3</b> 研究领域</a></li>
+<li class="chapter" data-level="5.4" data-path="china-study.html"><a href="china-study.html#发展趋势"><i class="fa fa-check"></i><b>5.4</b> 发展趋势</a>
+<ul>
+<li class="chapter" data-level="5.4.1" data-path="china-study.html"><a href="china-study.html#增长最为迅速的关键字有哪些"><i class="fa fa-check"></i><b>5.4.1</b> 增长最为迅速的关键字有哪些？</a></li>
+</ul></li>
+<li class="chapter" data-level="5.5" data-path="china-study.html"><a href="china-study.html#港澳台地区的肠道菌群研究"><i class="fa fa-check"></i><b>5.5</b> 港澳台地区的肠道菌群研究</a></li>
+</ul></li>
+<li class="part"><span><b>III 研究热点</b></span></li>
+<li class="chapter" data-level="6" data-path="research-topic.html"><a href="research-topic.html"><i class="fa fa-check"></i><b>6</b> 四大研究主题</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="research-topic.html"><a href="research-topic.html#主题对应的核心论文数据"><i class="fa fa-check"></i><b>6.1</b> 主题对应的核心论文数据</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="diet.html"><a href="diet.html"><i class="fa fa-check"></i><b>7</b> 肠道菌群与饮食</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="diet.html"><a href="diet.html#核心文章列表"><i class="fa fa-check"></i><b>7.1</b> 核心文章列表</a></li>
+<li class="chapter" data-level="7.2" data-path="diet.html"><a href="diet.html#领域内专家"><i class="fa fa-check"></i><b>7.2</b> 领域内专家</a></li>
+<li class="chapter" data-level="7.3" data-path="diet.html"><a href="diet.html#机构合作网络"><i class="fa fa-check"></i><b>7.3</b> 机构合作网络</a></li>
+<li class="chapter" data-level="7.4" data-path="diet.html"><a href="diet.html#研究热点"><i class="fa fa-check"></i><b>7.4</b> 研究热点</a></li>
+<li class="chapter" data-level="7.5" data-path="diet.html"><a href="diet.html#肠道菌群与饮食研究的历史脉络"><i class="fa fa-check"></i><b>7.5</b> 肠道菌群与饮食研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="7.5.1" data-path="diet.html"><a href="diet.html#菌群被发现是饮食与肥胖之间重要的一环"><i class="fa fa-check"></i><b>7.5.1</b> 菌群被发现是饮食与肥胖之间重要的一环</a></li>
+<li class="chapter" data-level="7.5.2" data-path="diet.html"><a href="diet.html#养出好菌群"><i class="fa fa-check"></i><b>7.5.2</b> 养出好菌群</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="immunity.html"><a href="immunity.html"><i class="fa fa-check"></i><b>8</b> 肠道菌群与免疫</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="immunity.html"><a href="immunity.html#免疫相关的核心文章列表"><i class="fa fa-check"></i><b>8.1</b> 免疫相关的核心文章列表</a></li>
+<li class="chapter" data-level="8.2" data-path="immunity.html"><a href="immunity.html#研究力量"><i class="fa fa-check"></i><b>8.2</b> 研究力量</a></li>
+<li class="chapter" data-level="8.3" data-path="immunity.html"><a href="immunity.html#知名研究机构"><i class="fa fa-check"></i><b>8.3</b> 知名研究机构</a></li>
+<li class="chapter" data-level="8.4" data-path="immunity.html"><a href="immunity.html#免疫相关研究的历史脉络"><i class="fa fa-check"></i><b>8.4</b> 免疫相关研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="immunity.html"><a href="immunity.html#免疫缺陷小鼠在发现肠道菌群的功能中发挥关键作用"><i class="fa fa-check"></i><b>8.4.1</b> 免疫缺陷小鼠在发现肠道菌群的功能中发挥关键作用</a></li>
+<li class="chapter" data-level="8.4.2" data-path="immunity.html"><a href="immunity.html#免疫失调是肠道菌群失调的重要表现"><i class="fa fa-check"></i><b>8.4.2</b> 免疫失调是肠道菌群失调的重要表现</a></li>
+<li class="chapter" data-level="8.4.3" data-path="immunity.html"><a href="immunity.html#能调控免疫的肠道菌群关键类群被发现"><i class="fa fa-check"></i><b>8.4.3</b> 能调控免疫的肠道菌群关键类群被发现</a></li>
+<li class="chapter" data-level="8.4.4" data-path="immunity.html"><a href="immunity.html#代谢产物是肠道菌群调控免疫的物质基础"><i class="fa fa-check"></i><b>8.4.4</b> 代谢产物是肠道菌群调控免疫的物质基础</a></li>
+<li class="chapter" data-level="8.4.5" data-path="immunity.html"><a href="immunity.html#饮食逐渐成为肠道菌群干预的重要出口"><i class="fa fa-check"></i><b>8.4.5</b> 饮食逐渐成为肠道菌群干预的重要出口</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="metabolism.html"><a href="metabolism.html"><i class="fa fa-check"></i><b>9</b> 肠道菌群与代谢</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="metabolism.html"><a href="metabolism.html#代谢相关的核心文章列表"><i class="fa fa-check"></i><b>9.1</b> 代谢相关的核心文章列表</a></li>
+<li class="chapter" data-level="9.2" data-path="metabolism.html"><a href="metabolism.html#研究力量-1"><i class="fa fa-check"></i><b>9.2</b> 研究力量</a></li>
+<li class="chapter" data-level="9.3" data-path="metabolism.html"><a href="metabolism.html#知名研究机构-1"><i class="fa fa-check"></i><b>9.3</b> 知名研究机构</a></li>
+<li class="chapter" data-level="9.4" data-path="metabolism.html"><a href="metabolism.html#代谢相关研究的历史脉络"><i class="fa fa-check"></i><b>9.4</b> 代谢相关研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="9.4.1" data-path="metabolism.html"><a href="metabolism.html#肥胖是代谢相关研究的绝对主流"><i class="fa fa-check"></i><b>9.4.1</b> 肥胖是代谢相关研究的绝对主流</a></li>
+<li class="chapter" data-level="9.4.2" data-path="metabolism.html"><a href="metabolism.html#代谢相关疾病的菌群特征被揭示"><i class="fa fa-check"></i><b>9.4.2</b> 代谢相关疾病的菌群特征被揭示</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="disease.html"><a href="disease.html"><i class="fa fa-check"></i><b>10</b> 肠道菌群与疾病</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="disease.html"><a href="disease.html#疾病类型概览"><i class="fa fa-check"></i><b>10.1</b> 疾病类型概览</a></li>
+<li class="chapter" data-level="10.2" data-path="disease.html"><a href="disease.html#cancer"><i class="fa fa-check"></i><b>10.2</b> 癌症</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="disease.html"><a href="disease.html#癌症相关研究的核心论文"><i class="fa fa-check"></i><b>10.2.1</b> 癌症相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.2.2" data-path="disease.html"><a href="disease.html#癌症相关研究的合作网络"><i class="fa fa-check"></i><b>10.2.2</b> 癌症相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.2.3" data-path="disease.html"><a href="disease.html#肠癌相关研究的历史脉络"><i class="fa fa-check"></i><b>10.2.3</b> 肠癌相关研究的历史脉络</a></li>
+<li class="chapter" data-level="10.2.4" data-path="disease.html"><a href="disease.html#癌症相关的重要研究主题"><i class="fa fa-check"></i><b>10.2.4</b> 癌症相关的重要研究主题</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="disease.html"><a href="disease.html#diabetes"><i class="fa fa-check"></i><b>10.3</b> 糖尿病</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="disease.html"><a href="disease.html#糖尿病相关研究的核心论文"><i class="fa fa-check"></i><b>10.3.1</b> 糖尿病相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.3.2" data-path="disease.html"><a href="disease.html#糖尿病相关研究的合作网络"><i class="fa fa-check"></i><b>10.3.2</b> 糖尿病相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.3.3" data-path="disease.html"><a href="disease.html#糖尿病相关研究的历史脉络"><i class="fa fa-check"></i><b>10.3.3</b> 糖尿病相关研究的历史脉络</a></li>
+<li class="chapter" data-level="10.3.4" data-path="disease.html"><a href="disease.html#糖尿病相关的重要研究主题"><i class="fa fa-check"></i><b>10.3.4</b> 糖尿病相关的重要研究主题</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="disease.html"><a href="disease.html#CVD"><i class="fa fa-check"></i><b>10.4</b> 心血管疾病</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的核心论文"><i class="fa fa-check"></i><b>10.4.1</b> 心血管疾病相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.4.2" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的合作网络"><i class="fa fa-check"></i><b>10.4.2</b> 心血管疾病相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.4.3" data-path="disease.html"><a href="disease.html#心血管相关的重要研究主题"><i class="fa fa-check"></i><b>10.4.3</b> 心血管相关的重要研究主题</a></li>
+<li class="chapter" data-level="10.4.4" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的历史脉络"><i class="fa fa-check"></i><b>10.4.4</b> 心血管疾病相关研究的历史脉络</a></li>
+</ul></li>
+</ul></li>
+<li class="appendix"><span><b>附录</b></span></li>
+<li class="chapter" data-level="A" data-path="data-source.html"><a href="data-source.html"><i class="fa fa-check"></i><b>A</b> 数据来源</a>
+<ul>
+<li class="chapter" data-level="A.1" data-path="data-source.html"><a href="data-source.html#文献检索方式"><i class="fa fa-check"></i><b>A.1</b> 文献检索方式</a></li>
+<li class="chapter" data-level="A.2" data-path="data-source.html"><a href="data-source.html#下载肠道菌群研究完整数据"><i class="fa fa-check"></i><b>A.2</b> 下载“肠道菌群”研究完整数据</a></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="core-article.html"><a href="core-article.html"><i class="fa fa-check"></i><b>B</b> 文献筛选</a>
+<ul>
+<li class="chapter" data-level="B.1" data-path="core-article.html"><a href="core-article.html#如何确定核心文献-1"><i class="fa fa-check"></i><b>B.1</b> 如何确定核心文献？</a>
+<ul>
+<li class="chapter" data-level="B.1.1" data-path="core-article.html"><a href="core-article.html#文献清单"><i class="fa fa-check"></i><b>B.1.1</b> 文献清单</a></li>
+<li class="chapter" data-level="B.1.2" data-path="core-article.html"><a href="core-article.html#近两年的研究进展"><i class="fa fa-check"></i><b>B.1.2</b> 近两年的研究进展</a></li>
+<li class="chapter" data-level="B.1.3" data-path="core-article.html"><a href="core-article.html#重点论文"><i class="fa fa-check"></i><b>B.1.3</b> 重点论文</a></li>
+</ul></li>
+<li class="chapter" data-level="B.2" data-path="core-article.html"><a href="core-article.html#数据库资料信息不全的情形"><i class="fa fa-check"></i><b>B.2</b> 数据库资料信息不全的情形</a></li>
+</ul></li>
+<li class="chapter" data-level="C" data-path="impact-factor.html"><a href="impact-factor.html"><i class="fa fa-check"></i><b>C</b> 使用影响因子评价</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>参考文献</a></li>
+<li class="divider"></li>
+<li><a href="https://mr-gut.cn" target="blank">热心肠研究院出品（©2020）</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">肠道菌群研究二十年·大数据</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="impact-factor" class="section level1" number="13">
+<h1><span class="header-section-number">C</span> 使用影响因子评价</h1>
+<p>在我们的分析中，并没有对影响因子这一指标进行过多涉及，而主要是基于引用次数来评价文章的重要性。相对于影响因子，引用次数更能反映文章的重要性。引用次数本身就是影响因子的基础，是期刊所有论文引用次数除以发文量之后得到的一个指标。然而，即便是同一本期刊上发表论文的引用次数事实上也存在巨大差异，用一个平均指标不利于发现那些最重要的文献。与此同时，同一篇文章的全局被引频次和本地被引频次也会存在明显差异，考虑到我们主要立足点是“肠道菌群”研究，那些本地被引频次更高的文献理论上更加重要。</p>
+<p>而在高被引论文中，影响因子小于3的论文数量最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当。大体上有50%的高被引论文影响因子在10分以上，另外有50%的高被引论文在10分以下（图 <a href="impact-factor.html#fig:HC-article-group-by-IF">C.1</a>）。</p>
+<div class="figure"><span id="fig:HC-article-group-by-IF"></span>
+<img src="plots/HC-article-group-by-IF-1.png" alt="WoS高被引论文影响因子的分布情况" width="768" />
+<p class="caption">
+图 C.1: WoS高被引论文影响因子的分布情况
+</p>
+</div>
+<p>基于 LCS 得到的核心文献中，与高被引论文的影响因子分组情况较为相似，同样可以发现影响因子小于3的论文同样最少，同时3-5,5-10,10-20之间和20以上的论文数目大体相当（图 <a href="impact-factor.html#fig:LCS-core-article-group-by-IF">C.2</a>）。</p>
+<div class="figure"><span id="fig:LCS-core-article-group-by-IF"></span>
+<img src="plots/LCS-core-article-group-by-IF-1.png" alt="LCS核心论文影响因子的分布情况" width="768" />
+<p class="caption">
+图 C.2: LCS核心论文影响因子的分布情况
+</p>
+</div>
+<p>在前面 <a href="core-article.html#core-article">B</a> 我们曾经列出了 LCS 核心文献和 WoS 高被引论文的清单，现在我们再来看一下这些不同类型文献的影响因子分布情况。
+如图 <a href="impact-factor.html#fig:core-vs-HC-boxplot">C.3</a> 中，可以发现 WoS 高被引特有的文献较 LCS 核心特有的文献具有更小的四分位数和中位数影响因子。这说明如果从影响因子的角度考虑，总体上 LCS 核心文献的影响因子较 WoS 高被引论文还更大一些。</p>
+<div class="figure" style="text-align: center"><span id="fig:core-vs-HC-boxplot"></span>
+<div id="htmlwidget-39397c63b445181ef74d" style="width:576px;height:355.968px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-39397c63b445181ef74d">{"x":{"data":[{"x":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],"y":[3.95,6.402,14.971,14.3,6.704,6.704,4.982,6.704,17.943,4.449,4.449,23.57,14.971,3.405,4.514,4.449,43.07,36.216,41.037,17.943,3.083,30.641,5.017,7.731,23.57,3.298,6.425,9.58,9.055,3.453,6.519,4.171,10.241,17.135,9.396,30.641,17.848,7.352,17.943,17.943,19.233,4.223,6.704,15.753,4.259,6.68,6.68,8.519,3.323,30.641,19.233,9.493,14.3,34.648,3.579,15.255,43.07,36.216,5.657,36.216,15.753,9.58,43.07,1.994,3.424,3.424,3.424,9.476,14.299,3.241,3.241,4.183,3.037,4.95,1.289,30.641,18.639,17.161,5.589,4.803,9.055,4.259,11.878,5.711,5.656,4.171,3.241,6.402,2.738,4.653,4.653,3.603,4.008,4.615,4.011,8.383,4.514,1.788,18.886,7.014,3.579,23.57,6.102,3.362,23.53,4.739,4.462,11.878,4.171,14.403,1.556,4.171,10.465,15.753,4.716,2.776,7.815,7.815,4.167,3.961,3.013,17.943,2.962,3.851,4.688,4.36,3.598,6.17,2.844,2.844,1.871,2.456,5.7,2.281,5.391,3.56,3.684,7.958,2.852,3.448,6.133,6.044,4.171,10.465,3.517,4.716,4.259,4.084,15.753,7.551,4.011,3.518,4.011,null,10.551,2.026,2.027,4.171,2.704,5.656,3.611,12.804,2.587,7.163,3.357,3.579,3.762,4.49,4.49,4.49,2.844,3.775,7.543,3.354,4.514,10.551,7.731,4.34,2.937,28.467,5.108,14.3,5.182,23.054,10.465,4.011,11.878,4.011,14.028,7.551,4.011,3.517,3.169,3.571,2.776,21.522,3.411,5.646,3.845,2.776,15.753,2.353,5.203,5.203,7.815,7.24,7.24,17.943,null,1.626,3.029,3.57,7.823,7.823,null,2.502,6.508,3.015,3.015,6.519,null,4.18,2.88,3.319,4.171,4.451,3.241,4.167,7.352,5.741,1.773,4.653,4.125,3.902,2.081,3.08,3.67,1.994,7.958,7.958,7.958,7.958,6.17,3.711,9.493,9.493,7.352,7.352,7.353,4.879,4.098,11.974,9.58,5.391,17.943,30.641,30.641,14.3,41.037,43.07,15.753,5.256,22.415,6.747,36.216,36.216,17.943,17.943,14.3,17.943,3.611,41.037,36.216,4.95,2.704,15.27,7.852,30.641,34.648,4.171,14.971,30.641,17.161,11.878,6.618,6.044,3.296,2.178,30.641,13,17.943,14.3,4.259,43.07,4.011,21.522,4.716,36.216,19.233,17.943,30.641,34.648,2.157,5.589,6.916,10.892,7.543,10.39,11.878,11.878,21.522,3.17,15.753,4.259,2.697,19.233,3.197,4.653,7.352,30.641,23.57,8.386,23.239,7.352,5.779,9.493,6.771,1.642,19.684,9.58,36.216,36.216,15.753,6.568,5.714,4.183,4.49,1.805,9.8,14.3,2.009,25.455,35.386,10.465,10.465,10.465,3.113,3.762,4.147,10.465,7.049,7.352,7.352,7.575,8.02,4.449,8.061,7.575,7.575,7.815,10.465,6.014,10.465,4.125,3.265,3.784,5.714,9.493,14.11,1.689,14.3,6.916,9.944,14.971,17.161,9.58,4.011,3.571,10.465,1.146,5.237,7.815,41.037,22.415,7.149,3.26,5.714,11.524,3.331,4.364,2.063,6.747,7.352,14.3,14.3,2.353,3.564,4.447,4.011,10.465,4.011,4.743,10.465,10.465,11.878,5.045,22.415,4.011,6.17,3.331,3.611,34.648,2.61,2.194,4.005,3.66,4.077,9.002,3.969,9.493,4.259,10.886,3.169,4.011,4.011,4.011,4.259,10.465,11.878,22.415,4.011,4.011,3.411,7.823,7.755,null,4.396,1.297,6.044,7.014,7.014,6.336,3.453,7.823,4.658,3.902,4.085,7.352,5.552,5.552,3.95,5.29,2.287,2.197,2.228,6.519,2.75,5.147,7.014,5.107,1.861,19.233,36.216,43.07,3.4,4.183,10.886,11.878,15.753,4.716,3.583,19.233,43.704,3.355,4.718,6.68,3.965,3.362,6.17,7.014,11.974,3.648,4.011,4.259,13,11.292,4.147,3.654,23.57,41.037,3.518,21.522,3.411,7.815,1.576,4.077,9.493,7.358,7.358,14.028,9.58,10.465,15.753,10.465,10.465,3.518,3.411,17.943,11.292,2.683,7.352,12.804,4.716,4.259,10.465,7.815,21.522,36.216,3.729,14.196,4.011,4.716,17.161,15.753,4.011,4.011,22.415,4.259,9.002,3.599,2.591,19.233,10.465,23.53,14.3,2.635,4.013,10.886,7.815,23.054,41.037,36.216,14.028,18.946,3.037,5.147,9.493,4.011,36.216,4.011,6.568,5.147,6.519,2.776,12.804,7.271,2.776,15.753,4.011,2.776,11.973,6.916,5.855,23.57,2.581,7.575,36.216,51.273,43.07,10.465,4.011,4.718,22.415,2.776,3.411,3.729,null,3.67,2.197,6.17,6.891,1.885,3.517,6.519,7.352,7.16,4.868,4.775,3.517,8.64,9.58,5.147,9.493,14.548,14.3,11.878,11.878,36.216,4.803,4.192,3.57,2.784,9.944,17.943,25.455,14.3,2.581,36.216,14.11,3.179,7.958,7.017,6.051,14.3,14.028,15.862,4.66,6.181,14.3,4.259,5.067,10.886,4.387,9.493,4.259,10.886,6.074,22.415,22.415,43.07,10.886,4.447,11.974,10.465,7.815,36.216,10.886,22.415,43.07,43.07,18.639,11.878,7.815,10.886,9.493,3.323,7.271,4.005,6.519,23.53,1.946,41.037,41.037,10.886,10.886,7.551,21.522,2.651,4.011,null,36.216,10.886,4,4.259,22.415,7.815,4.077,9.493,14.11,7.827,3.961,2.776,7.815,41.037,15.753,22.415,19.233,23.57,10.886,3.411,15.753,3.411,2.776,4.011,7.014,9.493,4.013,12.804,2.735,36.216,41.037,30.641,4.499,3.518,15.753,2.776,17.943,4.66,4.011,36.216,7.199,19.233,9.944,9.8,30.641,4.013,21.522,7.815,3.57,10.465,21.522,9.58,9.58,22.415,6.17,3.548,6.68,8.547,22.415,6.747,8.049,11.524,7.352,9.193,4.077,4.005,2.581,2.874,3.729,15.753,15.753,2.776,3.411,43.07,3.517,2.776,36.216,15.753,4.741,17.943,4.005,8.061,17.161,4.011,2.776,2.776,4.011,null,8.383,5.13,7.815,9.055,41.037,3.411,4.741,null,9.002,2.197,7.823,14.11,14.11,2.88,22.415,10.886,4.077,5.067,43.07,9.58,22.415,22.415,22.415,36.216,15.753,4.077,4.396,21.522,2.724,2.776,7.113,23.57,36.216,36.216,3.287,4.95,6.747,7.352,21.522,3.67,3.599,6.747,30.641,4.487,4.259,21.522,4.077,36.216,2.776,2.939,5.855,21.522,4.959,4.098,2.343,36.216,2.776,9.193,4.098,3.726,3.969,15.753,15.753,4.514,9.493,9.944,9.493,2.776,4.005,3.803,3.611,6.568,23.53,6.916,19.233,2.776,36.216,19.233,8.383,8.99,9.493,4.005,4.416,3.16,4.741,5.574,22.415,2.741,14.028,4.147,14.11,3.729,10.241,22.415,3.969,4.013,15.753,7.113,9.493,5.855,41.037,4.013,2.581,4.171,10.892,2.776,5.711,23.57,3.803,8.383,3.969,4.077,4.098,9.58,6.133,3.114,6.747,43.704,2.704,7.199,9.944,22.415,5.224,2.883,9.58,2.776,43.07,3.411,3.803,10.886,5.391,4.005,23.57,2.776,9.58,1.922,8.386,9.944,4.718,7.352,6.463,3.287,1.595,1.853,9.8,11.974,36.216,2.776,3.803,36.216,7.352,5.147,null,3.739,6.463,4.741,5.203,9.58,4.718,8.99,3.969,21.522,9.58,5.147,41.037,9.944,4.514,4.077,4.098,3.16,19.233,44.019,4.741,9.58,21.522,9.58,43.07,15.753,4.213,17.943,4.514,1.805,8.386,9.58,9.58,43.07,21.522,15.753,43.07,43.07,6.568,7.199,3.16,34.648,9.58,9.58,36.216,4.077,11.524,3.634,2.776,3.287,5.391,9.493,23.53,41.037,15.753,7.199,44.019,43.07,6.568,15.753,7.091,2.651,6.568,3.16,11.974,9.58,41.037,19.233,2.683,57.618,34.648,6.463,2.741,14.11,9.8,2.152,4.077,15.753,12.282,1.926,43.07,6.771,15.753,7.113,17.943,43.07,43.07,36.216,17.75,23.53,8.386,15.753,5.147,9.493,4,9.58,15.753,43.07,4.077,7.199,19.233,8.386,8.386,21.522,59.102,59.102,5.147,17.943,17.943,9.493,2.683,2.683,9.8,25.455,19.233,7.358,4.416,5.401,4.077,19.233,3.78,9.58,14.11,10.892,43.07,43.07,4.718,3.022,17.943,4.005,17.728,8.386,4.959,4.959,2.651,36.216,3.158,2.936,7.731,7.113,15.236,41.037,9.58,21.522,5.401,8.383,null,9.58,41.037,4.077,10.892,17.75,3.649,36.216,4.077,17.943,17.943,4.005,4.743,9.58,2.88,9.58,41.037,4.077,4.959,1.926,4.077,1.926,11.524,9.58,11.292,36.216,10.241,4.077,2.724,4.959,41.037,13,3.729,4.005,4.005,23.53,34.648,4.718,19.233,2.027,41.037,41.037,41.037,10.241,null,1.994,17.943,41.037,9.58,3.015,4.077,44.019,5.595,11.974,9.58,17.943,4.077,11.524,17.943,36.216,4.95,4.077,3.319,23.53,44.019,2.552,19.233,14.971,12.282,9.58,41.037,4.959,11.974,9.58,4.416,11.796,4.077,17.943,2.683,23.53,3.739,4.077,4.077,9.58,2.265,2.88,4.077,17.943,17.943,2.724,17.943,4.098,4.077,44.019,2.027,41.037,3.67,14.11,23.53,59.102,17.943,14.971,4.718,5.017,2.683,9.58,41.037,4.077,2.166,9.58,9.055,2.152,3.611,4.077,17.943,3.762,4.077,1.926,3.015,4.077,8.422,4.077,4.077,4.077,4.098,19.233,4.718,1.442,2.683,4.077,2.198,14.11,4.718,7.731,3.319,4.718,6.568,5.391,41.037,3.16,2.808,3.729,41.037,6.568,17.943,4.288,14.11,70.67,3.16,3.158,4.741,2.669,2.092,4.416,41.037,19.233,10.241,18.946,4.077,3.022,1.994,8.422,17.943,3.015,15.753,4.006,7.19,14.971,6.704,14.971,4.171,12.804,7.328,34.648,2.738,5.017,14.3,43.07,4.171,2.008,14.423,4.615,1.855,6.381,14.3,6.704,6.513,6.513,4.449,10.241,3.298,3.298,51.848,23.57,11.878,6.704,3.241,4.167,57.618,7.958,43.704,34.648,3.571,4.154,3.894,7.823,7.823,4.005,null,14.196,7.793,5.149,4.171,9.101,8.519,17.943,4.514,7.091,11.973,3.785,14.3,3.591,7.149,10.465,3.564,10.39,30.641,23.57,17.42,4.171,5.399,43.07,59.102,9.58,43.07,4.825,4.089,21.126,24.646,17.161,43.07,8.738,57.618,5.29,17.42,36.216,12.282,3.298,null,11.878,5.589,7.943,17.943,17.943,3.571,32.274,41.037,9.58,4.006,18.946,13.297,43.704,3.298,10.465,41.037,32.274,34.648,4.171,11.974,4.183,3.022,3.113,6.12,4.825,4.711,4.171,8.64,3.633,11.878,22.415,5.182,2.098,3.579,5.657,14.971,5.113,18.946,4.653,24.646,3.591,8.519,19.233,17.943,15.862,41.037,15.753,5.182,4.011,43.07,32.274,2.287,2.59,6.704,6.704,3.579,19.233,3.197,1.569,4.416,3.591,3.591,9.777,11.974,2.197,5.182,7.19,23.57,3.082,18.946,4.171,2.591,43.07,23.53,10.39,9.493,6.747,44.019,9.002,2.34,3.937,14.196,4.825,4.653,44.019,4.716,4.259,1.502,3.234,4.171,17.943,8.285,10.465,4.011,11.524,34.648,2.484,7.149,4.825,22.415,3.319,17.943,4.653,4.653,4.171,26.37,3.037,4.653,10.965,30.641,19.684,59.102,43.07,4.106,2.794,4.089,19.233,2.635,4.155,4.171,6.519,3.319,4.531,7.57,24.646,9.777,11.974,10.465,4.011,2.098,8.619,19.233,9.493,34.648,4.171,5.589,3.895,11.974,3.022,4.473,12.282,6.568,null,5.057,6.246,6.704,6.704,5.037,19.233,17.943,4.183,9.493,27.516,4.653,4.653,3.591,4.171,24.54,36.216,6.12,9.493,18.946,3.592,3.841,3.895,10.465,5.552,3.298,23.53,34.648,9.58,3.167,4.569,36.216,9.58,4.825,43.07,14.11,43.07,8.049,4.719,3.298,43.351,8.192,3.033,21.522,59.102,5.595,5.237,15.27,30.641,3.169,9.58,6.723,3.305,6.29,2.55,2.55,3.362,19.233,4.207,14.3,7.299,32.274,2.744,7.827,32.274,2.598,3.022,7.113,6.747,15.255,4.171,7.19,3.022,5.057,23.53,7.731,3.394,6.916,15.27,6.68,4.089,3.082,23.57,3.591,4.011,4.255,null,2.098,6.704,3.241,19.233,22.992,4.171,4.171,4.304,43.07,32.274,1.85,21.522,41.037,4.141,13.655,3.022,6.17,1.853,4.739,18.946,6.747,3.591,11.974,11.974,4.653,36.216,4.171,3.319,9.002,7.731,3.298,5.779,5.779,8.061,11.524,17.943,4.653,5.779,24.25,2.791,7.731,12.282,4.653,5.595,41.037,9.58,15.753,19.233,4.304,12.282,4.113,36.216,36.216,3.287,51.273,12.282,4.255,3.037,2.745,2.669,2.776,6.568,6.916,9.333,51.273,3.684,41.037,null,null,null,4.483,19.233,9.493,6.747,24.25,16.494,2.02,44.019,41.037,41.037,10.241,2.724,28.467,14.196,3.74,23.53,18.886,15.753,7.731,3.298,34.648,15.753,17.943,5.401,3.571,3.571,16.494,8.738,3.298,11.292,3.197,11.878,5.779,3.592,4.106,7.731,1.729,3.241,4.416,4.653,24.646,17.161,2.468,3.197,3.319,2.776,3.319,9.493,3.591,3.022,3.197,3.197,6.747,5.855,21.522,4.089,5.779,2.776,9.58,3.411,3.411,null,6.771,null,7.716,18.946,43.704,44.019,4.416,6.568,5.203,3.298,28.467,5.595,3.319,43.07,2.776,7.24,19.233,17.943,51.848,3.319,3.571,4.416,1.697,34.648,21.522,43.07,14.695,11.878,11.974,2.622,8.306,4.171,19.233,1.703,16.562,36.216,3.319,5.574,2.027,6.804,43.07,3.895,17.75,null,null,3.319,7.755,19.233,3.714,19.315,43.07,4.084,24.646,24.646,44.019,3.519,3.599,43.07,59.102,17.943,11.147,2.098,34.648,3.319,3.571,4.531,4.416,5.779,5.779,2.776,43.07,7.352,11.147,3.022,2.776,17.943,9.493,9.58,4.718,16.494,7.352,19.233,3.571,2.968,5.855,34.648,2.587,2.776,9.493,43.07,2.937,3.319,10.892,null,3.051,null,null,null,4.077,6.704,5.147,9.493,9.493,6.914,41.037,7.199,2.791,15.753,3.298,12.282,7.352,41.037,15.753,19.233,18.545,4.006,16.494,3.022,1.795,11.974,43.07,4.171,3.579,4.005,41.037,19.233,19.233,11.292,23.53,5.779,9.396,10.241,4.089,23.53,9.58,9.58,3.571,1.275,6.568,8.738,6.704,3.298,4.259,4.259,34.648,4.171,3.241,1.697,9.333,11.147,43.07,21.522,14.971,3.319,41.037,4.089,4.006,5.147,9.493,4.006,34.648,11.147,3.319,2.776,3.729,3.729,5.595,5.779,3.571,8.738,3.579,6.463,2.511,2.098,3.711,2.735,4.531,1.644,23.57,34.648,1.502,3.894,7.199,43.07,11.796,13.833,3.545,34.648,7.299,9.58,9.493,4.089,21.522,15.255,44.019,6.568,17.943,4.005,5.574,6.891,19.233,6.463,43.07,3.571,3.571,13.833,3.579,4.005,2.027,6.704,6.704,17.943,4.514,4.449,7.57,6.704,9.101,14.3,10.241,30.641,14.299,6.425,43.07,6.704,41.037,15.753,3.95,5.574,17.943,17.943,6.402,23.57,14.3,3.591,43.07,43.07,21.522,6.704,3.424,17.943,3.04,11.876,44.019,24.646,6.704,43.07,43.07,2.832,41.037,4.011,43.07,17.943,6.402,6.402,5.574,2.59,12.282,4.599,30.641,30.641,6.771,19.233,19.233,25.455,14.3,5.942,3.591,6.704,2.832,15.753,15.753,23.054,1.832,4.259,4.716,41.037,36.216,17.943,5.113,8.061,8.061,30.641,30.641,19.233,4.586,15.27,3.298,44.019,9.493,14.3,14.3,14.3,17.42,34.648,7.731,7.943,21.522,21.522,41.037,23.239,15.753,15.753,15.753,15.753,10.465,3.161,41.037,43.07,22.415,4.259,4.449,7.017,4.171,4.569,4.936,17.943,17.943,17.943,17.943,17.943,10.624,30.641,2.697,35.386,31.864,31.864,4.013,24.646,18.946,11.974,5.589,43.07,4.011,5.182,36.216,6.333,4.304,3.518,6.704,11.878,6.762,14.403,21.522,3.441,3.022,11.501,3.441,15.753,11.878,11.147,15.862,10.465,4.098,11.878,4.183,3.06,12.282,7.24,3.57,7.823,7.823,7.823,4.207,6.747,5.333,8.061,3.298,10.892,10.892,4.171,4.171,6.162,3.579,3.179,4.167,4.167,2.721,8.738,17.943,17.943,3.114,14.971,5.13,7.731,7.958,7.958,7.958,7.958,23.57,23.57,6.17,7.352,5.839,14.3,4.449,17.943,41.037,7.731,15.221,23.57,43.07,43.07,17.943,14.971,4.259,36.216,36.216,34.648,17.943,11.878,4.743,2.929,4.259,15.753,17.943,17.943,4.171,7.19,5.589,15.753,11.878,7.731,17.943,23.57,34.648,4.569,16.173,11.974,4.176,15.753,15.753,23.916,5.595,17.943,34.106,14.196,4.171,41.037,41.037,43.07,21.522,4.259,4.259,17.161,4.295,6.17,17.943,17.943,17.943,6.747,11.973,6.519,7.793,8.519,6.17,15.753,23.916,26.37,9.055,15.167,5.714,5.399,17.943,17.943,12.004,5.605,3.917,4.478,31.864,30.641,11.974,5.855,5.13,23.57,4.255,4.077,7.113,5.237,43.07,41.037,41.037,10.465,5.182,15.753,3.161,4.259,41.037,36.216,43.07,4.011,19.233,17.943,17.943,4.005,4.514,4.084,4.653,14.3,34.648,34.648,4.171,4.171,2.027,5.574,4.716,4.259,4.259,43.07,15.753,15.753,43.07,3.648,3.518,41.037,7.731,11.501,8.083,4.449,3.241,3.241,17.943,17.943,4.416,2.523,14.3,14.3,44.019,8.192,4.569,3.241,2.704,18.946,23.57,36.216,4.716,11.501,41.037,43.07,15.753,15.753,15.753,11.878,5.7,27.604,41.037,41.037,11.878,2.792,7.24,7.731,7.731,6.771,null,6.17,17.943,17.943,17.943,14.11,2.19,12.856,8.061,14.3,14.3,17.42,5.552,3.517,2.286,23.57,5.13,41.037,11.878,3.241,19.233,15.255,43.07,43.07,51.273,10.465,43.07,36.216,6.17,17.943,18.946,31.864,31.864,41.037,41.037,4.011,23.239,11.878,22.415,9.58,9.58,11.501,6.916,6.68,19.233,3.101,7.827,12.856,23.57,34.648,3.837,43.07,4.259,41.037,43.07,9.58,11.292,14.299,4.825,19.233,9.791,31.864,14.3,4.171,41.037,41.037,7.551,41.037,41.037,43.07,44.019,7.731,7.731,5,9.055,19.233,17.943,4.147,8.313,23.53,23.57,34.648,36.216,2.929,22.415,4.416,4.514,223.679,17.943,22.416,12.004,4.66,30.641,30.641,34.648,12.282,4.259,41.037,4.331,7.113,17.943,17.943,23.57,4.011,3.287,28.245,10.465,15.753,2.983,4.402,10.465,22.415,9.58,10.39,19.233,19.233,17.943,17.943,4.416,2.581,8.061,23.53,14.3,14.3,51.848,3.9,10.465,43.07,21.522,8.378,8.911,15.753,15.753,11.878,4.098,43.07,4.259,11.878,0.567,8.083,5.147,9.944,17.943,17.943,17.943,14.11,3.917,44.019,3.603,8.386,15.862,59.102,27.604,23.239,7.271,10.465,23.054,4.011,3.729,9.496,11.501,6.17,5.714,19.233,19.233,3.366,17.943,30.641,23.57,3.045,8.386,17.161,36.216,11.878,10.465,2.158,16.562,43.07,17.161,2.746,3.579,7.199,4.568,19.233,19.233,14.971,10.465,14.3,21.126,17.42,2.515,10.465,3.022,15.862,4.084,8.285,15.753,2.186,null,null,9.002,15.27,5.147,5.657,19.233,7.823,14.971,4.084,3.517,5.113,3.478,3.197,5.13,5.045,4.95,4.653,4.653,4.653,4.653,6.519,7.352,31.864,30.641,14.3,24.646,23.57,34.648,4.398,4.367,13.744,4.915,4.915,3.319,5.147,17.943,6.181,43.07,70.67,43.07,36.216,36.216,17.943,17.943,14.3,23.57,9.58,36.216,3.633,36.216,19.315,9.002,17.943,3.917,25.455,25.455,4.36,8.386,5.182,12.314,16.562,21.522,15.753,4.803,17.943,30.641,30.641,44.019,3.994,5.779,4.084,9.58,9.58,6.747,23.57,2.776,15.753,15.753,4.011,6.17,4.207,6.513,5.855,34.648,4.171,2.252,41.037,43.07,4.011,5.045,4.259,22.415,4.259,10.465,43.07,43.07,43.07,43.07,43.07,9.493,6.747,30.641,23.57,6.38,15.236,2.776,4.259,4.011,41.037,2.173,2.651,36.216,4.259,17.161,17.161,23.054,43.07,43.07,15.753,9.193,36.216,12.282,11.973,11.973,11.973,11.878,30.641,30.641,44.019,34.648,11.028,41.037,4.011,43.07,2.776,3.287,17.161,43.07,15.753,36.216,5.193,19.233,17.943,17.943,17.943,11.878,30.641,28.467,44.019,34.648,4.198,11.974,41.037,41.037,41.037,41.037,41.037,41.037,10.886,4.259,10.886,15.753,10.886,10.465,5.182,2.098,7.271,17.943,14.3,4.171,36.216,4.011,41.037,41.037,21.522,15.753,6.653,9.493,9.493,6.68,17.943,17.943,14.971,9.493,12.004,6.747,6.747,30.641,24.646,19.684,9.58,3.411,3.599,41.037,41.037,4.259,6.243,8.083,17.943,17.943,7.017,11.878,4.171,9.396,41.037,43.07,3.411,15.753,4.259,6.723,2.776,4.011,9.58,7.731,null,6.526,3.029,11.524,3.241,17.943,17.943,7.823,7.823,7.823,12.004,4.653,4.447,11.878,23.57,34.648,6.333,36.216,43.07,36.216,3.244,22.415,3.371,8.386,41.037,41.037,36.216,4.011,21.522,4.011,41.037,4.011,17.943,43.07,21.522,15.753,15.753,3.9,15.862,36.216,3.411,22.415,31.864,11.878,24.646,17.161,14.028,21.522,2.776,41.037,7.731,22.415,3.8,4.514,9.493,8.061,11.878,9.58,13.747,9.777,41.037,41.037,2.252,3.411,22.415,3.599,6.17,6.17,7.199,22.416,30.641,8.386,7.731,2.77,7.199,19.233,19.233,19.233,10.465,11.878,21.126,15.753,9.58,11.974,1.994,17.943,7.017,6.051,4.49,11.878,11.878,11.878,11.878,34.648,41.037,2.776,15.753,15.753,15.753,15.753,15.753,19.315,2.935,19.233,17.943,23.57,3.424,7.815,70.67,10.465,41.037,11.501,4.449,5.391,4.183,4.514,3.917,11.878,11.878,23.57,4.171,4.171,5.401,10.465,3.517,7.551,43.07,9.002,4.514,9.493,12.282,3.739,24.54,6.747,11.878,11.878,24.646,4.013,4.106,15.753,15.753,4.259,3.857,10.241,5.017,11.028,15.862,36.216,17.161,2.77,15.753,43.07,43.07,3.319,5.045,null,null,null,2.197,17.75,2.741,15.27,4.028,19.233,17.943,9.493,12.282,3.632,6.747,7.352,4.171,5.401,2.635,6.804,9.58,43.07,17.943,7.827,3.411,17.161,2.252,2.675,6.074,3.411,36.216,51.273,18.639,3.866,19.233,1.994,17.943,9.493,12.004,9.8,3.803,43.07,36.216,43.07,9.58,43.07,10.241,4.514,9.493,12.282,12.282,44.019,34.648,4.259,41.037,9.58,4.716,43.07,4.077,5.147,11.524,17.943,6.747,11.028,59.102,36.216,9.58,21.522,16.562,36.216,2.591,9.493,12.282,3.628,31.864,31.864,23.57,3.803,21.522,10.241,4.288,11.292,9.493,11.878,21.522,43.07,43.07,9.58,4.259,9.055,4.741,9.493,12.154,44.019,3.098,17.161,9.58,4.259,43.07,43.07,4.077,6.17,2.741,19.233,19.233,19.233,19.233,19.233,19.233,19.233,17.943,18.946,6.747,6.747,11.878,21.522,3.803,23.239,17.943,18.946,8.547,11.878,11.878,4.013,41.037,36.216,2.776,15.753,15.753,15.753,2.776,8.378,6.17,6.425,8.049,6.747,44.019,34.648,36.216,43.07,9.58,3.319,9.58,3.411,3.729,9.493,30.641,6.463,43.07,17.161,36.216,21.522,9.58,null,2.961,3.157,14.028,17.943,7.823,7.823,14.971,null,null,11.878,36.216,43.07,43.07,17.943,10.211,3.503,4.428,41.037,41.037,11.501,15.753,7.551,19.233,6.747,51.848,44.019,2.776,43.07,10.241,7.199,3.8,17.943,43.07,15.753,41.037,11.524,4.959,4.743,11.878,34.648,4.106,43.07,43.07,2.776,21.522,21.522,15.753,15.753,3.169,43.07,2.776,41.037,19.233,17.943,4.49,8.386,9.58,41.037,17.161,41.037,43.07,2.776,6.568,7.958,14.971,9.493,11.878,23.53,23.53,34.648,3.961,2.776,9.58,2.776,43.07,43.07,6.916,9.493,11.973,23.57,9.58,6.723,5.828,17.943,9.493,18.946,11.878,30.641,44.019,12.314,70.67,2.776,7.199,10.241,10.241,8.083,17.943,9.493,34.648,4.171,11.974,17.161,6.938,9.58,4.416,5.574,5.574,41.037,9.58,8.285,41.037,43.07,22.415,3.583,17.943,14.971,9.493,12.282,8.306,8.313,41.037,70.67,36.216,2.776,2.776,22.415,43.07,17.943,4.514,null,10.465,4.428,3.961,2.776,9.58,6.425,11.878,2.776,15.753,4.715,43.07,34.648,4.171,15.753,2.776,41.037,43.07,23.57,9.055,19.233,23.57,23.57,33.162,6.463,3.319,15.753,43.07,43.07,43.07,7.731,6.568,3.729,4.194,4.428,41.037,43.07,15.753,43.07,36.216,9.493,7.113,17.943,9.493,2.683,28.467,34.648,5.779,21.522,43.07,9.58,17.943,9.493,5.855,44.019,4.428,36.216,43.07,43.07,41.037,41.037,41.037,41.037,41.037,41.037,6.568,4.514,4.428,2.776,10.892,10.241,3.729,34.648,41.037,23.916,2.776,17.943,23.57,43.704,2.776,36.216,43.07,19.233,21.522,2.776,43.07,7.199,9.944,9.944,9.493,14.11,23.57,9.58,9.58,3.729,null,14.028,3.16,1.201,44.019,8.386,9.58,43.07,9.055,41.037,19.233,19.233,19.233,24.646,17.161,15.753,41.037,41.037,43.07,41.037,9.493,4.171,9.58,10.624,14.11,19.233,14.971,6.568,5.147,19.233,41.037,43.07,43.07,43.07,2.776,2.776,12.282,36.216,21.522,2.776,41.037,41.037,15.753,9.58,22.415,6.568,19.233,17.943,4.416,34.648,9.58,43.07,4.514,34.648,34.648,9.58,2.252,9.58,9.58,9.58,9.58,9.58,9.58,9.58,9.58,6.17,3.319,8.213,19.233,17.943,6.747,3.803,9.58,9.493,5.855,43.07,2.776,41.037,3.287,70.67,null,null,null,3.201,14.028,14.028,14.971,4.005,9.493,23.53,41.037,7.199,19.233,17.943,12.282,5.595,41.037,9.58,10.241,1.922,1.502,15.27,44.019,43.07,15.753,3.319,23.57,9.58,2.776,3.729,2.704,3.319,43.07,3.319,9.58,3.015,24.25,9.58,36.216,21.522,41.037,41.037,2.724,4.743,1.803,9.58,41.037,43.07,3.022,3.09,21.522,2.776,43.07,17.943,44.019,34.648,5.574,2.776,9.493,30.641,44.019,null,2.741,9.493,23.53,30.641,3.969,41.037,34.648,17.161,6.568,19.233,36.216,43.07,21.522,5.147,2.776,15.753,4.106,4.95,30.641,41.037,9.58,2.776,3.571,17.943,4.005,9.493,2.776,5.147,14.11,2.776,3.287,2.412,1.994,19.233,4.005,23.57,9.58,4.428,9.58,7.731,3.319,9.58,9.58,2.265,11.501,5.037,9.493,43.07,19.233,23.53],"hoverinfo":"y","type":"box","fillcolor":"rgba(255,255,255,1)","marker":{"opacity":null,"outliercolor":"rgba(0,0,0,1)","line":{"width":1.88976377952756,"color":"rgba(0,0,0,1)"},"size":5.66929133858268},"line":{"color":"rgba(51,51,51,1)","width":1.88976377952756},"showlegend":false,"xaxis":"x","yaxis":"y","frame":null}],"layout":{"margin":{"t":27.8374660424253,"r":7.30593607305936,"b":41.7918039419687,"l":37.2602739726027},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.4,3.6],"tickmode":"array","ticktext":["HighlyCited-specific","LCS-and-HighlyCited","LCS-specific"],"tickvals":[1,2,3],"categoryorder":"array","categoryarray":["HighlyCited-specific","LCS-and-HighlyCited","LCS-specific"],"nticks":null,"ticks":"outside","tickcolor":"rgba(179,179,179,1)","ticklen":3.65296803652968,"tickwidth":0.33208800332088,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(222,222,222,1)","gridwidth":0.33208800332088,"zeroline":false,"anchor":"y","title":{"text":"<b> group <\/b>","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-2.5,52.5],"tickmode":"array","ticktext":["0","10","20","30","40","50"],"tickvals":[0,10,20,30,40,50],"categoryorder":"array","categoryarray":["0","10","20","30","40","50"],"nticks":null,"ticks":"outside","tickcolor":"rgba(179,179,179,1)","ticklen":3.65296803652968,"tickwidth":0.33208800332088,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(222,222,222,1)","gridwidth":0.33208800332088,"zeroline":false,"anchor":"x","title":{"text":"<b> IF <\/b>","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"transparent","line":{"color":"rgba(179,179,179,1)","width":0.66417600664176,"linetype":"solid"},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.88976377952756,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","showSendToCloud":false},"source":"A","attrs":{"175c196259ca":{"x":{},"y":{},"type":"box"}},"cur_data":"175c196259ca","visdat":{"175c196259ca":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+图 C.3: LCS核心文献和WoS高被引文献的影响因子分布差异
+</p>
+</div>
+
+</div>
+<hr></hr>
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" ></div>
+<script type="text/javascript">
+(function(){
+var appid = 'cyuQwSWaS';
+var conf = 'prod_3162b55b7a40aca91e685ed6ce96ea24';
+var width = window.innerWidth || document.documentElement.clientWidth;
+if (width < 960) {
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="http://cy-cdn.kuaizhan.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("http://cy-cdn.kuaizhan.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="core-article.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook/js/app.min.js"></script>
+<script src="libs/gitbook/js/lunr.js"></script>
+<script src="libs/gitbook/js/clipboard.min.js"></script>
+<script src="libs/gitbook/js/plugin-search.js"></script>
+<script src="libs/gitbook/js/plugin-sharing.js"></script>
+<script src="libs/gitbook/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook/js/jquery.highlight.js"></script>
+<script src="libs/gitbook/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": true,
+"facebook": false,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/gaospecial/gut-microbiome-20yrs/edit/master/90-appendix.Rmd",
+"text": "编辑"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["gut-microbiome-20yrs.pdf"],
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

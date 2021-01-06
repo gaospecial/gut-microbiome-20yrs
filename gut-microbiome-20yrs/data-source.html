@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>A 数据来源 | 肠道菌群研究二十年·大数据</title>
+  <meta name="description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="A 数据来源 | 肠道菌群研究二十年·大数据" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  <meta name="github-repo" content="gaospecial/gut-microbiome-20yrs" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="A 数据来源 | 肠道菌群研究二十年·大数据" />
+  
+  <meta name="twitter:description" content="从20年肠道菌群研究大数据看肠道菌群研究的未来" />
+  
+
+<meta name="author" content="热心肠研究院" />
+
+
+<meta name="date" content="2021-01-06" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="disease.html"/>
+<link rel="next" href="core-article.html"/>
+<script src="libs/header-attrs/header-attrs.js"></script>
+<script src="libs/jquery/jquery.min.js"></script>
+<link href="libs/gitbook/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections/anchor-sections.js"></script>
+<script src="libs/htmlwidgets/htmlwidgets.js"></script>
+<link href="libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding/datatables.js"></script>
+<link href="libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core/js/jquery.dataTables.min.js"></script>
+<script src="libs/jszip/jszip.min.js"></script>
+<link href="libs/dt-ext-buttons/css/buttons.dataTables.min.css" rel="stylesheet" />
+<script src="libs/dt-ext-buttons/js/dataTables.buttons.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.flash.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.html5.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.colVis.min.js"></script>
+<script src="libs/dt-ext-buttons/js/buttons.print.min.js"></script>
+<link href="libs/nouislider/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="libs/nouislider/jquery.nouislider.min.js"></script>
+<link href="libs/selectize/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="libs/selectize/selectize.min.js"></script>
+<link href="libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk/js/crosstalk.min.js"></script>
+<script src="libs/plotly-binding/plotly.js"></script>
+<script src="libs/typedarray/typedarray.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main/plotly-latest.min.js"></script>
+<link href="libs/wordcloud2/wordcloud.css" rel="stylesheet" />
+<script src="libs/wordcloud2/wordcloud2-all.js"></script>
+<script src="libs/wordcloud2/hover.js"></script>
+<script src="libs/wordcloud2-binding/wordcloud2.js"></script>
+<script src="libs/d3/d3.min.js"></script>
+<script src="libs/sankey/sankey.js"></script>
+<script src="libs/sankeyNetwork-binding/sankeyNetwork.js"></script>
+<link href="libs/vis/vis.css" rel="stylesheet" />
+<script src="libs/vis/vis.min.js"></script>
+<script src="libs/visNetwork-binding/visNetwork.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="css/style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">肠道菌群二十年·大数据</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>前言</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#致谢"><i class="fa fa-check"></i>致谢</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="method.html"><a href="method.html"><i class="fa fa-check"></i><b>1</b> 方法论</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="method.html"><a href="method.html#如何确定核心文献"><i class="fa fa-check"></i><b>1.1</b> 如何确定核心文献？</a></li>
+<li class="chapter" data-level="1.2" data-path="method.html"><a href="method.html#network-concept"><i class="fa fa-check"></i><b>1.2</b> 如何进行文献网络分析？</a>
+<ul>
+<li class="chapter" data-level="1.2.1" data-path="method.html"><a href="method.html#文献的引用网络"><i class="fa fa-check"></i><b>1.2.1</b> 文献的引用网络</a></li>
+<li class="chapter" data-level="1.2.2" data-path="method.html"><a href="method.html#合作网络"><i class="fa fa-check"></i><b>1.2.2</b> 合作网络</a></li>
+<li class="chapter" data-level="1.2.3" data-path="method.html"><a href="method.html#共词分析"><i class="fa fa-check"></i><b>1.2.3</b> 共词分析</a></li>
+<li class="chapter" data-level="1.2.4" data-path="method.html"><a href="method.html#文献网络的简化"><i class="fa fa-check"></i><b>1.2.4</b> 文献网络的简化</a></li>
+</ul></li>
+<li class="chapter" data-level="1.3" data-path="method.html"><a href="method.html#核心论文的分类"><i class="fa fa-check"></i><b>1.3</b> 核心论文的分类</a></li>
+</ul></li>
+<li class="part"><span><b>I 概况</b></span></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> 研究概述</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="intro.html"><a href="intro.html#肠道菌群是一个高速发展的研究领域"><i class="fa fa-check"></i><b>2.1</b> 肠道菌群是一个高速发展的研究领域</a></li>
+<li class="chapter" data-level="2.2" data-path="intro.html"><a href="intro.html#肠道菌群研究仍然在收获持续的关注"><i class="fa fa-check"></i><b>2.2</b> 肠道菌群研究仍然在收获持续的关注</a></li>
+<li class="chapter" data-level="2.3" data-path="intro.html"><a href="intro.html#肠道菌群研究建立在广泛的全球合作之上"><i class="fa fa-check"></i><b>2.3</b> 肠道菌群研究建立在广泛的全球合作之上</a></li>
+<li class="chapter" data-level="2.4" data-path="intro.html"><a href="intro.html#全球范围内的知名大学和研究所广泛参与"><i class="fa fa-check"></i><b>2.4</b> 全球范围内的知名大学和研究所广泛参与</a></li>
+<li class="chapter" data-level="2.5" data-path="intro.html"><a href="intro.html#top-scientist"><i class="fa fa-check"></i><b>2.5</b> 来看看本领域内最负盛名的科学家</a></li>
+<li class="chapter" data-level="2.6" data-path="intro.html"><a href="intro.html#发表肠道菌群研究的主流期刊有哪些"><i class="fa fa-check"></i><b>2.6</b> 发表肠道菌群研究的主流期刊有哪些？</a></li>
+<li class="chapter" data-level="2.7" data-path="intro.html"><a href="intro.html#研究领域和研究内容一瞥"><i class="fa fa-check"></i><b>2.7</b> 研究领域和研究内容一瞥</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="citespace-network.html"><a href="citespace-network.html"><i class="fa fa-check"></i><b>3</b> CiteSpace 网络</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="citespace-network.html"><a href="citespace-network.html#citespace-network-result"><i class="fa fa-check"></i><b>3.1</b> 网络分析结果</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="citespace-network.html"><a href="citespace-network.html#文献的引用网络-1"><i class="fa fa-check"></i><b>3.1.1</b> 文献的引用网络</a></li>
+<li class="chapter" data-level="3.1.2" data-path="citespace-network.html"><a href="citespace-network.html#作者的合作网络"><i class="fa fa-check"></i><b>3.1.2</b> 作者的合作网络</a></li>
+<li class="chapter" data-level="3.1.3" data-path="citespace-network.html"><a href="citespace-network.html#关键词的共现网络"><i class="fa fa-check"></i><b>3.1.3</b> 关键词的共现网络</a></li>
+</ul></li>
+</ul></li>
+<li class="part"><span><b>II 国际研究格局</b></span></li>
+<li class="chapter" data-level="4" data-path="global.html"><a href="global.html"><i class="fa fa-check"></i><b>4</b> 全球合作网络</a></li>
+<li class="chapter" data-level="5" data-path="china-study.html"><a href="china-study.html"><i class="fa fa-check"></i><b>5</b> 中国的肠道菌群研究</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="china-study.html"><a href="china-study.html#中国研究概况"><i class="fa fa-check"></i><b>5.1</b> 中国研究概况</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="china-study.html"><a href="china-study.html#研究的主要脉络"><i class="fa fa-check"></i><b>5.1.1</b> 研究的主要脉络</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="china-study.html"><a href="china-study.html#主要的研究机构"><i class="fa fa-check"></i><b>5.2</b> 主要的研究机构</a></li>
+<li class="chapter" data-level="5.3" data-path="china-study.html"><a href="china-study.html#研究领域"><i class="fa fa-check"></i><b>5.3</b> 研究领域</a></li>
+<li class="chapter" data-level="5.4" data-path="china-study.html"><a href="china-study.html#发展趋势"><i class="fa fa-check"></i><b>5.4</b> 发展趋势</a>
+<ul>
+<li class="chapter" data-level="5.4.1" data-path="china-study.html"><a href="china-study.html#增长最为迅速的关键字有哪些"><i class="fa fa-check"></i><b>5.4.1</b> 增长最为迅速的关键字有哪些？</a></li>
+</ul></li>
+<li class="chapter" data-level="5.5" data-path="china-study.html"><a href="china-study.html#港澳台地区的肠道菌群研究"><i class="fa fa-check"></i><b>5.5</b> 港澳台地区的肠道菌群研究</a></li>
+</ul></li>
+<li class="part"><span><b>III 研究热点</b></span></li>
+<li class="chapter" data-level="6" data-path="research-topic.html"><a href="research-topic.html"><i class="fa fa-check"></i><b>6</b> 四大研究主题</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="research-topic.html"><a href="research-topic.html#主题对应的核心论文数据"><i class="fa fa-check"></i><b>6.1</b> 主题对应的核心论文数据</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="diet.html"><a href="diet.html"><i class="fa fa-check"></i><b>7</b> 肠道菌群与饮食</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="diet.html"><a href="diet.html#核心文章列表"><i class="fa fa-check"></i><b>7.1</b> 核心文章列表</a></li>
+<li class="chapter" data-level="7.2" data-path="diet.html"><a href="diet.html#领域内专家"><i class="fa fa-check"></i><b>7.2</b> 领域内专家</a></li>
+<li class="chapter" data-level="7.3" data-path="diet.html"><a href="diet.html#机构合作网络"><i class="fa fa-check"></i><b>7.3</b> 机构合作网络</a></li>
+<li class="chapter" data-level="7.4" data-path="diet.html"><a href="diet.html#研究热点"><i class="fa fa-check"></i><b>7.4</b> 研究热点</a></li>
+<li class="chapter" data-level="7.5" data-path="diet.html"><a href="diet.html#肠道菌群与饮食研究的历史脉络"><i class="fa fa-check"></i><b>7.5</b> 肠道菌群与饮食研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="7.5.1" data-path="diet.html"><a href="diet.html#菌群被发现是饮食与肥胖之间重要的一环"><i class="fa fa-check"></i><b>7.5.1</b> 菌群被发现是饮食与肥胖之间重要的一环</a></li>
+<li class="chapter" data-level="7.5.2" data-path="diet.html"><a href="diet.html#养出好菌群"><i class="fa fa-check"></i><b>7.5.2</b> 养出好菌群</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="immunity.html"><a href="immunity.html"><i class="fa fa-check"></i><b>8</b> 肠道菌群与免疫</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="immunity.html"><a href="immunity.html#免疫相关的核心文章列表"><i class="fa fa-check"></i><b>8.1</b> 免疫相关的核心文章列表</a></li>
+<li class="chapter" data-level="8.2" data-path="immunity.html"><a href="immunity.html#研究力量"><i class="fa fa-check"></i><b>8.2</b> 研究力量</a></li>
+<li class="chapter" data-level="8.3" data-path="immunity.html"><a href="immunity.html#知名研究机构"><i class="fa fa-check"></i><b>8.3</b> 知名研究机构</a></li>
+<li class="chapter" data-level="8.4" data-path="immunity.html"><a href="immunity.html#免疫相关研究的历史脉络"><i class="fa fa-check"></i><b>8.4</b> 免疫相关研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="immunity.html"><a href="immunity.html#免疫缺陷小鼠在发现肠道菌群的功能中发挥关键作用"><i class="fa fa-check"></i><b>8.4.1</b> 免疫缺陷小鼠在发现肠道菌群的功能中发挥关键作用</a></li>
+<li class="chapter" data-level="8.4.2" data-path="immunity.html"><a href="immunity.html#免疫失调是肠道菌群失调的重要表现"><i class="fa fa-check"></i><b>8.4.2</b> 免疫失调是肠道菌群失调的重要表现</a></li>
+<li class="chapter" data-level="8.4.3" data-path="immunity.html"><a href="immunity.html#能调控免疫的肠道菌群关键类群被发现"><i class="fa fa-check"></i><b>8.4.3</b> 能调控免疫的肠道菌群关键类群被发现</a></li>
+<li class="chapter" data-level="8.4.4" data-path="immunity.html"><a href="immunity.html#代谢产物是肠道菌群调控免疫的物质基础"><i class="fa fa-check"></i><b>8.4.4</b> 代谢产物是肠道菌群调控免疫的物质基础</a></li>
+<li class="chapter" data-level="8.4.5" data-path="immunity.html"><a href="immunity.html#饮食逐渐成为肠道菌群干预的重要出口"><i class="fa fa-check"></i><b>8.4.5</b> 饮食逐渐成为肠道菌群干预的重要出口</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="metabolism.html"><a href="metabolism.html"><i class="fa fa-check"></i><b>9</b> 肠道菌群与代谢</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="metabolism.html"><a href="metabolism.html#代谢相关的核心文章列表"><i class="fa fa-check"></i><b>9.1</b> 代谢相关的核心文章列表</a></li>
+<li class="chapter" data-level="9.2" data-path="metabolism.html"><a href="metabolism.html#研究力量-1"><i class="fa fa-check"></i><b>9.2</b> 研究力量</a></li>
+<li class="chapter" data-level="9.3" data-path="metabolism.html"><a href="metabolism.html#知名研究机构-1"><i class="fa fa-check"></i><b>9.3</b> 知名研究机构</a></li>
+<li class="chapter" data-level="9.4" data-path="metabolism.html"><a href="metabolism.html#代谢相关研究的历史脉络"><i class="fa fa-check"></i><b>9.4</b> 代谢相关研究的历史脉络</a>
+<ul>
+<li class="chapter" data-level="9.4.1" data-path="metabolism.html"><a href="metabolism.html#肥胖是代谢相关研究的绝对主流"><i class="fa fa-check"></i><b>9.4.1</b> 肥胖是代谢相关研究的绝对主流</a></li>
+<li class="chapter" data-level="9.4.2" data-path="metabolism.html"><a href="metabolism.html#代谢相关疾病的菌群特征被揭示"><i class="fa fa-check"></i><b>9.4.2</b> 代谢相关疾病的菌群特征被揭示</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="disease.html"><a href="disease.html"><i class="fa fa-check"></i><b>10</b> 肠道菌群与疾病</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="disease.html"><a href="disease.html#疾病类型概览"><i class="fa fa-check"></i><b>10.1</b> 疾病类型概览</a></li>
+<li class="chapter" data-level="10.2" data-path="disease.html"><a href="disease.html#cancer"><i class="fa fa-check"></i><b>10.2</b> 癌症</a>
+<ul>
+<li class="chapter" data-level="10.2.1" data-path="disease.html"><a href="disease.html#癌症相关研究的核心论文"><i class="fa fa-check"></i><b>10.2.1</b> 癌症相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.2.2" data-path="disease.html"><a href="disease.html#癌症相关研究的合作网络"><i class="fa fa-check"></i><b>10.2.2</b> 癌症相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.2.3" data-path="disease.html"><a href="disease.html#肠癌相关研究的历史脉络"><i class="fa fa-check"></i><b>10.2.3</b> 肠癌相关研究的历史脉络</a></li>
+<li class="chapter" data-level="10.2.4" data-path="disease.html"><a href="disease.html#癌症相关的重要研究主题"><i class="fa fa-check"></i><b>10.2.4</b> 癌症相关的重要研究主题</a></li>
+</ul></li>
+<li class="chapter" data-level="10.3" data-path="disease.html"><a href="disease.html#diabetes"><i class="fa fa-check"></i><b>10.3</b> 糖尿病</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="disease.html"><a href="disease.html#糖尿病相关研究的核心论文"><i class="fa fa-check"></i><b>10.3.1</b> 糖尿病相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.3.2" data-path="disease.html"><a href="disease.html#糖尿病相关研究的合作网络"><i class="fa fa-check"></i><b>10.3.2</b> 糖尿病相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.3.3" data-path="disease.html"><a href="disease.html#糖尿病相关研究的历史脉络"><i class="fa fa-check"></i><b>10.3.3</b> 糖尿病相关研究的历史脉络</a></li>
+<li class="chapter" data-level="10.3.4" data-path="disease.html"><a href="disease.html#糖尿病相关的重要研究主题"><i class="fa fa-check"></i><b>10.3.4</b> 糖尿病相关的重要研究主题</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="disease.html"><a href="disease.html#CVD"><i class="fa fa-check"></i><b>10.4</b> 心血管疾病</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的核心论文"><i class="fa fa-check"></i><b>10.4.1</b> 心血管疾病相关研究的核心论文</a></li>
+<li class="chapter" data-level="10.4.2" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的合作网络"><i class="fa fa-check"></i><b>10.4.2</b> 心血管疾病相关研究的合作网络</a></li>
+<li class="chapter" data-level="10.4.3" data-path="disease.html"><a href="disease.html#心血管相关的重要研究主题"><i class="fa fa-check"></i><b>10.4.3</b> 心血管相关的重要研究主题</a></li>
+<li class="chapter" data-level="10.4.4" data-path="disease.html"><a href="disease.html#心血管疾病相关研究的历史脉络"><i class="fa fa-check"></i><b>10.4.4</b> 心血管疾病相关研究的历史脉络</a></li>
+</ul></li>
+</ul></li>
+<li class="appendix"><span><b>附录</b></span></li>
+<li class="chapter" data-level="A" data-path="data-source.html"><a href="data-source.html"><i class="fa fa-check"></i><b>A</b> 数据来源</a>
+<ul>
+<li class="chapter" data-level="A.1" data-path="data-source.html"><a href="data-source.html#文献检索方式"><i class="fa fa-check"></i><b>A.1</b> 文献检索方式</a></li>
+<li class="chapter" data-level="A.2" data-path="data-source.html"><a href="data-source.html#下载肠道菌群研究完整数据"><i class="fa fa-check"></i><b>A.2</b> 下载“肠道菌群”研究完整数据</a></li>
+</ul></li>
+<li class="chapter" data-level="B" data-path="core-article.html"><a href="core-article.html"><i class="fa fa-check"></i><b>B</b> 文献筛选</a>
+<ul>
+<li class="chapter" data-level="B.1" data-path="core-article.html"><a href="core-article.html#如何确定核心文献-1"><i class="fa fa-check"></i><b>B.1</b> 如何确定核心文献？</a>
+<ul>
+<li class="chapter" data-level="B.1.1" data-path="core-article.html"><a href="core-article.html#文献清单"><i class="fa fa-check"></i><b>B.1.1</b> 文献清单</a></li>
+<li class="chapter" data-level="B.1.2" data-path="core-article.html"><a href="core-article.html#近两年的研究进展"><i class="fa fa-check"></i><b>B.1.2</b> 近两年的研究进展</a></li>
+<li class="chapter" data-level="B.1.3" data-path="core-article.html"><a href="core-article.html#重点论文"><i class="fa fa-check"></i><b>B.1.3</b> 重点论文</a></li>
+</ul></li>
+<li class="chapter" data-level="B.2" data-path="core-article.html"><a href="core-article.html#数据库资料信息不全的情形"><i class="fa fa-check"></i><b>B.2</b> 数据库资料信息不全的情形</a></li>
+</ul></li>
+<li class="chapter" data-level="C" data-path="impact-factor.html"><a href="impact-factor.html"><i class="fa fa-check"></i><b>C</b> 使用影响因子评价</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>参考文献</a></li>
+<li class="divider"></li>
+<li><a href="https://mr-gut.cn" target="blank">热心肠研究院出品（©2020）</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">肠道菌群研究二十年·大数据</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="data-source" class="section level1" number="11">
+<h1><span class="header-section-number">A</span> 数据来源</h1>
+<div id="文献检索方式" class="section level2" number="11.1">
+<h2><span class="header-section-number">A.1</span> 文献检索方式</h2>
+<p>使用“肠道”和“菌群”两个主题词在 WOS 数据库中搜索 2000 年以来的文献数据，共检得56445条记录（2020-1-3)。</p>
+<p>其中，包括 2135 条高被引论文（Highly Cited in Field）。</p>
+<ul>
+<li><p>数据库</p>
+<p>Web of Science Core Collection;</p>
+<p>包括：SCI-EXPANDED, SSCI, CPCI-S, CPCI-SSH, CCR-EXPANDED, IC.</p></li>
+<li><p>检索年限</p>
+<p>从 2000 年至 2020 年；</p></li>
+<li><p>具体使用的检索式是：</p>
+<p>“TS=(gut OR intestine OR bowel OR intestinal OR colon OR colorectal OR gastrointestine OR gastrointestinal) AND TS=(microbiome OR microbiota OR flora OR microbe OR microbes OR commensal OR symbiont OR pathobiont OR mycobiome OR virome OR metagenome OR meta-genome)”。</p></li>
+</ul>
+<p><strong>Web of Science 关于高被引论文的定义</strong></p>
+<blockquote>
+<p>As of September/October 2019, this highly cited paper received enough citations to place it in the top 1% of the academic field of Agricultural Sciences based on a highly cited threshold for the field and publication year.</p>
+</blockquote>
+</div>
+<div id="下载肠道菌群研究完整数据" class="section level2" number="11.2">
+<h2><span class="header-section-number">A.2</span> 下载“肠道菌群”研究完整数据</h2>
+<p>下载完整数据（Full Record and Cited References），保存为文本文件。</p>
+<p>Web of Science 数据导出每次限制 500 条数据，需要分多次保存，全部下载完毕后，可以将所有文件合并到一起。</p>
+</div>
+</div>
+<hr></hr>
+<!--PC和WAP自适应版-->
+<div id="SOHUCS" ></div>
+<script type="text/javascript">
+(function(){
+var appid = 'cyuQwSWaS';
+var conf = 'prod_3162b55b7a40aca91e685ed6ce96ea24';
+var width = window.innerWidth || document.documentElement.clientWidth;
+if (width < 960) {
+window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="http://cy-cdn.kuaizhan.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("http://cy-cdn.kuaizhan.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="disease.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="core-article.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook/js/app.min.js"></script>
+<script src="libs/gitbook/js/lunr.js"></script>
+<script src="libs/gitbook/js/clipboard.min.js"></script>
+<script src="libs/gitbook/js/plugin-search.js"></script>
+<script src="libs/gitbook/js/plugin-sharing.js"></script>
+<script src="libs/gitbook/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook/js/jquery.highlight.js"></script>
+<script src="libs/gitbook/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": true,
+"facebook": false,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/gaospecial/gut-microbiome-20yrs/edit/master/90-appendix.Rmd",
+"text": "编辑"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["gut-microbiome-20yrs.pdf"],
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
