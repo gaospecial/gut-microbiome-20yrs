@@ -117,3 +117,8 @@ M1 <- M1 %>% mutate(LCS=ifelse(is.na(LCS),0,LCS))
 saveRDS(M1, file = "data/M1.RDS")
 
 
+#' # 使用名在前，姓在后的形式？这样可以去掉逗号
+M1$AF0 <- M1$AF
+firstname_lastname <- function(x, person_split=";",name_split=","){
+
+}

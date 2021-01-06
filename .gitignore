@@ -1,4 +1,3 @@
-data
 data-raw
 .Rproj.user
 .Rhistory
@@ -8,3 +7,4 @@ _book
 _bookdown_files
 .vscode
 rsconnect
+timeline.md
