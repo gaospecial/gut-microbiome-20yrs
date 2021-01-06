@@ -1,4 +1,4 @@
-# 中医药与肠道菌群
+# 中医药与肠道菌群 {#chinese-medicine}
 
 ## 核心文章列表
 
@@ -12,6 +12,7 @@ df <- topic_articles_core[["Chinese medicine"]]
 df <- biblio_df(df)
 produce_topic_article_datatable(df, caption = topic_caption, filename = topic_caption)
 ```
+
 
 
 ```{r}
@@ -39,22 +40,26 @@ topAU <- authorProdOverTime(df, k=10, graph = TRUE)
 
 ## 作者合作网络
 
-```{r}
+```{r fig.width=10}
 # Author collaboration
 NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "authors", sep = ";")
-net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 30, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE)
+net = networkPlot(NetMatrix,  normalize = "salton", weighted=NULL, n = 25, Title = "Author collaboration", type = "fruchterman", size=5,size.cex=T,remove.multiple=TRUE,labelsize=0.8,label.n=10,label.cex=F,cluster="louvain",halo = TRUE,verbose = FALSE)
+visIgraph(net$graph)
+
 ```
 
 
 ## 机构合作网络
 
 
-```{r}
+```{r fig.width=10}
 # 机构合作网络（显示前 15 家）
 NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
 net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
                 type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
-                curved = TRUE,halo = TRUE)
+                curved = TRUE,halo = TRUE,verbose = FALSE)
+visIgraph(net$graph)
+
 ```
 
 ## 共词分析
@@ -73,5 +78,140 @@ CS$graph_terms
 safe_thematicMap <- purrr::possibly(thematicMap, NULL)
 Map <- safe_thematicMap(df, field="ID",n=20,minfreq = 1,stemming = FALSE,size = 0.5, n.labels = 3, repel = TRUE)
 Map$map
+```
+
+## 全部论文
+
+
+```{r}
+df <- M %>%
+    filter(str_detect(content, regex(paste0(c(chinese_medicine_keywords$primary),collapse = "|"), ignore_case = T))) %>%
+    mutate(DT=factor(DT))
+df <- biblio_df(df)
+```
+
+```{r}
+  DT::datatable(df %>% select(TI,PY,J9,LCS,DT), 
+              colnames = c("文章标题","年份","来源期刊","LCS","类型"),
+          escape = FALSE,
+          rownames = TRUE,
+          filter = "top",
+          width = "95%",
+          extensions = c("Buttons"),
+          options=list(dom = 'Bfrtip',
+                       pageLength = 10,
+                       buttons=list(
+                         'pageLength',
+                         list(extend='copy'),
+                         list(extend="excel",
+                              header=TRUE,
+                              title="")
+                         ),
+                       columnDefs=list(
+                         list(width="60%",targets=1),
+                         list(width="5%", targets=2),
+                         list(width="10%",targets=c(3,5)),
+                         list(width="200px",targets="_all")
+                       ),
+                       lengthMenu=list(c(10,20,50,100,200,-1),
+                                       c("10","20","50","100","200","All")),
+                       autoWidth=TRUE)) %>%
+  DT::formatStyle(fontSize="9pt",columns = 0:4)
+```
+
+### 结果概要
+
+```{r}
+res <- biblioAnalysis(df)
+summary(res,k=30)
+plot(res,k=30)
+```
+
+
+```{r}
+authorProdOverTime(df,k=15)
+```
+
+
+
+```{r}
+tableTag(df,Tag = "AU_UN_NR")
+```
+
+
+
+### 历史引用网络
+
+```{r}
+safe_histNetwork <- purrr::possibly(histNetwork, NULL)
+hist_result <- safe_histNetwork(filter(df,DT=="ARTICLE"),verbose = FALSE)
+safe_histPlot <- purrr::possibly(histPlot,NULL)
+safe_histPlot(hist_result,verbose = F,n=30,size = 8,labelsize = 3)
+```
+
+
+### 共词分析
+
+使用作者关键词
+
+```{r}
+CS <- conceptualStructure(df, field = "DE", method = "MDS",clust=5, minDegree = 3, stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+使用系统关键词
+
+```{r}
+CS <- conceptualStructure(df, field = "ID", method = "MDS",clust=5, minDegree = 5, stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+
+
+使用摘要
+
+```{r}
+CS <- conceptualStructure(df, field = "AB", method = "MDS",clust=5, minDegree = 40, stemming = FALSE, labelsize = 10, documents = 30,graph = FALSE)
+CS$graph_terms
+```
+
+
+### 机构合作网络
+
+
+```{r fig.width=10}
+# 机构合作网络（显示前 15 家）
+NetMatrix <- biblioNetwork(df, analysis = "collaboration", network = "universities", sep = ";")
+net = networkPlot(NetMatrix, n = 15, Title = "Universities Collaboration", 
+                type = "fruchterman", size=TRUE, remove.multiple=FALSE,labelsize=0.7,cluster="louvain",
+                curved = TRUE,halo = TRUE,verbose = FALSE)
+visIgraph(net$graph)
+
+```
+
+### 关键词趋势
+
+#### 系统关键词
+
+```{r fig.width=12}
+KeywordGrowth(df,top=30) %>%
+  pivot_longer(cols = -Year) %>%
+  ggplot(aes(Year, value, fill=name, color=name)) +
+  geom_area() + 
+  facet_wrap(~name,ncol = 6,scales = "free_y") +
+  theme(strip.text = element_text(size = 6,face="bold"),
+        legend.position="none")
+```
+
+#### 作者关键词
+
+```{r fig.width=12}
+KeywordGrowth(df,top=30, Tag="DE") %>%
+  pivot_longer(cols = -Year) %>%
+  ggplot(aes(Year, value, fill=name, color=name)) +
+  geom_area() + 
+  facet_wrap(~name,ncol = 6,scales = "free_y")+
+  theme(strip.text = element_text(size = 6,face="bold"),
+        legend.position="none")
 ```
 
