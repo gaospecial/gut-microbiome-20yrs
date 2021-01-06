@@ -5,7 +5,7 @@ my $ut = shift or die;
 my $wos = shift or die;
 my $out = shift or die;
 
-open FILE, $doi or die;
+open FILE, $ut or die;
 
 chomp( my @ut = <FILE> );
 

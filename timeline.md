@@ -50,7 +50,15 @@ section 附录
 
 section 其它
 视觉设计: des16, after des15, 7d
-汉化工作: des17, after des15, 7d
+
+section 汉化工作
+国家的汉化: des17, after des16, 1d
+机构的汉化: des18, after des17, 1d
+整合汉化到图片: des19, after des18, 5d
+
+section 地理信息
+机构地址: des20, after des19, 1d
+经纬度转化: des21,after des20, 2d
 
 
 ```
